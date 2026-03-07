@@ -26,6 +26,8 @@ Started: Sat Mar  7 07:26:50 PST 2026
 - API client in `src/services/api.ts` — namespaced exports: authAPI, usersAPI, appsAPI, languagesAPI, orgsAPI, projectsAPI, rolesAPI
 - Token keys in `src/constants/app.ts`: ACCESS_TOKEN_KEY, REFRESH_TOKEN_KEY
 - All API methods typed with AxiosPromise<T> generics; datetime fields are `string` in TypeScript
+- AdminRoute guard in App.tsx: wraps admin-only routes, checks `isPlatformAdmin`, renders AccessDeniedPage if false
+- Pages inside AppShell use flex-1 layout (not min-h-screen) since they render inside the shell
 
 ---
 
@@ -129,4 +131,23 @@ Started: Sat Mar  7 07:26:50 PST 2026
   - isPlatformAdmin is derived from user via useMemo, not stored separately
   - isAppAdmin uses useCallback to memoize the function, checks appRoles for matching app_key + role_key="admin"
   - Session restore uses cancelled flag pattern for safe async cleanup in useEffect
+---
+
+## 2026-03-07 - US-008
+- Built LoginPage with email + password form, centered Card on branco bg, Shema design tokens
+- LoginPage redirects to /app/dashboard if already authenticated, shows LoadingSpinner during auth check
+- Login form calls AuthContext.login(), shows error toast via sonner on failure
+- AppShell now checks user state from AuthContext — redirects to /login if not authenticated
+- Admin routes (/app/users, /app/apps and sub-routes) wrapped with AdminRoute guard — renders AccessDeniedPage for non-admins
+- Sidebar hides Users and Manage Apps nav items when isPlatformAdmin is false
+- Sidebar logout button now wired to AuthContext.logout()
+- Sidebar shows user email in expanded mode
+- AccessDeniedPage updated with ShieldX icon and layout suitable for inside AppShell
+- NotFoundPage already had proper 404 layout from US-004
+- Files changed: src/components/pages/LoginPage.tsx, src/components/pages/AccessDeniedPage.tsx, src/components/layout/AppShell.tsx, src/components/layout/Sidebar.tsx, src/App.tsx
+- **Learnings for future iterations:**
+  - AdminRoute guard pattern: simple component in App.tsx that checks isPlatformAdmin and renders AccessDeniedPage or children
+  - AccessDeniedPage renders inside AppShell (not full-page), so use flex-1 layout instead of min-h-screen
+  - LoginPage should check isLoading and redirect if user already authenticated to prevent flash
+  - Axios error messages from backend come in err.response.data — using generic fallback message in catch is safer
 ---

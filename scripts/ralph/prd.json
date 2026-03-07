@@ -166,7 +166,7 @@
         "Verify in browser using dev-browser skill"
       ],
       "priority": 8,
-      "passes": false,
+      "passes": true,
       "notes": "Login page: centered card on branco background. Use Montserrat font, telha primary button, areia borders."
     },
     {
