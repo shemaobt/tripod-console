@@ -544,7 +544,7 @@
         "Verify in browser using dev-browser skill"
       ],
       "priority": 27,
-      "passes": false,
+      "passes": true,
       "notes": "Role assign body: {user_id, app_key, role_key}. Role revoke body: {user_id, app_key, role_key}. Platform admins see all apps in dropdown."
     },
     {

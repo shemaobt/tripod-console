@@ -446,3 +446,23 @@ Started: Sat Mar  7 07:26:50 PST 2026
   - Admin-only page protection already handled by AdminRoute in App.tsx — no need to re-check in the page itself
   - display_name can be null — show em-dash fallback
 ---
+
+## 2026-03-07 - US-027
+- Built UserDetailPage replacing placeholder with full user detail + role assignment management
+- Fetches user from usersAPI.get(userId) and roles from usersAPI.listRoles(userId) with separate loading states
+- UserInfoCard sub-component: shows email, display_name, is_active badge with toggle, is_platform_admin badge with toggle
+- Toggle buttons call usersAPI.update() with toggled boolean values, update local state from response
+- RolesTable sub-component: HTML table with App Key, Role Key, Granted At, Actions columns
+- Assign Role dialog: App select dropdown (from appsAPI.list()), Role select (admin/member), calls rolesAPI.assign()
+- Revoke button per role row opens ConfirmDialog, calls rolesAPI.revoke() with target_user_id, app_key, role_key
+- 409 toast for duplicate role assignment
+- Apps loaded lazily on first dialog open
+- Back navigation link to /app/users
+- InfoTooltip on page header, Platform Admin label, App Roles section, App Key/Role Key columns, dialog fields
+- Files changed: src/components/pages/UserDetailPage.tsx
+- **Learnings for future iterations:**
+  - rolesAPI.assign/revoke use `target_user_id` (not `user_id`) in the request body — match RoleAssignRequest/RoleRevokeRequest types
+  - Role table rows keyed by `${role.app_key}-${role.role_key}` since there's no unique id field on UserRoleResponse
+  - Apps list for role assignment loaded lazily on first dialog open (same pattern as ProjectAccessTab org loading)
+  - User detail toggle pattern: call usersAPI.update with toggled value, use response data to update local state
+---
