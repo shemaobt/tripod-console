@@ -39,6 +39,7 @@ Started: Sat Mar  7 07:26:50 PST 2026
 - Button doesn't support `asChild` — for link-styled buttons, use `buttonVariants()` from button.tsx on `<a>` tags with `cn()`
 - CRUD pages with edit: use `editingItem` state (null=create, object=edit) to share one dialog for both create and edit
 - Detail pages with tabs: use Radix Tabs with `defaultValue`, put each section in `TabsContent`; sub-components keep main export manageable
+- Complex tab content: extract to separate sibling file (e.g. ProjectAccessTab.tsx) imported by the parent page component
 
 ---
 
@@ -406,4 +407,23 @@ Started: Sat Mar  7 07:26:50 PST 2026
   - Location update returns updated ProjectResponse — use it to update parent state directly
   - Sub-components (ProjectInfoCard, LocationSection) keep the main component under 300 lines for the main export
   - parseFloat validation: check with isNaN after parsing to catch invalid number input
+---
+
+## 2026-03-07 - US-025
+- Built ProjectAccessTab component as a separate file (src/components/pages/ProjectAccessTab.tsx)
+- Two sections: UserAccessSection (users with direct access) and OrgAccessSection (organizations with access)
+- Each section has: table listing, Grant button, Revoke button with ConfirmDialog, guided EmptyState
+- Grant User dialog with user_id input, Grant Organization dialog with org Select dropdown (from orgsAPI.list())
+- Revoke uses ConfirmDialog with descriptive messages including user email / org name
+- 409 conflict toast for duplicate access grants
+- FeatureSpotlight on access tab container (featureKey: 'project-access-first-visit')
+- InfoTooltip on both section headers and dialog fields
+- Updated ProjectDetailPage.tsx to import and use ProjectAccessTab in the Access tab
+- Files changed: src/components/pages/ProjectAccessTab.tsx (new), src/components/pages/ProjectDetailPage.tsx
+- **Learnings for future iterations:**
+  - When a detail page tab content is complex, extract it to a separate sibling file (e.g. ProjectAccessTab.tsx) to keep files under 300 lines
+  - FeatureSpotlight wraps the entire tab content div — works well for highlighting a section on first visit
+  - Grant org dialog loads orgs lazily on first open (checks availableOrgs.length === 0 before fetching)
+  - 409 conflict detection pattern: cast error to access response.status, show specific toast message (same pattern as OrganizationDetailPage)
+  - ConfirmDialog pattern: state holds the item being revoked (null = closed), onOpenChange clears state when dialog closes
 ---
