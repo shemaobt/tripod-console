@@ -427,3 +427,22 @@ Started: Sat Mar  7 07:26:50 PST 2026
   - 409 conflict detection pattern: cast error to access response.status, show specific toast message (same pattern as OrganizationDetailPage)
   - ConfirmDialog pattern: state holds the item being revoked (null = closed), onOpenChange clears state when dialog closes
 ---
+
+## 2026-03-07 - US-026
+- Built UsersPage replacing placeholder with admin user list table
+- Fetches users from usersAPI.list() (GET /api/users, admin only)
+- HTML table with columns: Email, Display Name, Active (badge), Platform Admin (badge), Created
+- Active badge: variant="active" for active users, variant="inactive" for inactive users
+- Platform Admin badge: variant="success" shown only when is_platform_admin=true
+- Click row navigates to /app/users/:userId
+- Page already protected by AdminRoute guard in App.tsx (renders AccessDeniedPage for non-admins)
+- LoadingSpinner while fetching, guided EmptyState with educational text
+- InfoTooltip on page header, Active column, and Platform Admin column
+- Files changed: src/components/pages/UsersPage.tsx
+- **Learnings for future iterations:**
+  - UsersPage is simpler than other CRUD pages — no create/edit dialogs needed, just a read-only list with navigation
+  - Badge variant="active" and variant="inactive" map exactly to is_active boolean state
+  - Platform admin badge shown conditionally (not as active/inactive pair) — only renders when is_platform_admin=true
+  - Admin-only page protection already handled by AdminRoute in App.tsx — no need to re-check in the page itself
+  - display_name can be null — show em-dash fallback
+---

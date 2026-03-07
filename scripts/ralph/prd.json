@@ -524,7 +524,7 @@
         "Verify in browser using dev-browser skill"
       ],
       "priority": 26,
-      "passes": false,
+      "passes": true,
       "notes": "Admin-only page. Depends on US-010 for GET /api/users endpoint."
     },
     {
