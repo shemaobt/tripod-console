@@ -27,4 +27,6 @@ export interface OrganizationMemberResponse {
   organization_id: string
   role: string
   joined_at: string
+  email: string
+  display_name: string | null
 }
