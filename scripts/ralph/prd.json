@@ -281,7 +281,7 @@
         "Typecheck passes"
       ],
       "priority": 14,
-      "passes": false,
+      "passes": true,
       "notes": "Working directory: /workspace/tripod-backend/. Read existing org service (app/services/org/) and router (app/api/organizations.py) first to extend them. Follow existing patterns."
     },
     {

@@ -230,3 +230,17 @@ Started: Sat Mar  7 07:26:50 PST 2026
   - db_session seeds "meaning-map-generator" app — account for it in list_apps assertions (use `in` not exact length)
   - create_app uses flush+refresh (not commit) — test still works since we're in the same session
 ---
+
+## 2026-03-07 - US-014
+- Added 3 new organization endpoints: PATCH /{id} (update), GET /{id}/members (list members with user info), DELETE /{id}/members/{user_id} (remove member)
+- Created 3 service functions: update_organization (with ConflictError on dup slug), list_members (joins OrganizationMember + User), remove_member (with NotFoundError)
+- Added OrganizationUpdate and OrganizationMemberDetailResponse Pydantic schemas
+- Updated frontend OrganizationMemberResponse type to include email + display_name fields
+- Files changed (backend): app/services/org/{update_organization,list_members,remove_member,__init__}.py, app/models/org.py, app/api/organizations.py, http/organizations.http
+- Files changed (frontend): src/types/organization.ts
+- **Learnings for future iterations:**
+  - list_members joins OrganizationMember + User and returns list of tuples — router constructs detail response manually
+  - OrganizationMemberDetailResponse is a flat model (not from_attributes) since it combines fields from two ORM models
+  - update_organization reuses get_organization_or_404 for existence check and get_organization_by_slug for slug uniqueness
+  - When backend response shape changes (adding email/display_name), update the corresponding frontend type in src/types/
+---
