@@ -370,3 +370,21 @@ Started: Sat Mar  7 07:26:50 PST 2026
   - ConfirmDialog onOpenChange: use `if (!open) setRemovingMember(null)` to clear state on close
   - Back navigation: plain button with ArrowLeft icon, styled as text link with hover transition
 ---
+
+## 2026-03-07 - US-023
+- Built ProjectsPage replacing placeholder with full CRUD table (list, create, edit)
+- Fetches projects from projectsAPI.list(), languages from languagesAPI.list() for display and dropdown
+- HTML table with columns: Name, Description (truncated to 60 chars), Language (name + code), Created, Actions
+- Create Project dialog with name input, description textarea, and language Select dropdown from languagesAPI.list()
+- Edit button per row opens dialog pre-filled with current values, calls projectsAPI.update()
+- Create calls projectsAPI.create() with name, description, language_id
+- 409 conflict toast, guided EmptyState, LoadingSpinner, InfoTooltip on page header
+- Click row navigates to /app/projects/:projectId
+- Files changed: src/components/pages/ProjectsPage.tsx
+- **Learnings for future iterations:**
+  - Language dropdown populated from languagesAPI.list() — fetch on mount for table display and on dialog open if not loaded
+  - truncate() helper for description column — returns em-dash for null values
+  - Select component from Radix requires value + onValueChange pattern (not onChange)
+  - languageMap (Map object) used for efficient language ID -> name lookups in table cells
+  - Same CRUD pattern as OrganizationsPage: editingItem state (null=create, object=edit), shared dialog
+---

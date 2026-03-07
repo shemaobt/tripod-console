@@ -463,7 +463,7 @@
         "Verify in browser using dev-browser skill"
       ],
       "priority": 23,
-      "passes": false,
+      "passes": true,
       "notes": "Depends on US-016 for PATCH /api/projects/{id} endpoint. Language dropdown fetched on dialog open."
     },
     {
