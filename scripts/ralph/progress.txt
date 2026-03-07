@@ -30,6 +30,11 @@ Started: Sat Mar  7 07:26:50 PST 2026
 - All API methods typed with AxiosPromise<T> generics; datetime fields are `string` in TypeScript
 - AdminRoute guard in App.tsx: wraps admin-only routes, checks `isPlatformAdmin`, renders AccessDeniedPage if false
 - Pages inside AppShell use flex-1 layout (not min-h-screen) since they render inside the shell
+- Backend service pattern: one function per file in `app/services/<domain>/`, `__init__.py` re-exports; add alias in `app/services/__init__.py`
+- Backend admin endpoints use `Depends(require_platform_admin)`, auth endpoints use `Depends(get_current_user)` from `app/core/auth_middleware`
+- Backend Pydantic schemas with ORM conversion need `model_config = {"from_attributes": True}`
+- Backend services raise business exceptions (NotFoundError, ConflictError) — never HTTPException
+- When adding new service+router: update `app/services/__init__.py` (import + alias) AND `app/main.py` (include_router)
 
 ---
 
@@ -165,4 +170,22 @@ Started: Sat Mar  7 07:26:50 PST 2026
   - Backend git repo may have corrupt loose objects — `git gc --prune=now` fixes it
   - Migration pattern: revision ID format `YYYYMMDD_NNNN`, chain via `down_revision` to latest existing migration
   - App model uses `Text` for description and `String(500)` for URL columns
+---
+
+## 2026-03-07 - US-010
+- Created Users API: service layer, Pydantic schemas, FastAPI router, HTTP examples
+- Service: app/services/user/ with 4 functions: list_users, get_user_by_id, update_user, list_user_roles
+- Schemas: app/models/user.py with UserListResponse (from_attributes), UserUpdate, UserRoleResponse
+- Router: app/api/users.py with GET /api/users (admin), GET /api/users/{id}, PATCH /api/users/{id} (admin), GET /api/users/{id}/roles
+- Registered in app/main.py (prefix /api/users, tag users) and app/services/__init__.py (user_service alias)
+- HTTP examples: http/users.http with all 4 endpoints
+- Files changed: app/services/user/{__init__,list_users,get_user_by_id,update_user,list_user_roles}.py, app/models/user.py, app/api/users.py, app/services/__init__.py, app/main.py, http/users.http
+- **Learnings for future iterations:**
+  - Backend service pattern: one file per function in service dir, __init__.py re-exports all; services/__init__.py adds alias (e.g. user_service = user)
+  - Admin-only endpoints use `Depends(require_platform_admin)` from auth_middleware
+  - Authenticated-only endpoints use `Depends(get_current_user)`
+  - Service functions raise NotFoundError (from app.core.exceptions) — never HTTPException
+  - UserListResponse uses `model_config = {"from_attributes": True}` for ORM model -> Pydantic conversion
+  - list_user_roles returns tuples (app_key, role_key, granted_at) — router constructs response models from them
+  - update_user uses flush+refresh pattern to return updated model within same transaction
 ---
