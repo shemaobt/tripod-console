@@ -1,3 +1,23 @@
 # Ralph Progress Log
 Started: Sat Mar  7 07:26:50 PST 2026
+
+## Codebase Patterns
+- Build: `npm run build` (tsc -b && vite build), `npm run typecheck` (tsc -b), `npm run lint` (eslint)
+- Path alias: `@/` maps to `src/` (configured in tsconfig.app.json and vite.config.ts)
+- Tailwind CSS v4 uses `@import "tailwindcss"` in index.css (not `@tailwind` directives)
+- API proxy: `/api` -> `http://localhost:8000` in vite dev server
+- React 18 (not 19) — use `react` and `react-dom` ^18.3.1 with `@types/react` ^18.3.12
+
+---
+
+## 2026-03-07 - US-001
+- Scaffolded Vite project with React 18, TypeScript, Tailwind CSS v4
+- Installed all required deps: react-router, zustand, axios, radix-ui, lucide-react, sonner, cva, clsx, tailwind-merge
+- Configured @/ path alias, API proxy, @tailwindcss/vite plugin
+- Files: package.json, vite.config.ts, tsconfig.app.json, tsconfig.json, tsconfig.node.json, index.html, src/App.tsx, src/main.tsx, src/index.css, src/vite-env.d.ts, .gitignore, eslint.config.js
+- **Learnings for future iterations:**
+  - `npm create vite` defaults to React 19; must pin to ^18.3.1 in package.json
+  - Tailwind v4 vite plugin is `@tailwindcss/vite` (not `tailwindcss/vite`)
+  - Scaffold generates App.css — remove it since we use Tailwind only
+  - `verbatimModuleSyntax: true` in tsconfig means use `import type` for type-only imports
 ---
