@@ -35,6 +35,7 @@ Started: Sat Mar  7 07:26:50 PST 2026
 - Backend Pydantic schemas with ORM conversion need `model_config = {"from_attributes": True}`
 - Backend services raise business exceptions (NotFoundError, ConflictError) — never HTTPException
 - When adding new service+router: update `app/services/__init__.py` (import + alias) AND `app/main.py` (include_router)
+- FastAPI route ordering: fixed path routes (e.g. `/my-apps`) must be defined BEFORE parameterized routes (e.g. `/{app_id}`)
 
 ---
 
@@ -200,4 +201,19 @@ Started: Sat Mar  7 07:26:50 PST 2026
   - Broken venv symlink to developer's local machine — use system Python for syntax checks only
   - list_user_roles returns list of tuples (app_key, role_key, granted_at) — destructure in tests
   - Test pattern: import service via `from app.services import user_service`, not direct function imports
+---
+
+## 2026-03-07 - US-012
+- Created Apps API: service layer (6 functions), Pydantic schemas (5 models), FastAPI router (6 endpoints), HTTP examples
+- Service: app/services/app/ with list_apps, create_app (ConflictError on dup), get_app_or_404 (NotFoundError), update_app, list_user_apps, list_app_roles
+- Schemas: app/models/app.py with AppCreate, AppUpdate, AppResponse (from_attributes), UserAppResponse (includes roles list), AppRoleResponse
+- Router: app/api/apps.py with GET /api/apps (admin), GET /api/apps/my-apps (any user), POST /api/apps (admin), GET /api/apps/{id}, PATCH /api/apps/{id} (admin), GET /api/apps/{id}/roles
+- Registered in app/main.py (prefix /api/apps, tag apps) and app/services/__init__.py (app_service alias)
+- HTTP examples: http/apps.http with all 6 endpoints
+- Files changed: app/services/app/{__init__,list_apps,get_app_or_404,create_app,update_app,list_user_apps,list_app_roles}.py, app/models/app.py, app/api/apps.py, app/services/__init__.py, app/main.py, http/apps.http
+- **Learnings for future iterations:**
+  - list_user_apps joins App + UserAppRole + Role, groups by app.id, collects role_key strings into a list
+  - Router must define /my-apps BEFORE /{app_id} to avoid FastAPI treating "my-apps" as an app_id path param
+  - UserAppResponse is not from_attributes since it adds a computed `roles` field; construct manually in router
+  - AppRoleResponse uses from_attributes since it maps directly from Role ORM model
 ---

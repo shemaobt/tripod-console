@@ -240,7 +240,7 @@
         "Typecheck passes"
       ],
       "priority": 12,
-      "passes": false,
+      "passes": true,
       "notes": "Working directory: /workspace/tripod-backend/. list_user_apps queries UserAppRole joined with App to find apps where user has roles, groups by app, collects role_keys. AppResponse must include new columns: description, icon_url, app_url, ios_url, android_url, platform."
     },
     {
