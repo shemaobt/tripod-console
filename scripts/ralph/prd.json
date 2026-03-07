@@ -36,7 +36,7 @@
         "Typecheck passes"
       ],
       "priority": 2,
-      "passes": false,
+      "passes": true,
       "notes": "Colors: branco=#F6F5EB, areia=#C5C29F, azul=#89AAA3, telha=#BE4A01, verde-claro=#777D45, verde=#3F3E20, preto=#0A0703, surface=#FFFFFF, surface-alt=#F3F2EB. Fonts: Montserrat (UI) + Merriweather (content)."
     },
     {
@@ -59,7 +59,7 @@
         "Typecheck passes"
       ],
       "priority": 3,
-      "passes": false,
+      "passes": true,
       "notes": "Follow shadcn/ui pattern: Radix primitive + Tailwind + cva + cn(). Use Shema design tokens for all colors. Primary button uses telha. Focus rings use telha. Borders use areia."
     },
     {

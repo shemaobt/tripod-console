@@ -5,6 +5,13 @@ Started: Sat Mar  7 07:26:50 PST 2026
 - Build: `npm run build` (tsc -b && vite build), `npm run typecheck` (tsc -b), `npm run lint` (eslint)
 - Path alias: `@/` maps to `src/` (configured in tsconfig.app.json and vite.config.ts)
 - Tailwind CSS v4 uses `@import "tailwindcss"` in index.css (not `@tailwind` directives)
+- Google Fonts `@import url()` must come BEFORE `@import "tailwindcss"` to avoid CSS warning
+- Design tokens defined in `@theme {}` block in index.css — use `--color-*` naming for Tailwind colors
+- Style constants in `src/styles/` — import from `@/styles` (e.g., `import { card } from "@/styles"`)
+- Use `cn()` from `@/utils/cn` for all class merging (clsx + tailwind-merge)
+- UI components in `src/components/ui/` follow shadcn pattern: Radix + Tailwind + cva + cn()
+- ESLint `react-refresh/only-export-components` is disabled for `src/components/ui/` (exports variants alongside components)
+- Use `type` alias instead of empty `interface extends` to avoid `@typescript-eslint/no-empty-object-type` lint error
 - API proxy: `/api` -> `http://localhost:8000` in vite dev server
 - React 18 (not 19) — use `react` and `react-dom` ^18.3.1 with `@types/react` ^18.3.12
 
@@ -20,4 +27,29 @@ Started: Sat Mar  7 07:26:50 PST 2026
   - Tailwind v4 vite plugin is `@tailwindcss/vite` (not `tailwindcss/vite`)
   - Scaffold generates App.css — remove it since we use Tailwind only
   - `verbatimModuleSyntax: true` in tsconfig means use `import type` for type-only imports
+---
+
+## 2026-03-07 - US-002
+- Added Shema design tokens to src/index.css with @theme block (all 9 colors + 2 fonts)
+- Added dark mode overrides via `.dark` class in @layer base
+- Created src/utils/cn.ts (clsx + tailwind-merge)
+- Created centralized style constants: src/styles/cards.ts, badges.ts, layout.ts, states.ts, index.ts
+- Files changed: src/index.css, src/utils/cn.ts, src/styles/{cards,badges,layout,states,index}.ts
+- **Learnings for future iterations:**
+  - Google Fonts @import url() must precede @import "tailwindcss" or build emits CSS warning
+  - Tailwind v4 @theme block uses `--color-*` prefix for custom colors (e.g., `--color-branco`)
+  - Dark mode uses `.dark` class on root element with CSS variable overrides
+---
+
+## 2026-03-07 - US-003
+- Created 11 UI primitive components in src/components/ui/
+- Button (cva: default/destructive/outline/ghost + sizes), Input, Label (Radix), Badge (cva: default/success/error/active/inactive), Card (Card/Header/Content/Footer), Dialog (Radix), Select (Radix), Tabs (Radix), Textarea, Tooltip (Radix), Popover (Radix)
+- All components use cn() for class merging, accept className prop, use forwardRef
+- All use Shema design tokens: telha for primary/focus, areia for borders, verde for muted text
+- Updated eslint.config.js to disable react-refresh/only-export-components for UI files
+- Files: src/components/ui/{button,input,label,badge,card,dialog,select,tabs,textarea,tooltip,popover}.tsx, eslint.config.js
+- **Learnings for future iterations:**
+  - ESLint react-refresh plugin warns about exporting non-components (like `buttonVariants`) — disabled for ui/ dir
+  - Use `type X = React.InputHTMLAttributes<...>` instead of `interface X extends React.InputHTMLAttributes<...> {}` to avoid no-empty-object-type lint error
+  - shadcn pattern: Radix primitive + React.forwardRef + cn() + Tailwind classes + cva for variants
 ---
