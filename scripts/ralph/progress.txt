@@ -2,6 +2,8 @@
 Started: Sat Mar  7 07:26:50 PST 2026
 
 ## Codebase Patterns
+- Backend repo: /workspace/tripod-backend/ — Python deps NOT installed in devcontainer, can only verify syntax (ast.parse)
+- Backend migrations: revision ID format `YYYYMMDD_NNNN`, chain via `down_revision` to latest existing
 - Build: `npm run build` (tsc -b && vite build), `npm run typecheck` (tsc -b), `npm run lint` (eslint)
 - Path alias: `@/` maps to `src/` (configured in tsconfig.app.json and vite.config.ts)
 - Tailwind CSS v4 uses `@import "tailwindcss"` in index.css (not `@tailwind` directives)
@@ -150,4 +152,17 @@ Started: Sat Mar  7 07:26:50 PST 2026
   - AccessDeniedPage renders inside AppShell (not full-page), so use flex-1 layout instead of min-h-screen
   - LoginPage should check isLoading and redirect if user already authenticated to prevent flash
   - Axios error messages from backend come in err.response.data — using generic fallback message in catch is safer
+---
+
+## 2026-03-07 - US-009
+- Added 6 new columns to App model in /workspace/tripod-backend/app/db/models/auth.py: description (Text), icon_url (String), app_url (String), ios_url (String), android_url (String), platform (String, default='web')
+- Created Alembic migration /workspace/tripod-backend/alembic/versions/20260307_0001_add_app_hub_columns.py with upgrade/downgrade
+- All new columns nullable or with defaults so existing data unaffected
+- Frontend types (src/types/app.ts) already included these columns from US-006
+- Files changed: /workspace/tripod-backend/app/db/models/auth.py, /workspace/tripod-backend/alembic/versions/20260307_0001_add_app_hub_columns.py
+- **Learnings for future iterations:**
+  - Backend repo at /workspace/tripod-backend/ doesn't have Python deps installed in this environment — can only verify syntax, not run tests
+  - Backend git repo may have corrupt loose objects — `git gc --prune=now` fixes it
+  - Migration pattern: revision ID format `YYYYMMDD_NNNN`, chain via `down_revision` to latest existing migration
+  - App model uses `Text` for description and `String(500)` for URL columns
 ---
