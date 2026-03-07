@@ -28,6 +28,7 @@ import {
 import { LoadingSpinner } from "@/components/common/LoadingSpinner"
 import { EmptyState } from "@/components/common/EmptyState"
 import { InfoTooltip } from "@/components/common/InfoTooltip"
+import { FeatureSpotlight } from "@/components/common/FeatureSpotlight"
 
 interface AppFormState {
   app_key: string
@@ -168,83 +169,89 @@ export default function AppsPage() {
         </Button>
       </div>
 
-      {apps.length === 0 ? (
-        <EmptyState
-          icon={AppWindow}
-          title="No apps registered"
-          description="Apps represent the software products in your platform. Register an app to start assigning user roles and managing access."
-          actionLabel="Create App"
-          onAction={openCreateDialog}
-        />
-      ) : (
-        <div className={`${card.base} overflow-hidden`}>
-          <table className="w-full">
-            <thead>
-              <tr className="bg-surface-alt">
-                <th className="px-4 py-3 text-left text-verde text-sm font-medium">
-                  <span className="inline-flex items-center">
-                    App Key
-                    <InfoTooltip content="A unique identifier used to reference this app in roles and access control." />
-                  </span>
-                </th>
-                <th className="px-4 py-3 text-left text-verde text-sm font-medium">
-                  Name
-                </th>
-                <th className="px-4 py-3 text-left text-verde text-sm font-medium">
-                  <span className="inline-flex items-center">
-                    Platform
-                    <InfoTooltip content="The platform this app targets: web, mobile (iOS/Android), or both." />
-                  </span>
-                </th>
-                <th className="px-4 py-3 text-left text-verde text-sm font-medium">
-                  <span className="inline-flex items-center">
-                    Active
-                    <InfoTooltip content="Whether this app is currently active and available to users." />
-                  </span>
-                </th>
-                <th className="px-4 py-3 text-right text-verde text-sm font-medium">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {apps.map((app) => (
-                <tr
-                  key={app.id}
-                  className="border-t border-areia/20 hover:bg-surface-alt/50 cursor-pointer"
-                  onClick={() => navigate(`/app/apps/${app.id}`)}
-                >
-                  <td className="px-4 py-3 text-sm text-preto font-mono">
-                    {app.app_key}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-preto font-medium">
-                    {app.name}
-                  </td>
-                  <td className="px-4 py-3 text-sm">
-                    <Badge variant="default">
-                      {app.platform ?? "web"}
-                    </Badge>
-                  </td>
-                  <td className="px-4 py-3 text-sm">
-                    <Badge variant={app.is_active ? "active" : "inactive"}>
-                      {app.is_active ? "Active" : "Inactive"}
-                    </Badge>
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={(e) => openEditDialog(e, app)}
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                  </td>
+      <FeatureSpotlight
+        featureKey="apps-admin-first-visit"
+        title="Apps Management"
+        description="Register and configure the apps in your platform. Each app can have roles assigned to users for access control."
+      >
+        {apps.length === 0 ? (
+          <EmptyState
+            icon={AppWindow}
+            title="No apps registered"
+            description="Apps represent the software products in your platform. Register an app to start assigning user roles and managing access."
+            actionLabel="Create App"
+            onAction={openCreateDialog}
+          />
+        ) : (
+          <div className={`${card.base} overflow-hidden`}>
+            <table className="w-full">
+              <thead>
+                <tr className="bg-surface-alt">
+                  <th className="px-4 py-3 text-left text-verde text-sm font-medium">
+                    <span className="inline-flex items-center">
+                      App Key
+                      <InfoTooltip content="A unique identifier used to reference this app in roles and access control." />
+                    </span>
+                  </th>
+                  <th className="px-4 py-3 text-left text-verde text-sm font-medium">
+                    Name
+                  </th>
+                  <th className="px-4 py-3 text-left text-verde text-sm font-medium">
+                    <span className="inline-flex items-center">
+                      Platform
+                      <InfoTooltip content="The platform this app targets: web, mobile (iOS/Android), or both." />
+                    </span>
+                  </th>
+                  <th className="px-4 py-3 text-left text-verde text-sm font-medium">
+                    <span className="inline-flex items-center">
+                      Active
+                      <InfoTooltip content="Whether this app is currently active and available to users." />
+                    </span>
+                  </th>
+                  <th className="px-4 py-3 text-right text-verde text-sm font-medium">
+                    Actions
+                  </th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+              </thead>
+              <tbody>
+                {apps.map((app) => (
+                  <tr
+                    key={app.id}
+                    className="border-t border-areia/20 hover:bg-surface-alt/50 cursor-pointer"
+                    onClick={() => navigate(`/app/apps/${app.id}`)}
+                  >
+                    <td className="px-4 py-3 text-sm text-preto font-mono">
+                      {app.app_key}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-preto font-medium">
+                      {app.name}
+                    </td>
+                    <td className="px-4 py-3 text-sm">
+                      <Badge variant="default">
+                        {app.platform ?? "web"}
+                      </Badge>
+                    </td>
+                    <td className="px-4 py-3 text-sm">
+                      <Badge variant={app.is_active ? "active" : "inactive"}>
+                        {app.is_active ? "Active" : "Inactive"}
+                      </Badge>
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => openEditDialog(e, app)}
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </FeatureSpotlight>
 
       <AppFormDialog
         open={dialogOpen}
