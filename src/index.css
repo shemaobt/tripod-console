@@ -1,1 +1,39 @@
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Merriweather:wght@300;400;700&display=swap");
 @import "tailwindcss";
+
+@theme {
+  --font-sans: "Montserrat", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Merriweather", ui-serif, Georgia, serif;
+
+  --color-branco: #F6F5EB;
+  --color-areia: #C5C29F;
+  --color-azul: #89AAA3;
+  --color-telha: #BE4A01;
+  --color-verde-claro: #777D45;
+  --color-verde: #3F3E20;
+  --color-preto: #0A0703;
+  --color-surface: #FFFFFF;
+  --color-surface-alt: #F3F2EB;
+}
+
+@layer base {
+  body {
+    font-family: var(--font-sans);
+    background-color: var(--color-branco);
+    color: var(--color-preto);
+  }
+}
+
+@layer base {
+  .dark {
+    --color-branco: #1a1a17;
+    --color-areia: #4a4a3a;
+    --color-azul: #5a7a73;
+    --color-telha: #d45a11;
+    --color-verde-claro: #8a9050;
+    --color-verde: #a0a070;
+    --color-preto: #f0efe5;
+    --color-surface: #252520;
+    --color-surface-alt: #2a2a25;
+  }
+}
