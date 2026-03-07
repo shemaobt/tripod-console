@@ -38,6 +38,7 @@ import {
 } from "@/components/ui/tabs"
 import { LoadingSpinner } from "@/components/common/LoadingSpinner"
 import { InfoTooltip } from "@/components/common/InfoTooltip"
+import { ProjectAccessTab } from "./ProjectAccessTab"
 
 function formatDate(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString(undefined, {
@@ -366,9 +367,7 @@ export default function ProjectDetailPage() {
         </TabsContent>
 
         <TabsContent value="access" className="mt-4">
-          <div className="text-sm text-verde">
-            Access management will be available here.
-          </div>
+          <ProjectAccessTab projectId={projectId!} />
         </TabsContent>
       </Tabs>
 
