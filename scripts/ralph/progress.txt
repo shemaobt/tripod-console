@@ -17,6 +17,9 @@ Started: Sat Mar  7 07:26:50 PST 2026
 - ESLint `react-hooks/set-state-in-effect`: don't call setState in useEffect; use `useSyncExternalStore` or `useMemo` for derived state
 - Context files exporting Provider + hook: add `// eslint-disable-next-line react-refresh/only-export-components` above the hook export
 - Routing: BrowserRouter in App.tsx, `/app` shell uses Outlet, pages in `components/pages/`
+- Common components in `src/components/common/`: LoadingSpinner, EmptyState, ConfirmDialog, ErrorBoundary, InfoTooltip, FeatureSpotlight
+- Zustand stores in `src/stores/` — onboardingStore persists to localStorage with key `tc_onboarding`
+- ErrorBoundary is a class component (React requirement for error boundaries)
 
 ---
 
@@ -70,4 +73,21 @@ Started: Sat Mar  7 07:26:50 PST 2026
   - Context files exporting both Provider + hook: add `// eslint-disable-next-line react-refresh/only-export-components` above hook export
   - Sidebar uses NavLink + useLocation for active state (startsWith matching for nested routes)
   - Admin-only items always shown for now; will be filtered by isPlatformAdmin when AuthContext is added
+---
+
+## 2026-03-07 - US-005
+- Created 6 common components in src/components/common/: LoadingSpinner, EmptyState, ConfirmDialog, ErrorBoundary, InfoTooltip, FeatureSpotlight
+- Created Zustand onboardingStore with localStorage persistence (key: tc_onboarding) in src/stores/onboardingStore.ts
+- LoadingSpinner: configurable size (sm/md/lg), uses Loader2 icon with animate-spin, centered via states.loading
+- EmptyState: accepts LucideIcon, title, description, optional action button (CTA)
+- ConfirmDialog: wraps Dialog primitive, cancel/confirm buttons, variant support (default/destructive)
+- ErrorBoundary: class component (React requirement), catches errors with fallback UI and "Try again" reset
+- InfoTooltip: (i) icon at 14px in text-verde/40, uses Radix Tooltip, ml-1 placement
+- FeatureSpotlight: wraps children with ring-2 ring-telha/30 animate-pulse, Radix Popover with "Got it" dismiss, integrates with onboardingStore
+- Files: src/stores/onboardingStore.ts, src/components/common/{LoadingSpinner,EmptyState,ConfirmDialog,ErrorBoundary,InfoTooltip,FeatureSpotlight}.tsx
+- **Learnings for future iterations:**
+  - ErrorBoundary must be a class component — React has no hook equivalent for componentDidCatch/getDerivedStateFromError
+  - Zustand persist middleware: `persist(stateCreator, { name: "key" })` stores to localStorage automatically
+  - FeatureSpotlight uses `isDismissed` from onboardingStore to conditionally render pulsing ring + popover
+  - Common components import from `@/styles` for centralized state styles (states.loading, states.empty)
 ---

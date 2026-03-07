@@ -102,7 +102,7 @@
         "Typecheck passes"
       ],
       "priority": 5,
-      "passes": false,
+      "passes": true,
       "notes": "FeatureSpotlight props: featureKey, title, description, side (top/bottom/left/right), children. Max 1 spotlight visible per page. InfoTooltip appears to the right of its label with ml-1."
     },
     {
