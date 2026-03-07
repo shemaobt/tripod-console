@@ -565,7 +565,7 @@
         "Verify in browser using dev-browser skill"
       ],
       "priority": 28,
-      "passes": false,
+      "passes": true,
       "notes": "Admin-only page. Depends on US-012 for Apps API endpoints."
     },
     {

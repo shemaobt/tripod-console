@@ -466,3 +466,27 @@ Started: Sat Mar  7 07:26:50 PST 2026
   - Apps list for role assignment loaded lazily on first dialog open (same pattern as ProjectAccessTab org loading)
   - User detail toggle pattern: call usersAPI.update with toggled value, use response data to update local state
 ---
+
+## 2026-03-07 - US-028
+- Built AppsPage replacing placeholder with full CRUD table (list, create, edit)
+- Fetches apps from appsAPI.list() (GET /api/apps, admin only), displays in HTML table
+- HTML table with columns: App Key (with InfoTooltip), Name, Platform (badge), Active (badge), Actions
+- Create App dialog with all fields: app_key, name, description, platform select (web/mobile/both), icon_url, app_url, ios_url, android_url, is_active checkbox
+- Edit button per row opens dialog pre-filled with current values (app_key disabled), calls appsAPI.update()
+- Create calls appsAPI.create(), shows success toast, refreshes list
+- 409 conflict toast for duplicate app_key
+- Click row navigates to /app/apps/:appId
+- Page already protected by AdminRoute guard in App.tsx
+- LoadingSpinner while fetching, guided EmptyState with educational text + action CTA
+- InfoTooltip on page header, App Key column, Platform column, Active column, and form fields
+- Extracted AppFormDialog sub-component to keep form logic clean and dialog scrollable (max-h-[85vh])
+- Files changed: src/components/pages/AppsPage.tsx
+- **Learnings for future iterations:**
+  - App form has many fields — extract form dialog to a sub-component (AppFormDialog) to keep main component manageable
+  - Use AppFormState interface + formFromApp helper for clean form state management
+  - App key field is disabled when editing (cannot change after creation) — use `disabled={!!editing}` + opacity
+  - Platform select with three options: web, mobile, both — uses Radix Select component
+  - is_active checkbox uses native HTML checkbox styled with Shema colors (no Radix Switch component exists yet)
+  - Dialog with many fields needs `max-h-[85vh] overflow-y-auto` on DialogContent for scrollability
+  - Same CRUD pattern as OrganizationsPage but with more form fields and form state extracted to interface
+---
