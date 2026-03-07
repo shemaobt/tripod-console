@@ -604,7 +604,7 @@
         "Verify in browser using dev-browser skill"
       ],
       "priority": 30,
-      "passes": false,
+      "passes": true,
       "notes": "Dependencies: react-leaflet, leaflet, @types/leaflet. Marker clustering (react-leaflet-cluster) is optional enhancement. Import leaflet CSS in index.css or MapPage."
     },
     {

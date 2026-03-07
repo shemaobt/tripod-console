@@ -40,6 +40,7 @@ Started: Sat Mar  7 07:26:50 PST 2026
 - CRUD pages with edit: use `editingItem` state (null=create, object=edit) to share one dialog for both create and edit
 - Detail pages with tabs: use Radix Tabs with `defaultValue`, put each section in `TabsContent`; sub-components keep main export manageable
 - Complex tab content: extract to separate sibling file (e.g. ProjectAccessTab.tsx) imported by the parent page component
+- react-leaflet v5 requires React 19; use v4.2.1 for React 18 — fix marker icons with L.Icon.Default.mergeOptions + PNG imports
 
 ---
 
@@ -508,4 +509,24 @@ Started: Sat Mar  7 07:26:50 PST 2026
   - Update response from appsAPI.update returns updated AppResponse — use it to update local state directly (same pattern as ProjectDetailPage)
   - AppRolesTable uses role.id as key (unlike UserRoleResponse which has no id and uses composite key)
   - External links (app_url, ios_url, android_url) rendered as anchor tags with ExternalLink icon, only when URL is set
+---
+
+## 2026-03-07 - US-030
+- Built MapPage replacing placeholder with Leaflet world map and project markers
+- Installed react-leaflet@4.2.1 + leaflet + @types/leaflet (v4 required for React 18 compat; v5 needs React 19)
+- Fetches projects from projectsAPI.list(), filters to those with both latitude and longitude set
+- Leaflet MapContainer with OpenStreetMap tiles, fills content area with min-height 500px
+- Marker per project with Popup showing project name, location_display_name (or fallback), and link to detail page
+- Fixed default marker icons (Leaflet/Vite asset issue) by importing PNGs and using L.Icon.Default.mergeOptions
+- Leaflet CSS imported directly in component (`import "leaflet/dist/leaflet.css"`)
+- Guided EmptyState when no projects have coordinates
+- FeatureSpotlight on map container for first visit (featureKey: 'map-first-visit')
+- InfoTooltip on page header
+- Files changed: src/components/pages/MapPage.tsx, package.json, package-lock.json
+- **Learnings for future iterations:**
+  - react-leaflet v5 requires React 19; use v4.2.1 for React 18 projects (install with `react-leaflet@4.2.1`)
+  - Leaflet default marker icons break in Vite — must import PNGs and call `L.Icon.Default.mergeOptions()` to fix
+  - Import `leaflet/dist/leaflet.css` directly in the component or index.css for tile/marker rendering
+  - MapContainer needs a fixed height to render — use `style={{ minHeight: "500px" }}` with `h-full` class
+  - FeatureSpotlight wrapping a flex-1 div works but the spotlight ring shows around the map container
 ---
