@@ -351,3 +351,22 @@ Started: Sat Mar  7 07:26:50 PST 2026
   - Edit dialog pre-fill: set form state from the org object when opening edit dialog
   - Same pattern as LanguagesPage but extended with edit and navigation
 ---
+
+## 2026-03-07 - US-022
+- Built OrganizationDetailPage replacing placeholder with full org detail + member management
+- Fetches org from orgsAPI.get(orgId) and members from orgsAPI.listMembers(orgId) with separate loading states
+- OrgInfoCard sub-component: shows name, slug, created date with Building2 icon
+- MembersTable sub-component: HTML table with Email, Display Name, Role, Joined, Actions columns
+- Add Member dialog with user ID and role inputs, calls orgsAPI.addMember()
+- Remove Member via ConfirmDialog, calls orgsAPI.removeMember()
+- 409 toast for duplicate member, guided EmptyState for no members
+- Back navigation link to /app/organizations
+- InfoTooltip on page header and Members section header
+- Files changed: src/components/pages/OrganizationDetailPage.tsx
+- **Learnings for future iterations:**
+  - Detail pages use useParams<{ paramName: string }>() for route params
+  - Separate loading states (orgLoading, membersLoading) for independent data fetches
+  - Sub-components (OrgInfoCard, MembersTable) keep the main component under 300 lines
+  - ConfirmDialog onOpenChange: use `if (!open) setRemovingMember(null)` to clear state on close
+  - Back navigation: plain button with ArrowLeft icon, styled as text link with hover transition
+---
