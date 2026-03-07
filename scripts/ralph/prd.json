@@ -264,7 +264,7 @@
         "Tests pass"
       ],
       "priority": 13,
-      "passes": false,
+      "passes": true,
       "notes": "Working directory: /workspace/tripod-backend/. Use make_app, make_user, make_role, make_user_app_role factories. The db_session fixture seeds one default app (meaning-map-generator), so list_apps may return more than just test-created apps."
     },
     {

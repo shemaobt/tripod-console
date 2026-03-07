@@ -217,3 +217,16 @@ Started: Sat Mar  7 07:26:50 PST 2026
   - UserAppResponse is not from_attributes since it adds a computed `roles` field; construct manually in router
   - AppRoleResponse uses from_attributes since it maps directly from Role ORM model
 ---
+
+## 2026-03-07 - US-013
+- Created tests/test_app_service.py with 11 tests covering all app service functions
+- Tests: list_apps (includes seeded meaning-map-generator), create_app with all fields, create_app ConflictError on duplicate key, get_app_or_404 (found + NotFoundError), update_app (name+description update, NotFoundError), list_user_apps (with roles + empty), list_app_roles
+- All tests use make_* factories from tests/baker.py, @pytest.mark.asyncio decorator, -> None return type
+- Syntax verified (Python deps not available in devcontainer for pytest execution)
+- Files changed: /workspace/tripod-backend/tests/test_app_service.py
+- **Learnings for future iterations:**
+  - Import service as module: `from app.services import app_service` (same pattern as user_service)
+  - list_user_apps returns list of tuples `(App, list[str])` — destructure as `(app, role_keys)` in tests
+  - db_session seeds "meaning-map-generator" app — account for it in list_apps assertions (use `in` not exact length)
+  - create_app uses flush+refresh (not commit) — test still works since we're in the same session
+---
