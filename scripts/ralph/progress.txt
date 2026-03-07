@@ -37,6 +37,7 @@ Started: Sat Mar  7 07:26:50 PST 2026
 - When adding new service+router: update `app/services/__init__.py` (import + alias) AND `app/main.py` (include_router)
 - FastAPI route ordering: fixed path routes (e.g. `/my-apps`) must be defined BEFORE parameterized routes (e.g. `/{app_id}`)
 - Button doesn't support `asChild` — for link-styled buttons, use `buttonVariants()` from button.tsx on `<a>` tags with `cn()`
+- CRUD pages with edit: use `editingItem` state (null=create, object=edit) to share one dialog for both create and edit
 
 ---
 
@@ -332,4 +333,21 @@ Started: Sat Mar  7 07:26:50 PST 2026
   - formatDate helper using toLocaleDateString with year/month/day options for consistent date display
   - 409 conflict detection: cast error to access response.status, show specific toast message
   - Dialog form reset: clear form fields in openDialog function before opening
+---
+
+## 2026-03-07 - US-021
+- Built OrganizationsPage replacing placeholder with full CRUD table (list, create, edit)
+- Fetches orgs from orgsAPI.list(), displays in HTML table with Name, Slug, Created, Actions columns
+- Create Organization dialog with name + slug inputs, calls orgsAPI.create()
+- Edit button per row opens dialog pre-filled with current values, calls orgsAPI.update()
+- 409 conflict toast for duplicate slug
+- Click row navigates to /app/organizations/:orgId via useNavigate
+- LoadingSpinner while fetching, guided EmptyState with educational text + action CTA
+- InfoTooltip on page header and Slug column (both in table header and form field)
+- Files changed: src/components/pages/OrganizationsPage.tsx
+- **Learnings for future iterations:**
+  - CRUD page with edit: use editingOrg state (null for create, object for edit) to toggle dialog title/behavior
+  - Row click navigation: use onClick with navigate(), stop propagation on edit button to prevent row click
+  - Edit dialog pre-fill: set form state from the org object when opening edit dialog
+  - Same pattern as LanguagesPage but extended with edit and navigation
 ---
