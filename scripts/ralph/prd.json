@@ -223,7 +223,7 @@
         "Tests pass"
       ],
       "priority": 11,
-      "passes": false,
+      "passes": true,
       "notes": "Working directory: /workspace/tripod-backend/. Follow patterns from tests/test_language_service.py and tests/test_authorization_service.py. Import service as module: from app.services import user_service (or from app.services.user import ...). Use make_user, make_app, make_role, make_user_app_role from tests.baker."
     },
     {
