@@ -52,3 +52,21 @@ export interface ProjectGrantUserAccess {
 export interface ProjectGrantOrganizationAccess {
   organization_id: string
 }
+
+export interface ProjectUserAccessDetailResponse {
+  id: string
+  project_id: string
+  user_id: string
+  email: string
+  display_name: string | null
+  granted_at: string
+}
+
+export interface ProjectOrganizationAccessDetailResponse {
+  id: string
+  project_id: string
+  organization_id: string
+  name: string
+  slug: string
+  granted_at: string
+}

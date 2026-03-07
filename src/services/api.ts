@@ -28,6 +28,8 @@ import type {
   ProjectOrganizationAccessResponse,
   ProjectGrantUserAccess,
   ProjectGrantOrganizationAccess,
+  ProjectUserAccessDetailResponse,
+  ProjectOrganizationAccessDetailResponse,
   RoleAssignRequest,
   RoleRevokeRequest,
   RoleAssignmentResponse,
@@ -184,11 +186,11 @@ export const projectsAPI = {
   updateLocation: (projectId: string, data: ProjectLocationUpdate) =>
     api.patch<ProjectResponse>(`/projects/${projectId}/location`, data),
   listUserAccess: (projectId: string) =>
-    api.get<ProjectUserAccessResponse[]>(
+    api.get<ProjectUserAccessDetailResponse[]>(
       `/projects/${projectId}/access/users`,
     ),
   listOrgAccess: (projectId: string) =>
-    api.get<ProjectOrganizationAccessResponse[]>(
+    api.get<ProjectOrganizationAccessDetailResponse[]>(
       `/projects/${projectId}/access/organizations`,
     ),
   grantUser: (projectId: string, data: ProjectGrantUserAccess) =>
