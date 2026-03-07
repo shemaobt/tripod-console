@@ -336,7 +336,7 @@
         "Typecheck passes"
       ],
       "priority": 17,
-      "passes": false,
+      "passes": true,
       "notes": "Working directory: /workspace/tripod-backend/. Extend existing project service and router. Grant endpoints (POST) already exist - only list (GET) and revoke (DELETE) are new."
     },
     {

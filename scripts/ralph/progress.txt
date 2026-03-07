@@ -270,3 +270,17 @@ Started: Sat Mar  7 07:26:50 PST 2026
   - update_project uses commit+refresh (like update_project_location), not flush+refresh
   - Backend git repo may have corrupt loose objects — `git gc --prune=now` or `git fsck` to diagnose
 ---
+
+## 2026-03-07 - US-017
+- Added 4 new project access endpoints: GET /{id}/access/users, GET /{id}/access/organizations, DELETE /{id}/access/users/{user_id}, DELETE /{id}/access/organizations/{org_id}
+- Created 4 service functions: list_project_user_access (joins ProjectUserAccess + User), list_project_organization_access (joins ProjectOrganizationAccess + Organization), revoke_user_access (raises NotFoundError), revoke_organization_access (raises NotFoundError)
+- Added 2 new Pydantic detail response schemas: ProjectUserAccessDetailResponse (includes email, display_name), ProjectOrganizationAccessDetailResponse (includes name, slug)
+- Updated frontend types (project.ts, index.ts) and API client (api.ts) to use detail response types for list endpoints
+- Files changed (backend): app/services/project/{list_project_user_access,list_project_organization_access,revoke_user_access,revoke_organization_access,__init__}.py, app/models/project.py, app/api/projects.py, http/projects.http
+- Files changed (frontend): src/types/project.ts, src/types/index.ts, src/services/api.ts
+- **Learnings for future iterations:**
+  - list_project_user_access follows same pattern as org list_members: joins two tables, returns list of tuples, router constructs flat response
+  - Detail response schemas (e.g. ProjectUserAccessDetailResponse) are NOT from_attributes since they combine fields from two ORM models
+  - revoke functions follow same pattern as org remove_member: select, check exists, delete, commit
+  - When backend response shape changes for existing API methods, update the corresponding frontend types AND api.ts generics
+---
