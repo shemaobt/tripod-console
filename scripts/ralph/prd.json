@@ -625,7 +625,7 @@
         "Verify in browser using dev-browser skill"
       ],
       "priority": 31,
-      "passes": false,
+      "passes": true,
       "notes": "Review all pages systematically. Spotlight keys: map-first-visit (already added in US-030), project-access-first-visit, apps-admin-first-visit. Keep tooltip text under 2 sentences."
     }
   ]

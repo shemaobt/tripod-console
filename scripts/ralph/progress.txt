@@ -530,3 +530,17 @@ Started: Sat Mar  7 07:26:50 PST 2026
   - MapContainer needs a fixed height to render — use `style={{ minHeight: "500px" }}` with `h-full` class
   - FeatureSpotlight wrapping a flex-1 div works but the spotlight ring shows around the map container
 ---
+## 2026-03-07 - US-031
+- Audited all 12 page components for contextual guidance coverage
+- Added FeatureSpotlight with featureKey 'apps-admin-first-visit' to AppsPage wrapping the table/empty state area
+- Verified all pages already had: InfoTooltip on section headers, non-obvious columns (Slug, Code, App Key, Platform Admin, Platform, Active), form fields with requirements (Code, Slug, App Key)
+- Verified all FeatureSpotlights: map-first-visit (MapPage), project-access-first-visit (ProjectAccessTab), apps-admin-first-visit (AppsPage) — all 3 present
+- Verified all empty states have educational guidance text with descriptive messages and CTAs
+- No CLAUDE.md updates needed — no new reusable patterns discovered
+- Files changed: src/components/pages/AppsPage.tsx
+- **Learnings for future iterations:**
+  - Previous stories (US-019 through US-030) already added most contextual guidance inline during page implementation
+  - Only gap was the FeatureSpotlight on AppsPage — previous stories covered InfoTooltips and empty states comprehensively
+  - FeatureSpotlight wrapping pattern: wrap the content area (table + empty state) so it highlights regardless of data state
+  - Manual browser verification needed (no browser testing tools available)
+---
