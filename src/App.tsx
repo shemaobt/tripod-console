@@ -1,8 +1,50 @@
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom"
+import { Toaster } from "sonner"
+import { ThemeProvider } from "@/contexts/ThemeContext"
+import AppShell from "@/components/layout/AppShell"
+import LoginPage from "@/components/pages/LoginPage"
+import DashboardPage from "@/components/pages/DashboardPage"
+import LanguagesPage from "@/components/pages/LanguagesPage"
+import OrganizationsPage from "@/components/pages/OrganizationsPage"
+import OrganizationDetailPage from "@/components/pages/OrganizationDetailPage"
+import ProjectsPage from "@/components/pages/ProjectsPage"
+import ProjectDetailPage from "@/components/pages/ProjectDetailPage"
+import UsersPage from "@/components/pages/UsersPage"
+import UserDetailPage from "@/components/pages/UserDetailPage"
+import AppsPage from "@/components/pages/AppsPage"
+import AppDetailPage from "@/components/pages/AppDetailPage"
+import MapPage from "@/components/pages/MapPage"
+import NotFoundPage from "@/components/pages/NotFoundPage"
+
 function App() {
   return (
-    <div className="min-h-screen flex items-center justify-center">
-      <h1 className="text-2xl font-semibold">Tripod Console</h1>
-    </div>
+    <ThemeProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/login" element={<LoginPage />} />
+
+          <Route path="/" element={<Navigate to="/app/dashboard" replace />} />
+
+          <Route path="/app" element={<AppShell />}>
+            <Route index element={<Navigate to="/app/dashboard" replace />} />
+            <Route path="dashboard" element={<DashboardPage />} />
+            <Route path="languages" element={<LanguagesPage />} />
+            <Route path="organizations" element={<OrganizationsPage />} />
+            <Route path="organizations/:orgId" element={<OrganizationDetailPage />} />
+            <Route path="projects" element={<ProjectsPage />} />
+            <Route path="projects/:projectId" element={<ProjectDetailPage />} />
+            <Route path="users" element={<UsersPage />} />
+            <Route path="users/:userId" element={<UserDetailPage />} />
+            <Route path="apps" element={<AppsPage />} />
+            <Route path="apps/:appId" element={<AppDetailPage />} />
+            <Route path="map" element={<MapPage />} />
+          </Route>
+
+          <Route path="*" element={<NotFoundPage />} />
+        </Routes>
+        <Toaster position="top-right" richColors />
+      </BrowserRouter>
+    </ThemeProvider>
   )
 }
 
