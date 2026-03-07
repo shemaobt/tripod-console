@@ -284,3 +284,17 @@ Started: Sat Mar  7 07:26:50 PST 2026
   - revoke functions follow same pattern as org remove_member: select, check exists, delete, commit
   - When backend response shape changes for existing API methods, update the corresponding frontend types AND api.ts generics
 ---
+
+## 2026-03-07 - US-018
+- Added 13 tests to tests/test_project_service.py for update_project, list_project_user_access, list_project_organization_access, revoke_user_access, revoke_organization_access
+- Tests: update_project (name+description, change language, NotFoundError for missing project, NotFoundError for invalid language), list_project_user_access (with users, empty), list_project_organization_access (with orgs, empty), revoke_user_access (success, NotFoundError), revoke_organization_access (success, NotFoundError)
+- All tests use make_* factories from tests/baker.py, @pytest.mark.asyncio decorator, -> None return type
+- Syntax verified (Python deps not available in devcontainer for pytest execution)
+- Files changed: /workspace/tripod-backend/tests/test_project_service.py
+- **Learnings for future iterations:**
+  - test_project_service.py already existed with tests for earlier project service functions — appended new tests to existing file
+  - list_project_user_access returns list of tuples `(ProjectUserAccess, User)` — destructure as `(access_obj, user_obj)` in tests
+  - list_project_organization_access returns list of tuples `(ProjectOrganizationAccess, Organization)` — destructure as `(access_obj, org_obj)`
+  - revoke functions return None — verify removal by calling the corresponding list function afterward
+  - NotFoundError match strings: "User access not found" (revoke_user_access), "Organization access not found" (revoke_organization_access), "Project not found" (update_project missing project), "Language not found" (update_project invalid language)
+---
