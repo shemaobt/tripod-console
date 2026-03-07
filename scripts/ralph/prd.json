@@ -82,7 +82,7 @@
         "Verify in browser using dev-browser skill"
       ],
       "priority": 4,
-      "passes": false,
+      "passes": true,
       "notes": "Admin items (Users, Manage Apps) will be conditionally rendered later when AuthContext exists. For now, always show them. Sidebar has user profile / logout area at bottom."
     },
     {

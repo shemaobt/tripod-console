@@ -14,6 +14,9 @@ Started: Sat Mar  7 07:26:50 PST 2026
 - Use `type` alias instead of empty `interface extends` to avoid `@typescript-eslint/no-empty-object-type` lint error
 - API proxy: `/api` -> `http://localhost:8000` in vite dev server
 - React 18 (not 19) — use `react` and `react-dom` ^18.3.1 with `@types/react` ^18.3.12
+- ESLint `react-hooks/set-state-in-effect`: don't call setState in useEffect; use `useSyncExternalStore` or `useMemo` for derived state
+- Context files exporting Provider + hook: add `// eslint-disable-next-line react-refresh/only-export-components` above the hook export
+- Routing: BrowserRouter in App.tsx, `/app` shell uses Outlet, pages in `components/pages/`
 
 ---
 
@@ -52,4 +55,19 @@ Started: Sat Mar  7 07:26:50 PST 2026
   - ESLint react-refresh plugin warns about exporting non-components (like `buttonVariants`) — disabled for ui/ dir
   - Use `type X = React.InputHTMLAttributes<...>` instead of `interface X extends React.InputHTMLAttributes<...> {}` to avoid no-empty-object-type lint error
   - shadcn pattern: Radix primitive + React.forwardRef + cn() + Tailwind classes + cva for variants
+---
+
+## 2026-03-07 - US-004
+- Created ThemeContext with light/dark/system theme switching, localStorage persistence (tc_theme key)
+- Used useSyncExternalStore for system dark mode media query to avoid setState-in-effect lint error
+- Created AppShell (sidebar + header + Outlet), AppHeader (theme toggle, mobile menu), Sidebar (collapsible nav with all route items)
+- Created 14 placeholder page components in src/components/pages/
+- Configured React Router v7 in App.tsx: BrowserRouter, all routes per CLAUDE.md routing table
+- Root / redirects to /app/dashboard, /app index redirects to /app/dashboard
+- Files: src/contexts/ThemeContext.tsx, src/components/layout/{AppShell,AppHeader,Sidebar}.tsx, src/components/pages/{Dashboard,Languages,Organizations,OrganizationDetail,Projects,ProjectDetail,Users,UserDetail,Apps,AppDetail,Map,Login,NotFound,AccessDenied}Page.tsx, src/App.tsx
+- **Learnings for future iterations:**
+  - ESLint react-hooks/set-state-in-effect: don't call setState synchronously in useEffect — use useSyncExternalStore or useMemo for derived state
+  - Context files exporting both Provider + hook: add `// eslint-disable-next-line react-refresh/only-export-components` above hook export
+  - Sidebar uses NavLink + useLocation for active state (startsWith matching for nested routes)
+  - Admin-only items always shown for now; will be filtered by isPlatformAdmin when AuthContext is added
 ---
