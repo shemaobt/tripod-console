@@ -490,3 +490,22 @@ Started: Sat Mar  7 07:26:50 PST 2026
   - Dialog with many fields needs `max-h-[85vh] overflow-y-auto` on DialogContent for scrollability
   - Same CRUD pattern as OrganizationsPage but with more form fields and form state extracted to interface
 ---
+
+## 2026-03-07 - US-029
+- Built AppDetailPage replacing placeholder with full app detail view + roles table
+- Fetches app from appsAPI.get(appId) and roles from appsAPI.listRoles(appId) with separate loading states
+- AppInfoCard sub-component: icon preview (img if icon_url set, default AppWindow icon), name, app_key (mono), description, platform badge, is_active badge, external links (app_url, ios_url, android_url), created date, edit button
+- AppRolesTable sub-component: HTML table with Role Key, Label, Description, System (badge for is_system) columns
+- Edit button opens Dialog pre-filled with app metadata (all fields from AppsPage form), app_key shown as disabled
+- Dialog uses max-h-[85vh] overflow-y-auto for scrollability (same pattern as AppsPage)
+- Back navigation link to /app/apps
+- Guided EmptyState for no roles, LoadingSpinner for loading states
+- InfoTooltip on page header, Roles section header, System column, and edit dialog fields
+- Files changed: src/components/pages/AppDetailPage.tsx
+- **Learnings for future iterations:**
+  - AppDetailPage is simpler than AppsPage — only edit dialog (no create), and roles table is read-only (no assign/revoke)
+  - Reused formFromApp pattern from AppsPage but without app_key field (can't change after creation)
+  - Update response from appsAPI.update returns updated AppResponse — use it to update local state directly (same pattern as ProjectDetailPage)
+  - AppRolesTable uses role.id as key (unlike UserRoleResponse which has no id and uses composite key)
+  - External links (app_url, ios_url, android_url) rendered as anchor tags with ExternalLink icon, only when URL is set
+---

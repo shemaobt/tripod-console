@@ -583,7 +583,7 @@
         "Verify in browser using dev-browser skill"
       ],
       "priority": 29,
-      "passes": false,
+      "passes": true,
       "notes": "Admin-only page. Depends on US-012 for GET /api/apps/{appId} and GET /api/apps/{appId}/roles."
     },
     {
