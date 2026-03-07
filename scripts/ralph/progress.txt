@@ -16,6 +16,8 @@ Started: Sat Mar  7 07:26:50 PST 2026
 - React 18 (not 19) — use `react` and `react-dom` ^18.3.1 with `@types/react` ^18.3.12
 - ESLint `react-hooks/set-state-in-effect`: don't call setState in useEffect; use `useSyncExternalStore` or `useMemo` for derived state
 - Context files exporting Provider + hook: add `// eslint-disable-next-line react-refresh/only-export-components` above the hook export
+- AuthProvider must be inside BrowserRouter (uses useNavigate); useAuth() for accessing auth state
+- Auth types: User, MyRoleResponse from `@/types`; token keys from `@/constants/app`
 - Routing: BrowserRouter in App.tsx, `/app` shell uses Outlet, pages in `components/pages/`
 - Common components in `src/components/common/`: LoadingSpinner, EmptyState, ConfirmDialog, ErrorBoundary, InfoTooltip, FeatureSpotlight
 - Zustand stores in `src/stores/` — onboardingStore persists to localStorage with key `tc_onboarding`
@@ -109,4 +111,22 @@ Started: Sat Mar  7 07:26:50 PST 2026
   - Token keys: `tc_access_token`, `tc_refresh_token` in localStorage
   - All API methods return `AxiosPromise<T>` (typed with generics on api.get/post/patch/delete)
   - `import type` is required for type-only imports (verbatimModuleSyntax in tsconfig)
+---
+
+## 2026-03-07 - US-007
+- Created src/contexts/AuthContext.tsx with full JWT auth flow
+- AuthProvider wraps app inside BrowserRouter in App.tsx (needs useNavigate)
+- Provides: user, isPlatformAdmin (derived via useMemo), appRoles, isLoading, login, logout, isAppAdmin
+- login(): calls authAPI.login, stores tokens in localStorage, fetches roles, navigates to /app/dashboard
+- logout(): calls authAPI.logout (ignores errors), clears localStorage, resets state, navigates to /login
+- Session restore on mount: checks localStorage for token, calls authAPI.me + authAPI.myRoles in parallel
+- Cleanup via cancelled flag in useEffect to prevent state updates after unmount
+- Axios interceptors already existed in api.ts (request: Bearer token, response: 401 refresh + retry queue)
+- Files changed: src/contexts/AuthContext.tsx (new), src/App.tsx (added AuthProvider wrapping)
+- **Learnings for future iterations:**
+  - AuthProvider must be inside BrowserRouter because it uses useNavigate
+  - Use `// eslint-disable-next-line react-refresh/only-export-components` above the useAuth hook export
+  - isPlatformAdmin is derived from user via useMemo, not stored separately
+  - isAppAdmin uses useCallback to memoize the function, checks appRoles for matching app_key + role_key="admin"
+  - Session restore uses cancelled flag pattern for safe async cleanup in useEffect
 ---

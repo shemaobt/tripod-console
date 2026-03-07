@@ -145,7 +145,7 @@
         "Typecheck passes"
       ],
       "priority": 7,
-      "passes": false,
+      "passes": true,
       "notes": "Token localStorage keys: tc_access_token, tc_refresh_token. Auth endpoints: POST /api/auth/login -> AuthResponse, POST /api/auth/refresh -> TokenResponse, POST /api/auth/logout (204), GET /api/auth/me -> UserResponse, GET /api/auth/my-roles -> MyRoleResponse[]."
     },
     {
