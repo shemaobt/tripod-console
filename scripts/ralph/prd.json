@@ -302,7 +302,7 @@
         "Tests pass"
       ],
       "priority": 15,
-      "passes": false,
+      "passes": true,
       "notes": "Working directory: /workspace/tripod-backend/. Use make_organization, make_user, make_organization_member factories from tests/baker.py."
     },
     {

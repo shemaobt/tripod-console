@@ -244,3 +244,16 @@ Started: Sat Mar  7 07:26:50 PST 2026
   - update_organization reuses get_organization_or_404 for existence check and get_organization_by_slug for slug uniqueness
   - When backend response shape changes (adding email/display_name), update the corresponding frontend type in src/types/
 ---
+
+## 2026-03-07 - US-015
+- Added 9 tests to tests/test_organization_service.py for update_organization, list_members, remove_member
+- Tests: update_organization (name update, slug update, NotFoundError, ConflictError on dup slug), list_members (with members + empty), remove_member (success + NotFoundError)
+- All tests use make_organization, make_user, make_organization_member factories from tests/baker.py
+- Syntax verified (Python deps not available in devcontainer for pytest execution)
+- Files changed: /workspace/tripod-backend/tests/test_organization_service.py
+- **Learnings for future iterations:**
+  - list_members returns list of tuples `(OrganizationMember, User)` — destructure as `(member_obj, user_obj)` in tests
+  - remove_member returns None — verify removal by calling list_members afterward
+  - update_organization uses flush+refresh (not commit) — same session still sees the changes
+  - ConflictError match string for org slug: "slug already exists" (from update_organization service)
+---
