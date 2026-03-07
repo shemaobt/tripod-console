@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom"
 import { Toaster } from "sonner"
 import { ThemeProvider } from "@/contexts/ThemeContext"
+import { AuthProvider } from "@/contexts/AuthContext"
 import AppShell from "@/components/layout/AppShell"
 import LoginPage from "@/components/pages/LoginPage"
 import DashboardPage from "@/components/pages/DashboardPage"
@@ -20,29 +21,31 @@ function App() {
   return (
     <ThemeProvider>
       <BrowserRouter>
-        <Routes>
-          <Route path="/login" element={<LoginPage />} />
+        <AuthProvider>
+          <Routes>
+            <Route path="/login" element={<LoginPage />} />
 
-          <Route path="/" element={<Navigate to="/app/dashboard" replace />} />
+            <Route path="/" element={<Navigate to="/app/dashboard" replace />} />
 
-          <Route path="/app" element={<AppShell />}>
-            <Route index element={<Navigate to="/app/dashboard" replace />} />
-            <Route path="dashboard" element={<DashboardPage />} />
-            <Route path="languages" element={<LanguagesPage />} />
-            <Route path="organizations" element={<OrganizationsPage />} />
-            <Route path="organizations/:orgId" element={<OrganizationDetailPage />} />
-            <Route path="projects" element={<ProjectsPage />} />
-            <Route path="projects/:projectId" element={<ProjectDetailPage />} />
-            <Route path="users" element={<UsersPage />} />
-            <Route path="users/:userId" element={<UserDetailPage />} />
-            <Route path="apps" element={<AppsPage />} />
-            <Route path="apps/:appId" element={<AppDetailPage />} />
-            <Route path="map" element={<MapPage />} />
-          </Route>
+            <Route path="/app" element={<AppShell />}>
+              <Route index element={<Navigate to="/app/dashboard" replace />} />
+              <Route path="dashboard" element={<DashboardPage />} />
+              <Route path="languages" element={<LanguagesPage />} />
+              <Route path="organizations" element={<OrganizationsPage />} />
+              <Route path="organizations/:orgId" element={<OrganizationDetailPage />} />
+              <Route path="projects" element={<ProjectsPage />} />
+              <Route path="projects/:projectId" element={<ProjectDetailPage />} />
+              <Route path="users" element={<UsersPage />} />
+              <Route path="users/:userId" element={<UserDetailPage />} />
+              <Route path="apps" element={<AppsPage />} />
+              <Route path="apps/:appId" element={<AppDetailPage />} />
+              <Route path="map" element={<MapPage />} />
+            </Route>
 
-          <Route path="*" element={<NotFoundPage />} />
-        </Routes>
-        <Toaster position="top-right" richColors />
+            <Route path="*" element={<NotFoundPage />} />
+          </Routes>
+          <Toaster position="top-right" richColors />
+        </AuthProvider>
       </BrowserRouter>
     </ThemeProvider>
   )
