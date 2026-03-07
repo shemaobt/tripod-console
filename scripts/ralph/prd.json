@@ -402,7 +402,7 @@
         "Verify in browser using dev-browser skill"
       ],
       "priority": 20,
-      "passes": false,
+      "passes": true,
       "notes": "Existing backend endpoints: GET /api/languages, POST /api/languages. No PATCH/PUT endpoint exists for languages, so edit functionality is not included."
     },
     {

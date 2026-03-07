@@ -315,3 +315,21 @@ Started: Sat Mar  7 07:26:50 PST 2026
   - AppCard uses card.base + card.hover from centralized styles for consistent card appearance
   - `line-clamp-2` for truncating descriptions in cards
 ---
+
+## 2026-03-07 - US-020
+- Built LanguagesPage replacing placeholder with full CRUD table
+- Fetches languages from languagesAPI.list(), displays in HTML table with Shema styling
+- Table: Name, Code (with InfoTooltip for ISO 639-3), Created date (formatted)
+- Create Language dialog with name + code inputs, code validation (exactly 3 chars), maxLength=3
+- Create calls languagesAPI.create(), shows success/error toasts (409 for duplicate code)
+- LoadingSpinner while fetching, guided EmptyState with educational text + action CTA
+- InfoTooltip on page header and Code column
+- Uses card.base from centralized styles for table container
+- Files changed: src/components/pages/LanguagesPage.tsx
+- **Learnings for future iterations:**
+  - CRUD page pattern: useState for data + loading + dialog + creating + form fields, useEffect fetch on mount, toast for feedback
+  - Table container uses template literal for card.base + overflow-hidden: `` `${card.base} overflow-hidden` ``
+  - formatDate helper using toLocaleDateString with year/month/day options for consistent date display
+  - 409 conflict detection: cast error to access response.status, show specific toast message
+  - Dialog form reset: clear form fields in openDialog function before opening
+---
