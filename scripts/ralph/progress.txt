@@ -36,6 +36,7 @@ Started: Sat Mar  7 07:26:50 PST 2026
 - Backend services raise business exceptions (NotFoundError, ConflictError) — never HTTPException
 - When adding new service+router: update `app/services/__init__.py` (import + alias) AND `app/main.py` (include_router)
 - FastAPI route ordering: fixed path routes (e.g. `/my-apps`) must be defined BEFORE parameterized routes (e.g. `/{app_id}`)
+- Button doesn't support `asChild` — for link-styled buttons, use `buttonVariants()` from button.tsx on `<a>` tags with `cn()`
 
 ---
 
@@ -297,4 +298,20 @@ Started: Sat Mar  7 07:26:50 PST 2026
   - list_project_organization_access returns list of tuples `(ProjectOrganizationAccess, Organization)` — destructure as `(access_obj, org_obj)`
   - revoke functions return None — verify removal by calling the corresponding list function afterward
   - NotFoundError match strings: "User access not found" (revoke_user_access), "Organization access not found" (revoke_organization_access), "Project not found" (update_project missing project), "Language not found" (update_project invalid language)
+---
+
+## 2026-03-07 - US-019
+- Built DashboardPage replacing placeholder with full My Apps hub
+- Fetches apps from appsAPI.myApps() (GET /api/apps/my-apps), displays as card grid
+- Each AppCard shows: icon (or default LayoutGrid placeholder), name, description, role badges, platform badge, launch/download links
+- Launch links use buttonVariants on anchor tags (Button component doesn't support asChild)
+- Admin stats section (AdminStats component) visible to platform admins: fetches user/project/org counts from list APIs
+- Guided EmptyState for no apps, LoadingSpinner while fetching
+- InfoTooltip on section headers
+- Files changed: src/components/pages/DashboardPage.tsx
+- **Learnings for future iterations:**
+  - Button component doesn't support `asChild` — use `buttonVariants()` from button.tsx directly on anchor tags with cn() for link-styled buttons
+  - Admin stats fetch counts from list endpoints (usersAPI.list, projectsAPI.list, orgsAPI.list) — non-critical, silently fails
+  - AppCard uses card.base + card.hover from centralized styles for consistent card appearance
+  - `line-clamp-2` for truncating descriptions in cards
 ---

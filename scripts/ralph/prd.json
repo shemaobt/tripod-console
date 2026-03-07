@@ -379,7 +379,7 @@
         "Verify in browser using dev-browser skill"
       ],
       "priority": 19,
-      "passes": false,
+      "passes": true,
       "notes": "This is the default landing page for all users at /app/dashboard. Admin stats can fetch counts from usersAPI.list(), projectsAPI.list(), orgsAPI.list()."
     },
     {
