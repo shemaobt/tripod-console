@@ -38,6 +38,7 @@ Started: Sat Mar  7 07:26:50 PST 2026
 - FastAPI route ordering: fixed path routes (e.g. `/my-apps`) must be defined BEFORE parameterized routes (e.g. `/{app_id}`)
 - Button doesn't support `asChild` — for link-styled buttons, use `buttonVariants()` from button.tsx on `<a>` tags with `cn()`
 - CRUD pages with edit: use `editingItem` state (null=create, object=edit) to share one dialog for both create and edit
+- Detail pages with tabs: use Radix Tabs with `defaultValue`, put each section in `TabsContent`; sub-components keep main export manageable
 
 ---
 
@@ -387,4 +388,22 @@ Started: Sat Mar  7 07:26:50 PST 2026
   - Select component from Radix requires value + onValueChange pattern (not onChange)
   - languageMap (Map object) used for efficient language ID -> name lookups in table cells
   - Same CRUD pattern as OrganizationsPage: editingItem state (null=create, object=edit), shared dialog
+---
+
+## 2026-03-07 - US-024
+- Built ProjectDetailPage replacing placeholder with full project detail view
+- Project info card (ProjectInfoCard sub-component): name, description, language (name + code), created/updated dates, edit button
+- Edit dialog with name input, description textarea, language Select dropdown — calls projectsAPI.update()
+- Location section (LocationSection sub-component): shows current location if set, input fields for lat/lng/display_name, Save button calls projectsAPI.updateLocation()
+- Location inputs have client-side validation (parseFloat, NaN check) with error toast
+- Tabs component with "Info" tab (location section) and "Access" tab (placeholder for US-025)
+- Back navigation link to /app/projects
+- Languages fetched on mount for both info card display and edit dialog dropdown
+- Files changed: src/components/pages/ProjectDetailPage.tsx
+- **Learnings for future iterations:**
+  - Detail page with tabs: use Radix Tabs with defaultValue, place sections inside TabsContent
+  - LocationSection manages its own local state (lat/lng/displayName) initialized from project props
+  - Location update returns updated ProjectResponse — use it to update parent state directly
+  - Sub-components (ProjectInfoCard, LocationSection) keep the main component under 300 lines for the main export
+  - parseFloat validation: check with isNaN after parsing to catch invalid number input
 ---

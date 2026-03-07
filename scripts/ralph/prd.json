@@ -483,7 +483,7 @@
         "Verify in browser using dev-browser skill"
       ],
       "priority": 24,
-      "passes": false,
+      "passes": true,
       "notes": "Location picker uses simple input fields for lat/lng/display_name initially. Google Maps integration can be added later. PATCH /api/projects/{id}/location already exists."
     },
     {
