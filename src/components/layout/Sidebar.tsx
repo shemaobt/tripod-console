@@ -12,6 +12,7 @@ import {
   LogOut,
 } from "lucide-react"
 import { cn } from "@/utils/cn"
+import { useAuth } from "@/contexts/AuthContext"
 
 interface SidebarProps {
   collapsed: boolean
@@ -69,6 +70,8 @@ function NavItem({
 }
 
 export default function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose }: SidebarProps) {
+  const { isPlatformAdmin, logout, user } = useAuth()
+
   const sidebarContent = (
     <div className={cn(
       "bg-surface border-r border-areia/30 h-full flex flex-col",
@@ -104,15 +107,25 @@ export default function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose
           <NavItem key={item.to} {...item} collapsed={collapsed} />
         ))}
 
-        <div className="my-2 border-t border-areia/20" />
+        {isPlatformAdmin && (
+          <>
+            <div className="my-2 border-t border-areia/20" />
 
-        {adminNavItems.map((item) => (
-          <NavItem key={item.to} {...item} collapsed={collapsed} />
-        ))}
+            {adminNavItems.map((item) => (
+              <NavItem key={item.to} {...item} collapsed={collapsed} />
+            ))}
+          </>
+        )}
       </nav>
 
       <div className="p-2 border-t border-areia/30">
+        {!collapsed && user && (
+          <div className="px-3 py-1.5 mb-1">
+            <p className="text-xs text-verde truncate">{user.email}</p>
+          </div>
+        )}
         <button
+          onClick={logout}
           className={cn(
             "flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium text-verde hover:bg-surface-alt hover:text-preto transition-colors w-full",
             collapsed && "justify-center px-2"

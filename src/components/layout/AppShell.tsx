@@ -1,11 +1,22 @@
 import { useState } from "react"
-import { Outlet } from "react-router-dom"
+import { Navigate, Outlet } from "react-router-dom"
+import { useAuth } from "@/contexts/AuthContext"
+import { LoadingSpinner } from "@/components/common/LoadingSpinner"
 import AppHeader from "./AppHeader"
 import Sidebar from "./Sidebar"
 
 export default function AppShell() {
+  const { user, isLoading } = useAuth()
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
+
+  if (isLoading) {
+    return <LoadingSpinner size="lg" />
+  }
+
+  if (!user) {
+    return <Navigate to="/login" replace />
+  }
 
   return (
     <div className="min-h-screen bg-branco flex">
