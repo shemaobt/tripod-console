@@ -124,7 +124,7 @@
         "Typecheck passes"
       ],
       "priority": 6,
-      "passes": false,
+      "passes": true,
       "notes": "Key distinction: appsAPI.myApps() -> GET /api/apps/my-apps (all users), appsAPI.list() -> GET /api/apps (admin only). Types should match backend Pydantic schemas."
     },
     {

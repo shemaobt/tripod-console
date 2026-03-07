@@ -20,6 +20,10 @@ Started: Sat Mar  7 07:26:50 PST 2026
 - Common components in `src/components/common/`: LoadingSpinner, EmptyState, ConfirmDialog, ErrorBoundary, InfoTooltip, FeatureSpotlight
 - Zustand stores in `src/stores/` — onboardingStore persists to localStorage with key `tc_onboarding`
 - ErrorBoundary is a class component (React requirement for error boundaries)
+- Types in `src/types/` — import from `@/types` (re-exported via index.ts)
+- API client in `src/services/api.ts` — namespaced exports: authAPI, usersAPI, appsAPI, languagesAPI, orgsAPI, projectsAPI, rolesAPI
+- Token keys in `src/constants/app.ts`: ACCESS_TOKEN_KEY, REFRESH_TOKEN_KEY
+- All API methods typed with AxiosPromise<T> generics; datetime fields are `string` in TypeScript
 
 ---
 
@@ -90,4 +94,19 @@ Started: Sat Mar  7 07:26:50 PST 2026
   - Zustand persist middleware: `persist(stateCreator, { name: "key" })` stores to localStorage automatically
   - FeatureSpotlight uses `isDismissed` from onboardingStore to conditionally render pulsing ring + popover
   - Common components import from `@/styles` for centralized state styles (states.loading, states.empty)
+---
+
+## 2026-03-07 - US-006
+- Created TypeScript type definitions in src/types/: auth.ts, user.ts, app.ts, language.ts, organization.ts, project.ts, role.ts, index.ts
+- Created src/constants/app.ts with ACCESS_TOKEN_KEY and REFRESH_TOKEN_KEY
+- Created src/services/api.ts with single Axios instance and all namespaced APIs: authAPI, usersAPI, appsAPI, languagesAPI, orgsAPI, projectsAPI, rolesAPI
+- Axios interceptors: request interceptor attaches Bearer token, response interceptor handles 401 with token refresh and retry queue
+- Files: src/types/{auth,user,app,language,organization,project,role,index}.ts, src/constants/app.ts, src/services/api.ts
+- **Learnings for future iterations:**
+  - Types match backend Pydantic schemas exactly — datetime fields are `string` in TS (ISO 8601)
+  - API client uses refresh queue pattern: if multiple requests fail with 401 simultaneously, only one refresh is attempted, others wait
+  - `appsAPI.myApps()` -> GET /api/apps/my-apps (all users), `appsAPI.list()` -> GET /api/apps (admin only)
+  - Token keys: `tc_access_token`, `tc_refresh_token` in localStorage
+  - All API methods return `AxiosPromise<T>` (typed with generics on api.get/post/patch/delete)
+  - `import type` is required for type-only imports (verbatimModuleSyntax in tsconfig)
 ---
