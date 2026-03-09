@@ -142,6 +142,7 @@ export const usersAPI = {
   get: (userId: string) => api.get<UserListResponse>(`/users/${userId}`),
   update: (userId: string, data: UserUpdate) =>
     api.patch<UserListResponse>(`/users/${userId}`, data),
+  delete: (userId: string) => api.delete(`/users/${userId}`),
   listRoles: (userId: string) =>
     api.get<UserRoleResponse[]>(`/users/${userId}/roles`),
 }
@@ -156,6 +157,10 @@ export const appsAPI = {
   delete: (appId: string) => api.delete(`/apps/${appId}`),
   listRoles: (appId: string) =>
     api.get<AppRoleResponse[]>(`/apps/${appId}/roles`),
+  createRole: (appId: string, data: { role_key: string; label: string; description?: string | null }) =>
+    api.post<AppRoleResponse>(`/apps/${appId}/roles`, data),
+  deleteRole: (appId: string, roleId: string) =>
+    api.delete(`/apps/${appId}/roles/${roleId}`),
 }
 
 export const languagesAPI = {
