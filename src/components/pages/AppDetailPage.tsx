@@ -6,6 +6,8 @@ import {
   ExternalLink,
   KeyRound,
   Pencil,
+  Plus,
+  Trash2,
 } from "lucide-react"
 import { toast } from "sonner"
 import { appsAPI } from "@/services/api"
@@ -36,6 +38,7 @@ import { LoadingSpinner } from "@/components/common/LoadingSpinner"
 import { EmptyState } from "@/components/common/EmptyState"
 import { InfoTooltip } from "@/components/common/InfoTooltip"
 import { ImageUpload } from "@/components/common/ImageUpload"
+import { ConfirmDialog } from "@/components/common/ConfirmDialog"
 import { Switch } from "@/components/ui/switch"
 
 import { formatDate } from "@/utils/format"
@@ -129,9 +132,13 @@ function AppInfoCard({
 function AppRolesTable({
   roles,
   loading,
+  onAddRole,
+  onDeleteRole,
 }: {
   roles: AppRoleResponse[]
   loading: boolean
+  onAddRole: () => void
+  onDeleteRole: (role: AppRoleResponse) => void
 }) {
   if (loading) {
     return <LoadingSpinner />
@@ -139,16 +146,24 @@ function AppRolesTable({
 
   return (
     <div className="space-y-4">
-      <h3 className="text-lg font-semibold text-preto tracking-tight flex items-center">
-        Roles
-        <InfoTooltip content="Roles define permission levels within this app. System roles are built-in and cannot be removed." />
-      </h3>
+      <div className="flex items-center justify-between">
+        <h3 className="text-lg font-semibold text-preto tracking-tight flex items-center">
+          Roles
+          <InfoTooltip content="Roles define permission levels within this app. System roles are built-in and cannot be removed." />
+        </h3>
+        <Button size="sm" onClick={onAddRole}>
+          <Plus className="h-4 w-4" />
+          Add Role
+        </Button>
+      </div>
 
       {roles.length === 0 ? (
         <EmptyState
           icon={KeyRound}
           title="No roles defined"
-          description="This app has no roles configured yet. Roles are typically created via the backend and define permission levels for users."
+          description="This app has no roles configured yet. Add a role to define permission levels for users."
+          actionLabel="Add Role"
+          onAction={onAddRole}
         />
       ) : (
         <div className={`${card.base} overflow-hidden`}>
@@ -166,9 +181,12 @@ function AppRolesTable({
                 </th>
                 <th className="px-3 sm:px-6 py-3 sm:py-4 text-left text-verde/70 text-xs font-medium tracking-wider uppercase hidden sm:table-cell">
                   <span className="inline-flex items-center">
-                    System
+                    Type
                     <InfoTooltip content="System roles are built-in and managed by the platform. They cannot be deleted." />
                   </span>
+                </th>
+                <th className="px-3 sm:px-6 py-3 sm:py-4 text-right text-verde/70 text-xs font-medium tracking-wider uppercase">
+                  Actions
                 </th>
               </tr>
             </thead>
@@ -191,7 +209,18 @@ function AppRolesTable({
                     {role.is_system ? (
                       <Badge variant="default">System</Badge>
                     ) : (
-                      <span className="text-verde">\u2014</span>
+                      <Badge variant="active">Custom</Badge>
+                    )}
+                  </td>
+                  <td className="px-3 sm:px-6 py-3 sm:py-4 text-right">
+                    {!role.is_system && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => onDeleteRole(role)}
+                      >
+                        <Trash2 className="h-4 w-4 text-red-600 dark:text-red-400" />
+                      </Button>
                     )}
                   </td>
                 </tr>
@@ -249,6 +278,11 @@ export default function AppDetailPage() {
     is_active: true,
   })
   const [saving, setSaving] = useState(false)
+
+  const [addRoleDialogOpen, setAddRoleDialogOpen] = useState(false)
+  const [roleForm, setRoleForm] = useState({ role_key: "", label: "", description: "" })
+  const [addingRole, setAddingRole] = useState(false)
+  const [deletingRole, setDeletingRole] = useState<AppRoleResponse | null>(null)
 
   async function fetchApp() {
     if (!appId) return
@@ -310,6 +344,44 @@ export default function AppDetailPage() {
     }
   }
 
+  async function handleAddRole() {
+    if (!appId || !roleForm.role_key.trim() || !roleForm.label.trim()) return
+    setAddingRole(true)
+    try {
+      await appsAPI.createRole(appId, {
+        role_key: roleForm.role_key.trim(),
+        label: roleForm.label.trim(),
+        description: roleForm.description.trim() || null,
+      })
+      toast.success("Role created")
+      setAddRoleDialogOpen(false)
+      setRoleForm({ role_key: "", label: "", description: "" })
+      await fetchRoles()
+    } catch (err: unknown) {
+      const status = (err as { response?: { status?: number } })?.response?.status
+      if (status === 409) {
+        toast.error("A role with this key already exists")
+      } else {
+        toast.error("Failed to create role")
+      }
+    } finally {
+      setAddingRole(false)
+    }
+  }
+
+  async function handleDeleteRole() {
+    if (!appId || !deletingRole) return
+    try {
+      await appsAPI.deleteRole(appId, deletingRole.id)
+      toast.success("Role deleted")
+      setDeletingRole(null)
+      await fetchRoles()
+    } catch (err: unknown) {
+      const detail = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail
+      toast.error(detail || "Failed to delete role")
+    }
+  }
+
   if (appLoading) {
     return <LoadingSpinner />
   }
@@ -340,7 +412,12 @@ export default function AppDetailPage() {
 
       <AppInfoCard app={app} onEdit={openEditDialog} />
 
-      <AppRolesTable roles={roles} loading={rolesLoading} />
+      <AppRolesTable
+        roles={roles}
+        loading={rolesLoading}
+        onAddRole={() => { setRoleForm({ role_key: "", label: "", description: "" }); setAddRoleDialogOpen(true) }}
+        onDeleteRole={setDeletingRole}
+      />
 
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
         <DialogContent className="sm:max-w-lg">
@@ -505,6 +582,73 @@ export default function AppDetailPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <Dialog open={addRoleDialogOpen} onOpenChange={setAddRoleDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add Role</DialogTitle>
+            <DialogDescription>
+              Create a new custom role for this app.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 pt-1">
+            <div className="space-y-1.5">
+              <Label htmlFor="role-key">
+                <span className="inline-flex items-center">
+                  Role Key
+                  <InfoTooltip content="A unique identifier for this role (e.g. editor, reviewer). Use snake_case." />
+                </span>
+              </Label>
+              <Input
+                id="role-key"
+                placeholder="e.g. editor"
+                value={roleForm.role_key}
+                onChange={(e) => setRoleForm((f) => ({ ...f, role_key: e.target.value }))}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="role-label">Label</Label>
+              <Input
+                id="role-label"
+                placeholder="e.g. Editor"
+                value={roleForm.label}
+                onChange={(e) => setRoleForm((f) => ({ ...f, label: e.target.value }))}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="role-description">Description (optional)</Label>
+              <Textarea
+                id="role-description"
+                placeholder="What this role can do..."
+                value={roleForm.description}
+                onChange={(e) => setRoleForm((f) => ({ ...f, description: e.target.value }))}
+                rows={2}
+              />
+            </div>
+          </div>
+          <DialogFooter className="border-t border-areia/10 pt-4 mt-2">
+            <Button variant="outline" onClick={() => setAddRoleDialogOpen(false)} disabled={addingRole}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleAddRole}
+              disabled={addingRole || !roleForm.role_key.trim() || !roleForm.label.trim()}
+            >
+              {addingRole ? "Creating..." : "Create Role"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <ConfirmDialog
+        open={deletingRole !== null}
+        onOpenChange={(open) => { if (!open) setDeletingRole(null) }}
+        title="Delete Role"
+        description={`Are you sure you want to delete the "${deletingRole?.label}" (${deletingRole?.role_key}) role? Users with this role will lose their assignment.`}
+        confirmLabel="Delete Role"
+        variant="destructive"
+        onConfirm={handleDeleteRole}
+      />
     </div>
   )
 }
