@@ -275,9 +275,9 @@ export const rolesAPI = {
 
 export const placesAPI = {
   autocomplete: (q: string) =>
-    api.get<{ predictions: Array<{ place_id: string; description: string }> }>("/places/autocomplete", { params: { q } }),
+    api.get<{ suggestions: Array<{ placePrediction: { placeId: string; text: { text: string } } }> }>("/places/autocomplete", { params: { q } }),
   details: (placeId: string) =>
-    api.get<{ result: { geometry: { location: { lat: number; lng: number } }; formatted_address: string } }>("/places/details", { params: { place_id: placeId } }),
+    api.get<{ location?: { latitude: number; longitude: number }; formattedAddress?: string; displayName?: { text: string } }>("/places/details", { params: { place_id: placeId } }),
 }
 
 export const uploadsAPI = {
