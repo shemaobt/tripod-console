@@ -8,7 +8,6 @@ import { projectsAPI } from "@/services/api"
 import type { ProjectResponse, ProjectPhaseResponse } from "@/types"
 import { useLanguagesStore } from "@/stores/languagesStore"
 import { LoadingSpinner } from "@/components/common/LoadingSpinner"
-import { EmptyState } from "@/components/common/EmptyState"
 import { Input } from "@/components/ui/input"
 import { cn } from "@/utils/cn"
 
@@ -390,18 +389,6 @@ export default function MapPage() {
   )
 
   if (loading) return <LoadingSpinner size="lg" />
-
-  if (locatedProjects.length === 0) {
-    return (
-      <div className="p-8">
-        <EmptyState
-          icon={Globe}
-          title="No project locations to show"
-          description="Projects with latitude and longitude coordinates will appear on this map. Edit a project to add location data."
-        />
-      </div>
-    )
-  }
 
   function handleSelectProject(project: ProjectResponse) {
     setActiveProject(project)
