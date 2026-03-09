@@ -7,18 +7,22 @@ import {
   MapPin,
   Save,
   Shield,
+  GitBranch,
 } from "lucide-react"
 import { toast } from "sonner"
-import { projectsAPI, languagesAPI } from "@/services/api"
-import type { ProjectResponse, LanguageResponse } from "@/types"
+import { projectsAPI } from "@/services/api"
+import type { ProjectResponse } from "@/types"
+import { useLanguagesStore } from "@/stores/languagesStore"
 import { card } from "@/styles"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { LocationSearchInput } from "@/components/common/LocationSearchInput"
 import { Textarea } from "@/components/ui/textarea"
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -39,14 +43,9 @@ import {
 import { LoadingSpinner } from "@/components/common/LoadingSpinner"
 import { InfoTooltip } from "@/components/common/InfoTooltip"
 import { ProjectAccessTab } from "./ProjectAccessTab"
+import { ProjectPhasesTab } from "./ProjectPhasesTab"
 
-function formatDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString(undefined, {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  })
-}
+import { formatDate } from "@/utils/format"
 
 function ProjectInfoCard({
   project,
@@ -58,7 +57,7 @@ function ProjectInfoCard({
   onEdit: () => void
 }) {
   return (
-    <div className={`${card.base} p-6`}>
+    <div className={`${card.base} p-4 sm:p-6`}>
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-3 mb-4">
           <div className="h-10 w-10 rounded-lg bg-azul/20 flex items-center justify-center">
@@ -79,7 +78,7 @@ function ProjectInfoCard({
           <Pencil className="h-4 w-4" />
         </Button>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
         <div>
           <span className="text-verde">Language</span>
           <p className="text-preto font-medium">{languageName}</p>
@@ -112,107 +111,160 @@ function LocationSection({
     displayName: string | null,
   ) => Promise<void>
 }) {
-  const [latitude, setLatitude] = useState(
-    project.latitude != null ? String(project.latitude) : "",
-  )
-  const [longitude, setLongitude] = useState(
-    project.longitude != null ? String(project.longitude) : "",
-  )
-  const [displayName, setDisplayName] = useState(
-    project.location_display_name ?? "",
+  const [location, setLocation] = useState<{
+    displayName: string
+    latitude: number
+    longitude: number
+  } | null>(
+    project.latitude != null && project.longitude != null
+      ? {
+          displayName: project.location_display_name || "",
+          latitude: project.latitude,
+          longitude: project.longitude,
+        }
+      : null,
   )
   const [saving, setSaving] = useState(false)
+  const [showManual, setShowManual] = useState(false)
+  const [manualLat, setManualLat] = useState(
+    project.latitude != null ? String(project.latitude) : "",
+  )
+  const [manualLng, setManualLng] = useState(
+    project.longitude != null ? String(project.longitude) : "",
+  )
+  const [manualName, setManualName] = useState(
+    project.location_display_name ?? "",
+  )
 
   async function handleSave() {
     setSaving(true)
-    const lat = latitude.trim() ? parseFloat(latitude) : null
-    const lng = longitude.trim() ? parseFloat(longitude) : null
-
-    if (latitude.trim() && isNaN(lat!)) {
-      toast.error("Latitude must be a valid number")
-      setSaving(false)
-      return
-    }
-    if (longitude.trim() && isNaN(lng!)) {
-      toast.error("Longitude must be a valid number")
-      setSaving(false)
-      return
-    }
-
     try {
-      await onSave(lat, lng, displayName.trim() || null)
+      if (showManual) {
+        const lat = manualLat.trim() ? parseFloat(manualLat) : null
+        const lng = manualLng.trim() ? parseFloat(manualLng) : null
+        if (manualLat.trim() && isNaN(lat!)) {
+          toast.error("Latitude must be a valid number")
+          setSaving(false)
+          return
+        }
+        if (manualLng.trim() && isNaN(lng!)) {
+          toast.error("Longitude must be a valid number")
+          setSaving(false)
+          return
+        }
+        await onSave(lat, lng, manualName.trim() || null)
+      } else if (location) {
+        await onSave(
+          location.latitude,
+          location.longitude,
+          location.displayName || null,
+        )
+      } else {
+        await onSave(null, null, null)
+      }
     } finally {
       setSaving(false)
     }
   }
 
-  const hasLocation = project.latitude != null && project.longitude != null
+  function handleLocationChange(
+    loc: { displayName: string; latitude: number; longitude: number } | null,
+  ) {
+    setLocation(loc)
+    if (loc) {
+      setManualLat(String(loc.latitude))
+      setManualLng(String(loc.longitude))
+      setManualName(loc.displayName)
+    }
+  }
+
+  function handleClearLocation() {
+    setLocation(null)
+    setManualLat("")
+    setManualLng("")
+    setManualName("")
+  }
 
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-semibold text-preto tracking-tight flex items-center">
         <MapPin className="h-5 w-5 mr-2 text-azul" />
         Location
-        <InfoTooltip content="Set the geographic coordinates for this project. Used on the global map view." />
+        <InfoTooltip content="Set the geographic location for this project. Search for a place or enter coordinates manually." />
       </h3>
 
-      {hasLocation && (
-        <div className={`${card.base} p-4`}>
-          <div className="flex items-center gap-2 text-sm">
-            <MapPin className="h-4 w-4 text-verde" />
-            <span className="text-preto font-medium">
-              {project.location_display_name || "No location name"}
-            </span>
-            <span className="text-verde">
-              ({project.latitude}, {project.longitude})
-            </span>
-          </div>
-        </div>
-      )}
+      <LocationSearchInput value={location} onChange={handleLocationChange} />
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="latitude">
-            <span className="inline-flex items-center">
-              Latitude
-              <InfoTooltip content="Decimal degrees, e.g. -3.1190" />
-            </span>
-          </Label>
-          <Input
-            id="latitude"
-            placeholder="e.g. -3.1190"
-            value={latitude}
-            onChange={(e) => setLatitude(e.target.value)}
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="longitude">
-            <span className="inline-flex items-center">
-              Longitude
-              <InfoTooltip content="Decimal degrees, e.g. -59.9750" />
-            </span>
-          </Label>
-          <Input
-            id="longitude"
-            placeholder="e.g. -59.9750"
-            value={longitude}
-            onChange={(e) => setLongitude(e.target.value)}
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="display-name">Location Name</Label>
-          <Input
-            id="display-name"
-            placeholder="e.g. Manaus, Brazil"
-            value={displayName}
-            onChange={(e) => setDisplayName(e.target.value)}
-          />
-        </div>
+      <div>
+        <button
+          type="button"
+          onClick={() => setShowManual(!showManual)}
+          className="text-xs text-verde/60 hover:text-preto transition-colors"
+        >
+          {showManual
+            ? "Hide manual coordinates"
+            : "Enter coordinates manually"}
+        </button>
+
+        {showManual && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-3">
+            <div className="space-y-2">
+              <Label htmlFor="latitude">
+                <span className="inline-flex items-center">
+                  Latitude
+                  <InfoTooltip content="Decimal degrees, e.g. -3.1190" />
+                </span>
+              </Label>
+              <Input
+                id="latitude"
+                placeholder="e.g. -3.1190"
+                value={manualLat}
+                onChange={(e) => setManualLat(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="longitude">
+                <span className="inline-flex items-center">
+                  Longitude
+                  <InfoTooltip content="Decimal degrees, e.g. -59.9750" />
+                </span>
+              </Label>
+              <Input
+                id="longitude"
+                placeholder="e.g. -59.9750"
+                value={manualLng}
+                onChange={(e) => setManualLng(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="display-name">Location Name</Label>
+              <Input
+                id="display-name"
+                placeholder="e.g. Manaus, Brazil"
+                value={manualName}
+                onChange={(e) => setManualName(e.target.value)}
+              />
+            </div>
+          </div>
+        )}
       </div>
-      <Button onClick={handleSave} disabled={saving} size="sm">
-        <Save className="h-4 w-4" />
-        {saving ? "Saving..." : "Save Location"}
-      </Button>
+
+      <div className="flex items-center gap-3">
+        <Button onClick={handleSave} disabled={saving} size="sm">
+          <Save className="h-4 w-4" />
+          {saving ? "Saving..." : "Save Location"}
+        </Button>
+        {(location || manualLat || manualLng) && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleClearLocation}
+            className="text-red-600 dark:text-red-400"
+          >
+            Clear Location
+          </Button>
+        )}
+      </div>
     </div>
   )
 }
@@ -224,8 +276,7 @@ export default function ProjectDetailPage() {
   const [project, setProject] = useState<ProjectResponse | null>(null)
   const [loading, setLoading] = useState(true)
 
-  const [languages, setLanguages] = useState<LanguageResponse[]>([])
-  const [languagesLoading, setLanguagesLoading] = useState(false)
+  const { languages, loading: languagesLoading, fetch: fetchLanguages, getLanguageName } = useLanguagesStore()
 
   const [editDialogOpen, setEditDialogOpen] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -242,18 +293,6 @@ export default function ProjectDetailPage() {
       toast.error("Failed to load project")
     } finally {
       setLoading(false)
-    }
-  }
-
-  async function fetchLanguages() {
-    setLanguagesLoading(true)
-    try {
-      const { data } = await languagesAPI.list()
-      setLanguages(data)
-    } catch {
-      toast.error("Failed to load languages")
-    } finally {
-      setLanguagesLoading(false)
     }
   }
 
@@ -309,13 +348,6 @@ export default function ProjectDetailPage() {
     }
   }
 
-  const languageMap = new Map(languages.map((l) => [l.id, l]))
-
-  function getLanguageName(langId: string): string {
-    const lang = languageMap.get(langId)
-    return lang ? `${lang.name} (${lang.code})` : langId
-  }
-
   if (loading) {
     return <LoadingSpinner />
   }
@@ -329,11 +361,11 @@ export default function ProjectDetailPage() {
   }
 
   return (
-    <div className="p-6 md:p-8 space-y-6">
+    <div className="p-6 md:p-8 lg:p-10 space-y-6">
       <div>
         <button
           onClick={() => navigate("/app/projects")}
-          className="inline-flex items-center gap-1 text-sm text-verde hover:text-preto transition-colors mb-4"
+          className="inline-flex items-center gap-1 text-sm text-verde/60 hover:text-preto transition-colors mb-4"
         >
           <ArrowLeft className="h-4 w-4" />
           Back to Projects
@@ -353,6 +385,10 @@ export default function ProjectDetailPage() {
       <Tabs defaultValue="info">
         <TabsList>
           <TabsTrigger value="info">Info</TabsTrigger>
+          <TabsTrigger value="phases">
+            <GitBranch className="h-4 w-4 mr-1" />
+            Phases
+          </TabsTrigger>
           <TabsTrigger value="access">
             <Shield className="h-4 w-4 mr-1" />
             Access
@@ -366,6 +402,10 @@ export default function ProjectDetailPage() {
           />
         </TabsContent>
 
+        <TabsContent value="phases" className="mt-4">
+          <ProjectPhasesTab projectId={projectId!} />
+        </TabsContent>
+
         <TabsContent value="access" className="mt-4">
           <ProjectAccessTab projectId={projectId!} />
         </TabsContent>
@@ -375,9 +415,12 @@ export default function ProjectDetailPage() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Edit Project</DialogTitle>
+            <DialogDescription>
+              Update this project's details and language assignment.
+            </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-2">
+          <div className="space-y-5 pt-1">
+            <div className="space-y-1.5">
               <Label htmlFor="edit-name">Name</Label>
               <Input
                 id="edit-name"
@@ -386,7 +429,7 @@ export default function ProjectDetailPage() {
                 onChange={(e) => setEditName(e.target.value)}
               />
             </div>
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               <Label htmlFor="edit-description">Description</Label>
               <Textarea
                 id="edit-description"
@@ -396,7 +439,7 @@ export default function ProjectDetailPage() {
                 rows={3}
               />
             </div>
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               <Label>Language</Label>
               {languagesLoading ? (
                 <p className="text-sm text-verde">Loading languages...</p>
@@ -419,7 +462,7 @@ export default function ProjectDetailPage() {
               )}
             </div>
           </div>
-          <DialogFooter>
+          <DialogFooter className="border-t border-areia/10 pt-4 mt-2">
             <Button
               variant="outline"
               onClick={() => setEditDialogOpen(false)}

@@ -2,14 +2,14 @@ import { useEffect, useState } from "react"
 import { Languages, Plus } from "lucide-react"
 import { toast } from "sonner"
 import { languagesAPI } from "@/services/api"
-import type { LanguageResponse } from "@/types"
-import { card } from "@/styles"
+import { useLanguagesStore } from "@/stores/languagesStore"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -18,35 +18,19 @@ import { LoadingSpinner } from "@/components/common/LoadingSpinner"
 import { EmptyState } from "@/components/common/EmptyState"
 import { InfoTooltip } from "@/components/common/InfoTooltip"
 
-function formatDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString(undefined, {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  })
-}
+import { formatDate } from "@/utils/format"
 
 export default function LanguagesPage() {
-  const [languages, setLanguages] = useState<LanguageResponse[]>([])
-  const [loading, setLoading] = useState(true)
+  const { languages, loading: storeLoading, lastFetched, fetch: fetchLanguages } = useLanguagesStore()
+  const loading = storeLoading || (!lastFetched && languages.length === 0)
   const [dialogOpen, setDialogOpen] = useState(false)
   const [creating, setCreating] = useState(false)
   const [name, setName] = useState("")
   const [code, setCode] = useState("")
 
-  async function fetchLanguages() {
-    try {
-      const { data } = await languagesAPI.list()
-      setLanguages(data)
-    } catch {
-      toast.error("Failed to load languages")
-    } finally {
-      setLoading(false)
-    }
-  }
-
   useEffect(() => {
     fetchLanguages()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   function openDialog() {
@@ -62,6 +46,7 @@ export default function LanguagesPage() {
       await languagesAPI.create({ name: name.trim(), code: code.trim().toLowerCase() })
       toast.success("Language created")
       setDialogOpen(false)
+      useLanguagesStore.getState().invalidate()
       await fetchLanguages()
     } catch (err: unknown) {
       const status = (err as { response?: { status?: number } })?.response?.status
@@ -80,13 +65,18 @@ export default function LanguagesPage() {
   }
 
   return (
-    <div className="p-6 md:p-8 space-y-6">
+    <div className="p-6 md:p-8 lg:p-10 space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold text-preto tracking-tight flex items-center">
-          Languages
-          <InfoTooltip content="Manage the translation target languages for your projects." />
-        </h1>
-        <Button onClick={openDialog}>
+        <div>
+          <h1 className="text-2xl font-semibold text-preto tracking-tight flex items-center">
+            Languages
+            <InfoTooltip content="Manage the translation target languages for your projects." />
+          </h1>
+          <p className="text-sm text-verde/60 mt-1">
+            {languages.length} language{languages.length !== 1 ? "s" : ""} registered
+          </p>
+        </div>
+        <Button onClick={openDialog} className="rounded-xl">
           <Plus className="h-4 w-4" />
           New Language
         </Button>
@@ -101,43 +91,25 @@ export default function LanguagesPage() {
           onAction={openDialog}
         />
       ) : (
-        <div className={`${card.base} overflow-hidden`}>
-          <table className="w-full">
-            <thead>
-              <tr className="bg-surface-alt">
-                <th className="px-4 py-3 text-left text-verde text-sm font-medium">
-                  Name
-                </th>
-                <th className="px-4 py-3 text-left text-verde text-sm font-medium">
-                  <span className="inline-flex items-center">
-                    Code
-                    <InfoTooltip content="Exactly 3 characters, ISO 639-3." />
-                  </span>
-                </th>
-                <th className="px-4 py-3 text-left text-verde text-sm font-medium">
-                  Created
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {languages.map((lang) => (
-                <tr
-                  key={lang.id}
-                  className="border-t border-areia/20 hover:bg-surface-alt/50"
-                >
-                  <td className="px-4 py-3 text-sm text-preto font-medium">
-                    {lang.name}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-preto font-mono">
-                    {lang.code}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-verde">
-                    {formatDate(lang.created_at)}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+          {languages.map((lang) => (
+            <div
+              key={lang.id}
+              className="group rounded-2xl border border-areia/20 bg-surface p-5 shadow-sm hover:shadow-md hover:border-telha/30 transition-all duration-200 cursor-default"
+            >
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-azul/15 to-azul/5 flex items-center justify-center mx-auto">
+                <span className="text-2xl font-mono font-bold text-azul">
+                  {lang.code}
+                </span>
+              </div>
+              <p className="text-sm font-medium text-preto text-center mt-3">
+                {lang.name}
+              </p>
+              <p className="text-xs text-verde/50 text-center mt-1">
+                {formatDate(lang.created_at)}
+              </p>
+            </div>
+          ))}
         </div>
       )}
 
@@ -145,9 +117,12 @@ export default function LanguagesPage() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Create Language</DialogTitle>
+            <DialogDescription>
+              Add a new target language for your translation projects.
+            </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-2">
+          <div className="space-y-5 pt-1">
+            <div className="space-y-1.5">
               <Label htmlFor="lang-name">Name</Label>
               <Input
                 id="lang-name"
@@ -156,7 +131,7 @@ export default function LanguagesPage() {
                 onChange={(e) => setName(e.target.value)}
               />
             </div>
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               <Label htmlFor="lang-code">
                 <span className="inline-flex items-center">
                   Code
@@ -170,12 +145,12 @@ export default function LanguagesPage() {
                 value={code}
                 onChange={(e) => setCode(e.target.value)}
               />
-              <p className="text-xs text-verde/60">
+              <p className="text-xs text-verde/50 mt-1.5">
                 Must be exactly 3 characters (ISO 639-3)
               </p>
             </div>
           </div>
-          <DialogFooter>
+          <DialogFooter className="border-t border-areia/10 pt-4 mt-2">
             <Button
               variant="outline"
               onClick={() => setDialogOpen(false)}

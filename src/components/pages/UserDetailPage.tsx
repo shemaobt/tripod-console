@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react"
 import { useParams, useNavigate } from "react-router"
-import { ArrowLeft, KeyRound, Plus, Trash2, User } from "lucide-react"
+import { ArrowLeft, KeyRound, Plus, Trash2, User as UserIcon } from "lucide-react"
 import { toast } from "sonner"
 import { usersAPI, appsAPI, rolesAPI } from "@/services/api"
 import type {
   UserListResponse,
   UserRoleResponse,
   AppResponse,
+  AppRoleResponse,
 } from "@/types"
 import { card } from "@/styles"
 import { Button } from "@/components/ui/button"
@@ -22,6 +23,7 @@ import {
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -31,13 +33,7 @@ import { EmptyState } from "@/components/common/EmptyState"
 import { InfoTooltip } from "@/components/common/InfoTooltip"
 import { ConfirmDialog } from "@/components/common/ConfirmDialog"
 
-function formatDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString(undefined, {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  })
-}
+import { formatDate } from "@/utils/format"
 
 function UserInfoCard({
   user,
@@ -49,19 +45,23 @@ function UserInfoCard({
   onToggleAdmin: () => void
 }) {
   return (
-    <div className={`${card.base} p-6`}>
-      <div className="flex items-center gap-3 mb-4">
-        <div className="h-10 w-10 rounded-lg bg-azul/20 flex items-center justify-center">
-          <User className="h-5 w-5 text-azul" />
+    <div className={`${card.base} p-4 sm:p-6`}>
+      <div className="flex items-start gap-3 sm:gap-4 mb-4">
+        <div className="flex items-center justify-center h-16 w-16 rounded-full bg-azul/20 overflow-hidden shrink-0">
+          {user.avatar_url ? (
+            <img src={user.avatar_url} alt="" className="h-full w-full object-cover rounded-full" />
+          ) : (
+            <UserIcon className="h-8 w-8 text-verde/30" />
+          )}
         </div>
-        <div>
+        <div className="pt-2">
           <h2 className="text-lg font-semibold text-preto">{user.email}</h2>
           <p className="text-sm text-verde">
             {user.display_name || "No display name"}
           </p>
         </div>
       </div>
-      <div className="flex flex-wrap gap-4 text-sm">
+      <div className="flex flex-col sm:flex-row sm:flex-wrap gap-3 sm:gap-4 text-sm">
         <div className="flex items-center gap-2">
           <span className="text-verde">Status:</span>
           <Badge variant={user.is_active ? "active" : "inactive"}>
@@ -135,23 +135,23 @@ function RolesTable({
         <div className={`${card.base} overflow-hidden`}>
           <table className="w-full">
             <thead>
-              <tr className="bg-surface-alt">
-                <th className="px-4 py-3 text-left text-verde text-sm font-medium">
+              <tr className="bg-surface-alt/40">
+                <th className="px-3 sm:px-6 py-3 sm:py-4 text-left text-verde/70 text-xs font-medium tracking-wider uppercase">
                   <span className="inline-flex items-center">
                     App Key
                     <InfoTooltip content="The unique identifier of the app this role belongs to." />
                   </span>
                 </th>
-                <th className="px-4 py-3 text-left text-verde text-sm font-medium">
+                <th className="px-3 sm:px-6 py-3 sm:py-4 text-left text-verde/70 text-xs font-medium tracking-wider uppercase">
                   <span className="inline-flex items-center">
                     Role Key
                     <InfoTooltip content="The permission level within the app (e.g. admin, member)." />
                   </span>
                 </th>
-                <th className="px-4 py-3 text-left text-verde text-sm font-medium">
+                <th className="px-3 sm:px-6 py-3 sm:py-4 text-left text-verde/70 text-xs font-medium tracking-wider uppercase hidden sm:table-cell">
                   Granted At
                 </th>
-                <th className="px-4 py-3 text-right text-verde text-sm font-medium">
+                <th className="px-3 sm:px-6 py-3 sm:py-4 text-right text-verde/70 text-xs font-medium tracking-wider uppercase">
                   Actions
                 </th>
               </tr>
@@ -160,24 +160,24 @@ function RolesTable({
               {roles.map((role) => (
                 <tr
                   key={`${role.app_key}-${role.role_key}`}
-                  className="border-t border-areia/20 hover:bg-surface-alt/50"
+                  className="border-t border-areia/10 hover:bg-surface-alt/30"
                 >
-                  <td className="px-4 py-3 text-sm text-preto font-mono">
+                  <td className="px-3 sm:px-6 py-3 sm:py-4 text-sm text-preto font-mono">
                     {role.app_key}
                   </td>
-                  <td className="px-4 py-3 text-sm text-preto">
+                  <td className="px-3 sm:px-6 py-3 sm:py-4 text-sm text-preto">
                     <Badge variant="default">{role.role_key}</Badge>
                   </td>
-                  <td className="px-4 py-3 text-sm text-verde">
+                  <td className="px-3 sm:px-6 py-3 sm:py-4 text-sm text-verde hidden sm:table-cell">
                     {formatDate(role.granted_at)}
                   </td>
-                  <td className="px-4 py-3 text-right">
+                  <td className="px-3 sm:px-6 py-3 sm:py-4 text-right">
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => onRevokeRole(role)}
                     >
-                      <Trash2 className="h-4 w-4 text-red-600" />
+                      <Trash2 className="h-4 w-4 text-red-600 dark:text-red-400" />
                     </Button>
                   </td>
                 </tr>
@@ -204,6 +204,8 @@ export default function UserDetailPage() {
   const [selectedAppKey, setSelectedAppKey] = useState("")
   const [selectedRoleKey, setSelectedRoleKey] = useState("")
   const [assigning, setAssigning] = useState(false)
+  const [availableRoles, setAvailableRoles] = useState<AppRoleResponse[]>([])
+  const [rolesForAppLoading, setRolesForAppLoading] = useState(false)
 
   const [revokingRole, setRevokingRole] = useState<UserRoleResponse | null>(
     null,
@@ -278,10 +280,27 @@ export default function UserDetailPage() {
     if (apps.length === 0) {
       try {
         const { data } = await appsAPI.list()
-        setApps(data)
+        setApps(data.filter((a) => a.is_active))
       } catch {
         toast.error("Failed to load apps")
       }
+    }
+  }
+
+  async function handleAppChange(appKey: string) {
+    setSelectedAppKey(appKey)
+    setSelectedRoleKey("")
+    setAvailableRoles([])
+    const app = apps.find((a) => a.app_key === appKey)
+    if (!app) return
+    setRolesForAppLoading(true)
+    try {
+      const { data } = await appsAPI.listRoles(app.id)
+      setAvailableRoles(data)
+    } catch {
+      toast.error("Failed to load roles for this app")
+    } finally {
+      setRolesForAppLoading(false)
     }
   }
 
@@ -339,11 +358,11 @@ export default function UserDetailPage() {
   }
 
   return (
-    <div className="p-6 md:p-8 space-y-6">
+    <div className="p-6 md:p-8 lg:p-10 space-y-6">
       <div>
         <button
           onClick={() => navigate("/app/users")}
-          className="inline-flex items-center gap-1 text-sm text-verde hover:text-preto transition-colors mb-4"
+          className="inline-flex items-center gap-1 text-sm text-verde/60 hover:text-preto transition-colors mb-4"
         >
           <ArrowLeft className="h-4 w-4" />
           Back to Users
@@ -371,9 +390,12 @@ export default function UserDetailPage() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Assign Role</DialogTitle>
+            <DialogDescription>
+              Grant this user a role in one of the platform apps.
+            </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-2">
+          <div className="space-y-5 pt-1">
+            <div className="space-y-1.5">
               <Label>
                 <span className="inline-flex items-center">
                   App
@@ -382,7 +404,7 @@ export default function UserDetailPage() {
               </Label>
               <Select
                 value={selectedAppKey}
-                onValueChange={setSelectedAppKey}
+                onValueChange={handleAppChange}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select an app" />
@@ -396,28 +418,36 @@ export default function UserDetailPage() {
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               <Label>
                 <span className="inline-flex items-center">
                   Role
-                  <InfoTooltip content="The permission level to grant (admin has full app access, member has basic access)." />
+                  <InfoTooltip content="The permission level to grant within this app." />
                 </span>
               </Label>
-              <Select
-                value={selectedRoleKey}
-                onValueChange={setSelectedRoleKey}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a role" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="admin">Admin</SelectItem>
-                  <SelectItem value="member">Member</SelectItem>
-                </SelectContent>
-              </Select>
+              {rolesForAppLoading ? (
+                <p className="text-sm text-verde">Loading roles...</p>
+              ) : (
+                <Select
+                  value={selectedRoleKey}
+                  onValueChange={setSelectedRoleKey}
+                  disabled={!selectedAppKey}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder={selectedAppKey ? "Select a role" : "Select an app first"} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableRoles.map((role) => (
+                      <SelectItem key={role.id} value={role.role_key}>
+                        {role.label} ({role.role_key})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
             </div>
           </div>
-          <DialogFooter>
+          <DialogFooter className="border-t border-areia/10 pt-4 mt-2">
             <Button
               variant="outline"
               onClick={() => setAssignDialogOpen(false)}

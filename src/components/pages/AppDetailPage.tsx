@@ -27,6 +27,7 @@ import {
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -34,14 +35,10 @@ import {
 import { LoadingSpinner } from "@/components/common/LoadingSpinner"
 import { EmptyState } from "@/components/common/EmptyState"
 import { InfoTooltip } from "@/components/common/InfoTooltip"
+import { ImageUpload } from "@/components/common/ImageUpload"
+import { Switch } from "@/components/ui/switch"
 
-function formatDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString(undefined, {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  })
-}
+import { formatDate } from "@/utils/format"
 
 function AppInfoCard({
   app,
@@ -51,7 +48,7 @@ function AppInfoCard({
   onEdit: () => void
 }) {
   return (
-    <div className={`${card.base} p-6`}>
+    <div className={`${card.base} p-4 sm:p-6`}>
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center gap-3">
           {app.icon_url ? (
@@ -157,17 +154,17 @@ function AppRolesTable({
         <div className={`${card.base} overflow-hidden`}>
           <table className="w-full">
             <thead>
-              <tr className="bg-surface-alt">
-                <th className="px-4 py-3 text-left text-verde text-sm font-medium">
+              <tr className="bg-surface-alt/40">
+                <th className="px-3 sm:px-6 py-3 sm:py-4 text-left text-verde/70 text-xs font-medium tracking-wider uppercase">
                   Role Key
                 </th>
-                <th className="px-4 py-3 text-left text-verde text-sm font-medium">
+                <th className="px-3 sm:px-6 py-3 sm:py-4 text-left text-verde/70 text-xs font-medium tracking-wider uppercase">
                   Label
                 </th>
-                <th className="px-4 py-3 text-left text-verde text-sm font-medium">
+                <th className="px-3 sm:px-6 py-3 sm:py-4 text-left text-verde/70 text-xs font-medium tracking-wider uppercase hidden md:table-cell">
                   Description
                 </th>
-                <th className="px-4 py-3 text-left text-verde text-sm font-medium">
+                <th className="px-3 sm:px-6 py-3 sm:py-4 text-left text-verde/70 text-xs font-medium tracking-wider uppercase hidden sm:table-cell">
                   <span className="inline-flex items-center">
                     System
                     <InfoTooltip content="System roles are built-in and managed by the platform. They cannot be deleted." />
@@ -179,18 +176,18 @@ function AppRolesTable({
               {roles.map((role) => (
                 <tr
                   key={role.id}
-                  className="border-t border-areia/20 hover:bg-surface-alt/50"
+                  className="border-t border-areia/10 hover:bg-surface-alt/30"
                 >
-                  <td className="px-4 py-3 text-sm text-preto font-mono">
+                  <td className="px-3 sm:px-6 py-3 sm:py-4 text-sm text-preto font-mono">
                     {role.role_key}
                   </td>
-                  <td className="px-4 py-3 text-sm text-preto">
+                  <td className="px-3 sm:px-6 py-3 sm:py-4 text-sm text-preto">
                     {role.label}
                   </td>
-                  <td className="px-4 py-3 text-sm text-verde">
+                  <td className="px-3 sm:px-6 py-3 sm:py-4 text-sm text-verde hidden md:table-cell">
                     {role.description || "\u2014"}
                   </td>
-                  <td className="px-4 py-3 text-sm">
+                  <td className="px-3 sm:px-6 py-3 sm:py-4 text-sm hidden sm:table-cell">
                     {role.is_system ? (
                       <Badge variant="default">System</Badge>
                     ) : (
@@ -326,11 +323,11 @@ export default function AppDetailPage() {
   }
 
   return (
-    <div className="p-6 md:p-8 space-y-6">
+    <div className="p-6 md:p-8 lg:p-10 space-y-6">
       <div>
         <button
           onClick={() => navigate("/app/apps")}
-          className="inline-flex items-center gap-1 text-sm text-verde hover:text-preto transition-colors mb-4"
+          className="inline-flex items-center gap-1 text-sm text-verde/60 hover:text-preto transition-colors mb-4"
         >
           <ArrowLeft className="h-4 w-4" />
           Back to Apps
@@ -346,125 +343,152 @@ export default function AppDetailPage() {
       <AppRolesTable roles={roles} loading={rolesLoading} />
 
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-        <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle>Edit App</DialogTitle>
+            <DialogDescription>
+              Update this app's configuration and metadata.
+            </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="edit-app-key">
-                <span className="inline-flex items-center">
-                  App Key
-                  <InfoTooltip content="The app key cannot be changed after creation." />
-                </span>
-              </Label>
-              <Input
-                id="edit-app-key"
-                value={app.app_key}
-                disabled
-                className={cn("opacity-60")}
-              />
+          <div className="space-y-6 pt-1">
+            {/* Identity */}
+            <div className="space-y-4">
+              <p className="text-xs font-medium text-verde/60 tracking-wider uppercase">Identity</p>
+              <div className="space-y-1.5">
+                <Label htmlFor="edit-app-key">
+                  <span className="inline-flex items-center">
+                    App Key
+                    <InfoTooltip content="The app key cannot be changed after creation." />
+                  </span>
+                </Label>
+                <Input
+                  id="edit-app-key"
+                  value={app.app_key}
+                  disabled
+                  className={cn("opacity-60")}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="edit-name">Name</Label>
+                <Input
+                  id="edit-name"
+                  value={form.name}
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, name: e.target.value }))
+                  }
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="edit-description">Description</Label>
+                <Textarea
+                  id="edit-description"
+                  value={form.description}
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, description: e.target.value }))
+                  }
+                  rows={2}
+                />
+              </div>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="edit-name">Name</Label>
-              <Input
-                id="edit-name"
-                value={form.name}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, name: e.target.value }))
-                }
-              />
+
+            <div className="border-t border-areia/10" />
+
+            {/* Platform & Icon */}
+            <div className="space-y-4">
+              <p className="text-xs font-medium text-verde/60 tracking-wider uppercase">Platform & Icon</p>
+              <div className="space-y-1.5">
+                <Label htmlFor="edit-platform">
+                  <span className="inline-flex items-center">
+                    Platform
+                    <InfoTooltip content="The platform this app targets: web, mobile, or both." />
+                  </span>
+                </Label>
+                <Select
+                  value={form.platform}
+                  onValueChange={(v) => setForm((f) => ({ ...f, platform: v }))}
+                >
+                  <SelectTrigger id="edit-platform">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="web">Web</SelectItem>
+                    <SelectItem value="mobile">Mobile</SelectItem>
+                    <SelectItem value="both">Both</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label>App Icon</Label>
+                <ImageUpload
+                  value={form.icon_url || null}
+                  onChange={(url) => setForm((f) => ({ ...f, icon_url: url ?? "" }))}
+                  folder="app-icons"
+                  shape="square"
+                  size="md"
+                />
+              </div>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="edit-description">Description</Label>
-              <Textarea
-                id="edit-description"
-                value={form.description}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, description: e.target.value }))
-                }
-                rows={2}
-              />
+
+            <div className="border-t border-areia/10" />
+
+            {/* Links */}
+            <div className="space-y-4">
+              <p className="text-xs font-medium text-verde/60 tracking-wider uppercase">Links</p>
+              <div className="space-y-1.5">
+                <Label htmlFor="edit-app-url">App URL (Web)</Label>
+                <Input
+                  id="edit-app-url"
+                  placeholder="https://..."
+                  value={form.app_url}
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, app_url: e.target.value }))
+                  }
+                />
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <Label htmlFor="edit-ios-url">iOS URL</Label>
+                  <Input
+                    id="edit-ios-url"
+                    placeholder="apps.apple.com/..."
+                    value={form.ios_url}
+                    onChange={(e) =>
+                      setForm((f) => ({ ...f, ios_url: e.target.value }))
+                    }
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="edit-android-url">Android URL</Label>
+                  <Input
+                    id="edit-android-url"
+                    placeholder="play.google.com/..."
+                    value={form.android_url}
+                    onChange={(e) =>
+                      setForm((f) => ({ ...f, android_url: e.target.value }))
+                    }
+                  />
+                </div>
+              </div>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="edit-platform">
-                <span className="inline-flex items-center">
-                  Platform
-                  <InfoTooltip content="The platform this app targets: web, mobile, or both." />
-                </span>
-              </Label>
-              <Select
-                value={form.platform}
-                onValueChange={(v) => setForm((f) => ({ ...f, platform: v }))}
-              >
-                <SelectTrigger id="edit-platform">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="web">Web</SelectItem>
-                  <SelectItem value="mobile">Mobile</SelectItem>
-                  <SelectItem value="both">Both</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="edit-icon-url">Icon URL</Label>
-              <Input
-                id="edit-icon-url"
-                placeholder="https://..."
-                value={form.icon_url}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, icon_url: e.target.value }))
-                }
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="edit-app-url">App URL (Web)</Label>
-              <Input
-                id="edit-app-url"
-                placeholder="https://..."
-                value={form.app_url}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, app_url: e.target.value }))
-                }
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="edit-ios-url">iOS URL</Label>
-              <Input
-                id="edit-ios-url"
-                placeholder="https://apps.apple.com/..."
-                value={form.ios_url}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, ios_url: e.target.value }))
-                }
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="edit-android-url">Android URL</Label>
-              <Input
-                id="edit-android-url"
-                placeholder="https://play.google.com/..."
-                value={form.android_url}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, android_url: e.target.value }))
-                }
-              />
-            </div>
-            <div className="flex items-center space-x-2">
-              <input
+
+            <div className="border-t border-areia/10" />
+
+            {/* Status */}
+            <div className="flex items-center justify-between rounded-xl bg-surface-alt/40 px-4 py-3">
+              <div>
+                <Label htmlFor="edit-is-active" className="mb-0">Active</Label>
+                <p className="text-xs text-verde/50 mt-0.5">Users can access this app when active</p>
+              </div>
+              <Switch
                 id="edit-is-active"
-                type="checkbox"
                 checked={form.is_active}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, is_active: e.target.checked }))
+                onCheckedChange={(checked) =>
+                  setForm((f) => ({ ...f, is_active: checked }))
                 }
-                className="h-4 w-4 rounded border-areia text-telha focus:ring-telha"
               />
-              <Label htmlFor="edit-is-active">Active</Label>
             </div>
           </div>
-          <DialogFooter>
+          <DialogFooter className="border-t border-areia/10 pt-4 mt-2">
             <Button
               variant="outline"
               onClick={() => setEditDialogOpen(false)}

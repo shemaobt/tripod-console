@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label"
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -31,13 +32,7 @@ import { InfoTooltip } from "@/components/common/InfoTooltip"
 import { ConfirmDialog } from "@/components/common/ConfirmDialog"
 import { FeatureSpotlight } from "@/components/common/FeatureSpotlight"
 
-function formatDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString(undefined, {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  })
-}
+import { formatDate } from "@/utils/format"
 
 function UserAccessSection({
   users,
@@ -79,17 +74,17 @@ function UserAccessSection({
         <div className={`${card.base} overflow-hidden`}>
           <table className="w-full">
             <thead>
-              <tr className="bg-surface-alt">
-                <th className="px-4 py-3 text-left text-verde text-sm font-medium">
+              <tr className="bg-surface-alt/40">
+                <th className="px-3 sm:px-6 py-3 sm:py-4 text-left text-verde/70 text-xs font-medium tracking-wider uppercase">
                   Email
                 </th>
-                <th className="px-4 py-3 text-left text-verde text-sm font-medium">
+                <th className="px-3 sm:px-6 py-3 sm:py-4 text-left text-verde/70 text-xs font-medium tracking-wider uppercase hidden sm:table-cell">
                   Display Name
                 </th>
-                <th className="px-4 py-3 text-left text-verde text-sm font-medium">
+                <th className="px-3 sm:px-6 py-3 sm:py-4 text-left text-verde/70 text-xs font-medium tracking-wider uppercase hidden md:table-cell">
                   Granted
                 </th>
-                <th className="px-4 py-3 text-right text-verde text-sm font-medium">
+                <th className="px-3 sm:px-6 py-3 sm:py-4 text-right text-verde/70 text-xs font-medium tracking-wider uppercase">
                   Actions
                 </th>
               </tr>
@@ -98,24 +93,24 @@ function UserAccessSection({
               {users.map((user) => (
                 <tr
                   key={user.id}
-                  className="border-t border-areia/20 hover:bg-surface-alt/50"
+                  className="border-t border-areia/10 hover:bg-surface-alt/30"
                 >
-                  <td className="px-4 py-3 text-sm text-preto">
+                  <td className="px-3 sm:px-6 py-3 sm:py-4 text-sm text-preto">
                     {user.email}
                   </td>
-                  <td className="px-4 py-3 text-sm text-preto">
+                  <td className="px-3 sm:px-6 py-3 sm:py-4 text-sm text-preto hidden sm:table-cell">
                     {user.display_name || "\u2014"}
                   </td>
-                  <td className="px-4 py-3 text-sm text-verde">
+                  <td className="px-3 sm:px-6 py-3 sm:py-4 text-sm text-verde hidden md:table-cell">
                     {formatDate(user.granted_at)}
                   </td>
-                  <td className="px-4 py-3 text-right">
+                  <td className="px-3 sm:px-6 py-3 sm:py-4 text-right">
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => onRevoke(user)}
                     >
-                      <Trash2 className="h-4 w-4 text-red-600" />
+                      <Trash2 className="h-4 w-4 text-red-600 dark:text-red-400" />
                     </Button>
                   </td>
                 </tr>
@@ -168,17 +163,17 @@ function OrgAccessSection({
         <div className={`${card.base} overflow-hidden`}>
           <table className="w-full">
             <thead>
-              <tr className="bg-surface-alt">
-                <th className="px-4 py-3 text-left text-verde text-sm font-medium">
+              <tr className="bg-surface-alt/40">
+                <th className="px-3 sm:px-6 py-3 sm:py-4 text-left text-verde/70 text-xs font-medium tracking-wider uppercase">
                   Name
                 </th>
-                <th className="px-4 py-3 text-left text-verde text-sm font-medium">
+                <th className="px-3 sm:px-6 py-3 sm:py-4 text-left text-verde/70 text-xs font-medium tracking-wider uppercase hidden sm:table-cell">
                   Slug
                 </th>
-                <th className="px-4 py-3 text-left text-verde text-sm font-medium">
+                <th className="px-3 sm:px-6 py-3 sm:py-4 text-left text-verde/70 text-xs font-medium tracking-wider uppercase hidden md:table-cell">
                   Granted
                 </th>
-                <th className="px-4 py-3 text-right text-verde text-sm font-medium">
+                <th className="px-3 sm:px-6 py-3 sm:py-4 text-right text-verde/70 text-xs font-medium tracking-wider uppercase">
                   Actions
                 </th>
               </tr>
@@ -187,22 +182,22 @@ function OrgAccessSection({
               {orgs.map((org) => (
                 <tr
                   key={org.id}
-                  className="border-t border-areia/20 hover:bg-surface-alt/50"
+                  className="border-t border-areia/10 hover:bg-surface-alt/30"
                 >
-                  <td className="px-4 py-3 text-sm text-preto">{org.name}</td>
-                  <td className="px-4 py-3 text-sm text-verde font-mono">
+                  <td className="px-3 sm:px-6 py-3 sm:py-4 text-sm text-preto">{org.name}</td>
+                  <td className="px-3 sm:px-6 py-3 sm:py-4 text-sm text-verde font-mono hidden sm:table-cell">
                     {org.slug}
                   </td>
-                  <td className="px-4 py-3 text-sm text-verde">
+                  <td className="px-3 sm:px-6 py-3 sm:py-4 text-sm text-verde hidden md:table-cell">
                     {formatDate(org.granted_at)}
                   </td>
-                  <td className="px-4 py-3 text-right">
+                  <td className="px-3 sm:px-6 py-3 sm:py-4 text-right">
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => onRevoke(org)}
                     >
-                      <Trash2 className="h-4 w-4 text-red-600" />
+                      <Trash2 className="h-4 w-4 text-red-600 dark:text-red-400" />
                     </Button>
                   </td>
                 </tr>
@@ -380,9 +375,12 @@ export function ProjectAccessTab({ projectId }: { projectId: string }) {
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Grant User Access</DialogTitle>
+              <DialogDescription>
+                Give a specific user direct access to this project.
+              </DialogDescription>
             </DialogHeader>
-            <div className="space-y-4">
-              <div className="space-y-2">
+            <div className="space-y-5 pt-1">
+              <div className="space-y-1.5">
                 <Label htmlFor="grant-user-id">
                   <span className="inline-flex items-center">
                     User ID
@@ -397,7 +395,7 @@ export function ProjectAccessTab({ projectId }: { projectId: string }) {
                 />
               </div>
             </div>
-            <DialogFooter>
+            <DialogFooter className="border-t border-areia/10 pt-4 mt-2">
               <Button
                 variant="outline"
                 onClick={() => setGrantUserOpen(false)}
@@ -419,13 +417,16 @@ export function ProjectAccessTab({ projectId }: { projectId: string }) {
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Grant Organization Access</DialogTitle>
+              <DialogDescription>
+                All members of the selected organization will gain access to this project.
+              </DialogDescription>
             </DialogHeader>
-            <div className="space-y-4">
-              <div className="space-y-2">
+            <div className="space-y-5 pt-1">
+              <div className="space-y-1.5">
                 <Label>
                   <span className="inline-flex items-center">
                     Organization
-                    <InfoTooltip content="All members of the selected organization will gain access to this project." />
+                    <InfoTooltip content="Select the organization to grant project access." />
                   </span>
                 </Label>
                 {orgsListLoading ? (
@@ -448,7 +449,7 @@ export function ProjectAccessTab({ projectId }: { projectId: string }) {
                 )}
               </div>
             </div>
-            <DialogFooter>
+            <DialogFooter className="border-t border-areia/10 pt-4 mt-2">
               <Button
                 variant="outline"
                 onClick={() => setGrantOrgOpen(false)}

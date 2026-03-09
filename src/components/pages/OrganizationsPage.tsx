@@ -4,13 +4,13 @@ import { Building2, Plus, Pencil } from "lucide-react"
 import { toast } from "sonner"
 import { orgsAPI } from "@/services/api"
 import type { OrganizationResponse } from "@/types"
-import { card } from "@/styles"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -19,13 +19,7 @@ import { LoadingSpinner } from "@/components/common/LoadingSpinner"
 import { EmptyState } from "@/components/common/EmptyState"
 import { InfoTooltip } from "@/components/common/InfoTooltip"
 
-function formatDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString(undefined, {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  })
-}
+import { formatDate } from "@/utils/format"
 
 export default function OrganizationsPage() {
   const navigate = useNavigate()
@@ -107,15 +101,20 @@ export default function OrganizationsPage() {
   }
 
   return (
-    <div className="p-6 md:p-8 space-y-6">
+    <div className="p-6 md:p-8 lg:p-10 space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold text-preto tracking-tight flex items-center">
-          Organizations
-          <InfoTooltip content="Organizations group users together for shared project access." />
-        </h1>
-        <Button onClick={openCreateDialog}>
+        <div>
+          <h1 className="text-2xl font-semibold text-preto tracking-tight flex items-center">
+            Organizations
+            <InfoTooltip content="Organizations group users together for shared project access." />
+          </h1>
+          <p className="text-sm text-verde/60 mt-1">
+            {orgs.length} organization{orgs.length !== 1 ? "s" : ""}
+          </p>
+        </div>
+        <Button onClick={openCreateDialog} className="rounded-xl">
           <Plus className="h-4 w-4" />
-          New Organization
+          <span className="hidden sm:inline">New Organization</span>
         </Button>
       </div>
 
@@ -128,56 +127,37 @@ export default function OrganizationsPage() {
           onAction={openCreateDialog}
         />
       ) : (
-        <div className={`${card.base} overflow-hidden`}>
-          <table className="w-full">
-            <thead>
-              <tr className="bg-surface-alt">
-                <th className="px-4 py-3 text-left text-verde text-sm font-medium">
-                  Name
-                </th>
-                <th className="px-4 py-3 text-left text-verde text-sm font-medium">
-                  <span className="inline-flex items-center">
-                    Slug
-                    <InfoTooltip content="A unique URL-friendly identifier for this organization." />
-                  </span>
-                </th>
-                <th className="px-4 py-3 text-left text-verde text-sm font-medium">
-                  Created
-                </th>
-                <th className="px-4 py-3 text-right text-verde text-sm font-medium">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {orgs.map((org) => (
-                <tr
-                  key={org.id}
-                  className="border-t border-areia/20 hover:bg-surface-alt/50 cursor-pointer"
-                  onClick={() => navigate(`/app/organizations/${org.id}`)}
-                >
-                  <td className="px-4 py-3 text-sm text-preto font-medium">
-                    {org.name}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-preto font-mono">
-                    {org.slug}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-verde">
-                    {formatDate(org.created_at)}
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={(e) => openEditDialog(e, org)}
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="space-y-3">
+          {orgs.map((org) => (
+            <div
+              key={org.id}
+              className="group flex items-center gap-4 rounded-2xl border border-areia/20 bg-surface px-5 py-4 shadow-sm hover:shadow-md hover:border-telha/30 transition-all duration-200 cursor-pointer"
+              onClick={() => navigate(`/app/organizations/${org.id}`)}
+            >
+              <div className="flex items-center justify-center w-11 h-11 rounded-xl bg-gradient-to-br from-azul/15 to-azul/5 shrink-0 overflow-hidden">
+                {org.logo_url ? (
+                  <img src={org.logo_url} alt="" className="h-full w-full object-cover rounded-xl" />
+                ) : (
+                  <Building2 className="h-5 w-5 text-azul" />
+                )}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-preto truncate">{org.name}</p>
+                <p className="text-xs text-verde/50 font-mono mt-0.5">{org.slug}</p>
+              </div>
+              <p className="text-xs text-verde/50 tabular-nums shrink-0 hidden sm:block">
+                {formatDate(org.created_at)}
+              </p>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
+                onClick={(e) => openEditDialog(e, org)}
+              >
+                <Pencil className="h-4 w-4" />
+              </Button>
+            </div>
+          ))}
         </div>
       )}
 
@@ -187,9 +167,14 @@ export default function OrganizationsPage() {
             <DialogTitle>
               {editingOrg ? "Edit Organization" : "Create Organization"}
             </DialogTitle>
+            <DialogDescription>
+              {editingOrg
+                ? "Update this organization's details."
+                : "Organizations group users together for shared project access."}
+            </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-2">
+          <div className="space-y-5 pt-1">
+            <div className="space-y-1.5">
               <Label htmlFor="org-name">Name</Label>
               <Input
                 id="org-name"
@@ -198,7 +183,7 @@ export default function OrganizationsPage() {
                 onChange={(e) => setName(e.target.value)}
               />
             </div>
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               <Label htmlFor="org-slug">
                 <span className="inline-flex items-center">
                   Slug
@@ -211,9 +196,12 @@ export default function OrganizationsPage() {
                 value={slug}
                 onChange={(e) => setSlug(e.target.value)}
               />
+              <p className="text-xs text-verde/50 mt-1.5">
+                Lowercase letters, numbers, and hyphens only
+              </p>
             </div>
           </div>
-          <DialogFooter>
+          <DialogFooter className="border-t border-areia/10 pt-4 mt-2">
             <Button
               variant="outline"
               onClick={() => setDialogOpen(false)}
