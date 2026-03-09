@@ -9,9 +9,10 @@ const badgeVariants = cva(
       variant: {
         default: "bg-areia/30 text-verde border border-areia",
         success: "bg-verde-claro/20 text-verde-claro border border-verde-claro/30",
-        error: "bg-red-100 text-red-800 border border-red-200",
+        error: "bg-red-100 text-red-800 border border-red-200 dark:bg-red-950/30 dark:text-red-400 dark:border-red-800/40",
         active: "bg-verde-claro/20 text-verde-claro",
         inactive: "bg-areia/30 text-verde",
+        admin: "bg-telha/15 text-telha border border-telha/30",
       },
     },
     defaultVariants: {
