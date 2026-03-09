@@ -14,6 +14,7 @@ import UsersPage from "@/components/pages/UsersPage"
 import UserDetailPage from "@/components/pages/UserDetailPage"
 import AppsPage from "@/components/pages/AppsPage"
 import AppDetailPage from "@/components/pages/AppDetailPage"
+import PhasesPage from "@/components/pages/PhasesPage"
 import MapPage from "@/components/pages/MapPage"
 import NotFoundPage from "@/components/pages/NotFoundPage"
 import AccessDeniedPage from "@/components/pages/AccessDeniedPage"
@@ -46,6 +47,7 @@ function App() {
               <Route path="users/:userId" element={<AdminRoute><UserDetailPage /></AdminRoute>} />
               <Route path="apps" element={<AdminRoute><AppsPage /></AdminRoute>} />
               <Route path="apps/:appId" element={<AdminRoute><AppDetailPage /></AdminRoute>} />
+              <Route path="phases" element={<PhasesPage />} />
               <Route path="map" element={<MapPage />} />
             </Route>
 
