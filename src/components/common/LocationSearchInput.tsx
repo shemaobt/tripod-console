@@ -1,0 +1,192 @@
+import { useEffect, useRef, useState, useCallback } from "react"
+import { MapPin, Loader2, Search, X } from "lucide-react"
+import { Input } from "@/components/ui/input"
+import { cn } from "@/utils/cn"
+import { placesAPI } from "@/services/api"
+
+export interface LocationResult {
+  displayName: string
+  latitude: number
+  longitude: number
+}
+
+interface Suggestion {
+  placePrediction: {
+    placeId: string
+    text: { text: string }
+    structuredFormat: {
+      mainText: { text: string }
+      secondaryText: { text: string }
+    }
+  }
+}
+
+interface LocationSearchInputProps {
+  value: LocationResult | null
+  onChange: (location: LocationResult | null) => void
+  className?: string
+}
+
+export function LocationSearchInput({
+  value,
+  onChange,
+  className,
+}: LocationSearchInputProps) {
+  const [query, setQuery] = useState("")
+  const [suggestions, setSuggestions] = useState<Suggestion[]>([])
+  const [loading, setLoading] = useState(false)
+  const [showResults, setShowResults] = useState(false)
+  const [resolving, setResolving] = useState(false)
+
+  const containerRef = useRef<HTMLDivElement>(null)
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => {
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current)
+    }
+  }, [])
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setShowResults(false)
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => document.removeEventListener("mousedown", handleClickOutside)
+  }, [])
+
+  const searchPlaces = useCallback(async (input: string) => {
+    if (!input.trim()) {
+      setSuggestions([])
+      return
+    }
+    setLoading(true)
+    try {
+      const { data } = await placesAPI.autocomplete(input)
+      setSuggestions(data.suggestions ?? [])
+    } catch {
+      setSuggestions([])
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  function handleInputChange(val: string) {
+    setQuery(val)
+    setShowResults(true)
+    if (value) onChange(null)
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    debounceRef.current = setTimeout(() => searchPlaces(val), 300)
+  }
+
+  async function handleSelectSuggestion(suggestion: Suggestion) {
+    setResolving(true)
+    setShowResults(false)
+    try {
+      const placeId = suggestion.placePrediction.placeId
+      const { data } = await placesAPI.details(placeId)
+      if (data.location) {
+        onChange({
+          displayName:
+            data.formattedAddress ||
+            data.displayName?.text ||
+            suggestion.placePrediction.text.text,
+          latitude: data.location.latitude,
+          longitude: data.location.longitude,
+        })
+        setQuery("")
+        setSuggestions([])
+      }
+    } catch {
+      // fall back silently
+    } finally {
+      setResolving(false)
+    }
+  }
+
+  function handleClear() {
+    onChange(null)
+    setQuery("")
+    setSuggestions([])
+  }
+
+  return (
+    <div ref={containerRef} className={cn("relative", className)}>
+      {value ? (
+        <div className="flex items-center gap-3 rounded-lg border border-areia/30 bg-surface-alt/30 px-3 py-3">
+          <div className="flex items-center justify-center h-9 w-9 rounded-lg bg-azul/15 shrink-0">
+            <MapPin className="h-4 w-4 text-azul" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-preto truncate">
+              {value.displayName}
+            </p>
+            <p className="text-xs text-verde/60 font-mono mt-0.5">
+              {value.latitude.toFixed(6)}, {value.longitude.toFixed(6)}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={handleClear}
+            className="flex items-center justify-center h-7 w-7 rounded-md text-verde/50 hover:text-preto hover:bg-areia/10 transition-colors shrink-0"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+      ) : (
+        <>
+          <div className="relative">
+            {resolving ? (
+              <Loader2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-verde/40 animate-spin" />
+            ) : (
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-verde/40" />
+            )}
+            <Input
+              value={query}
+              onChange={(e) => handleInputChange(e.target.value)}
+              onFocus={() =>
+                query.trim() && suggestions.length > 0 && setShowResults(true)
+              }
+              placeholder="Search for a location..."
+              className="pl-9"
+            />
+          </div>
+          {showResults && query.trim().length > 0 && (
+            <div className="absolute top-full left-0 right-0 mt-1 z-50 bg-surface border border-areia/30 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+              {loading ? (
+                <div className="flex items-center justify-center py-4">
+                  <Loader2 className="h-5 w-5 text-verde/40 animate-spin" />
+                </div>
+              ) : suggestions.length === 0 ? (
+                <p className="text-sm text-verde/50 text-center py-4">
+                  No locations found
+                </p>
+              ) : (
+                suggestions.map((suggestion) => (
+                  <button
+                    key={suggestion.placePrediction.placeId}
+                    type="button"
+                    onClick={() => handleSelectSuggestion(suggestion)}
+                    className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-surface-alt/50 transition-colors text-left"
+                  >
+                    <MapPin className="h-4 w-4 text-verde/40 shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm text-preto truncate">
+                        {suggestion.placePrediction.structuredFormat.mainText.text}
+                      </p>
+                      <p className="text-xs text-verde/60 truncate">
+                        {suggestion.placePrediction.structuredFormat.secondaryText.text}
+                      </p>
+                    </div>
+                  </button>
+                ))
+              )}
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  )
+}
