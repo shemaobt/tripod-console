@@ -273,12 +273,11 @@ export const rolesAPI = {
     }),
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const placesAPI = {
   autocomplete: (q: string) =>
-    api.get<any>("/places/autocomplete", { params: { q } }),
+    api.get<{ predictions: Array<{ place_id: string; description: string }> }>("/places/autocomplete", { params: { q } }),
   details: (placeId: string) =>
-    api.get<any>("/places/details", { params: { place_id: placeId } }),
+    api.get<{ result: { geometry: { location: { lat: number; lng: number } }; formatted_address: string } }>("/places/details", { params: { place_id: placeId } }),
 }
 
 export const uploadsAPI = {
