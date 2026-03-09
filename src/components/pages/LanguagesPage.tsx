@@ -1,0 +1,172 @@
+import { useEffect, useState } from "react"
+import { Languages, Plus } from "lucide-react"
+import { toast } from "sonner"
+import { languagesAPI } from "@/services/api"
+import { useLanguagesStore } from "@/stores/languagesStore"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import { LoadingSpinner } from "@/components/common/LoadingSpinner"
+import { EmptyState } from "@/components/common/EmptyState"
+import { InfoTooltip } from "@/components/common/InfoTooltip"
+
+import { formatDate } from "@/utils/format"
+
+export default function LanguagesPage() {
+  const { languages, loading: storeLoading, lastFetched, fetch: fetchLanguages } = useLanguagesStore()
+  const loading = storeLoading || (!lastFetched && languages.length === 0)
+  const [dialogOpen, setDialogOpen] = useState(false)
+  const [creating, setCreating] = useState(false)
+  const [name, setName] = useState("")
+  const [code, setCode] = useState("")
+
+  useEffect(() => {
+    fetchLanguages()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  function openDialog() {
+    setName("")
+    setCode("")
+    setDialogOpen(true)
+  }
+
+  async function handleCreate() {
+    if (!name.trim() || code.trim().length !== 3) return
+    setCreating(true)
+    try {
+      await languagesAPI.create({ name: name.trim(), code: code.trim().toLowerCase() })
+      toast.success("Language created")
+      setDialogOpen(false)
+      useLanguagesStore.getState().invalidate()
+      await fetchLanguages()
+    } catch (err: unknown) {
+      const status = (err as { response?: { status?: number } })?.response?.status
+      if (status === 409) {
+        toast.error("A language with this code already exists")
+      } else {
+        toast.error("Failed to create language")
+      }
+    } finally {
+      setCreating(false)
+    }
+  }
+
+  if (loading) {
+    return <LoadingSpinner />
+  }
+
+  return (
+    <div className="p-6 md:p-8 lg:p-10 space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold text-preto tracking-tight flex items-center">
+            Languages
+            <InfoTooltip content="Manage the translation target languages for your projects." />
+          </h1>
+          <p className="text-sm text-verde/60 mt-1">
+            {languages.length} language{languages.length !== 1 ? "s" : ""} registered
+          </p>
+        </div>
+        <Button onClick={openDialog} className="rounded-xl">
+          <Plus className="h-4 w-4" />
+          New Language
+        </Button>
+      </div>
+
+      {languages.length === 0 ? (
+        <EmptyState
+          icon={Languages}
+          title="No languages yet"
+          description="Languages define the translation targets for your projects. Create one to get started."
+          actionLabel="Create Language"
+          onAction={openDialog}
+        />
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+          {languages.map((lang) => (
+            <div
+              key={lang.id}
+              className="group rounded-2xl border border-areia/20 bg-surface p-5 shadow-sm hover:shadow-md hover:border-telha/30 transition-all duration-200 cursor-default"
+            >
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-azul/15 to-azul/5 flex items-center justify-center mx-auto">
+                <span className="text-2xl font-mono font-bold text-azul">
+                  {lang.code}
+                </span>
+              </div>
+              <p className="text-sm font-medium text-preto text-center mt-3">
+                {lang.name}
+              </p>
+              <p className="text-xs text-verde/50 text-center mt-1">
+                {formatDate(lang.created_at)}
+              </p>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Create Language</DialogTitle>
+            <DialogDescription>
+              Add a new target language for your translation projects.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-5 pt-1">
+            <div className="space-y-1.5">
+              <Label htmlFor="lang-name">Name</Label>
+              <Input
+                id="lang-name"
+                placeholder="e.g. English"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="lang-code">
+                <span className="inline-flex items-center">
+                  Code
+                  <InfoTooltip content="Exactly 3 characters, ISO 639-3." />
+                </span>
+              </Label>
+              <Input
+                id="lang-code"
+                placeholder="e.g. eng"
+                maxLength={3}
+                value={code}
+                onChange={(e) => setCode(e.target.value)}
+              />
+              <p className="text-xs text-verde/50 mt-1.5">
+                Must be exactly 3 characters (ISO 639-3)
+              </p>
+            </div>
+          </div>
+          <DialogFooter className="border-t border-areia/10 pt-4 mt-2">
+            <Button
+              variant="outline"
+              onClick={() => setDialogOpen(false)}
+              disabled={creating}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleCreate}
+              disabled={creating || !name.trim() || code.trim().length !== 3}
+            >
+              {creating ? "Creating..." : "Create"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  )
+}

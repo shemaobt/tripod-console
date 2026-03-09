@@ -136,13 +136,31 @@ Use `isPlatformAdmin` and `appRoles` from AuthContext for enforcement.
 - **Avoid inline styles** for things Tailwind can do. Use inline `style` only when necessary (e.g. dynamic values, third-party integration like Leaflet).
 - **Use the design tokens** defined in `src/index.css`: `branco`, `areia`, `azul`, `telha`, `verde`, `verde-claro`, `preto`, `surface`, `surface-alt`. Do not introduce arbitrary hex values in JSX; extend the theme if new tokens are needed.
 
+### Dark mode
+
+- Dark mode uses `@custom-variant dark (&:where(.dark, .dark *))` in `index.css`.
+- All dark color overrides are defined in `@layer base { .dark { ... } }` using the same Shema tokens.
+- When adding components with color that won't adapt via tokens alone, add explicit `dark:` variants (e.g. `dark:bg-red-950/30 dark:text-red-400`).
+
+### Global focus-visible
+
+- `index.css` defines `*:focus-visible { ring-2 ring-telha ring-offset-1 ring-offset-branco }`.
+- Components should **not** add redundant `focus:outline-none focus:ring-*` classes. Use `focus-visible:` (not `focus:`) for keyboard-only focus rings.
+- Input-like components (Input, Textarea, Select) use `focus:ring-2 focus:ring-telha focus:border-telha` for the border+ring combo since they need `focus:border-telha` too.
+
+### `bg-surface` not `bg-white`
+
+- **Always use `bg-surface`** for elevated surfaces (cards, inputs, modals, select triggers). Never hardcode `bg-white`.
+- `surface` maps to `#FFFFFF` in light mode and `#1E1D17` in dark mode — this ensures dark mode works correctly.
+- `bg-branco` is for page backgrounds only.
+
 ### Centralized style constants
 
 - **Use `src/styles/`** for reusable style constants. This directory contains TypeScript objects with Tailwind class strings organized by purpose:
-  - `cards.ts` — card.base, card.hover, card.interactive, card.padded
-  - `badges.ts` — badge styles for status indicators
+  - `cards.ts` — card.base, card.hover, card.interactive, card.padded (padded includes base styles)
+  - `badges.ts` — badge.base + status variants (success, pending, error, active, inactive) with dark mode support
   - `layout.ts` — page, container, grid, sidebar, main layout patterns
-  - `states.ts` — empty, loading, error, warning state styles
+  - `states.ts` — empty, loading, error (banner-style with dark mode), warning state styles with responsive padding
 - **Import from `@/styles`** when using these constants
 - **Prefer centralized styles** over repeating the same class strings across components
 - **Extend the central styles** when adding new patterns
@@ -150,7 +168,9 @@ Use `isPlatformAdmin` and `appRoles` from AuthContext for enforcement.
 **Examples:**
 
 - `<div className={cn(card.base, card.hover)}>` — uses centralized card styles
+- `<div className={card.padded}>` — card with base styles + responsive padding (standalone, no need to combine with card.base)
 - `<div className={states.empty}>` — consistent empty state styling
+- `<span className={cn(badge.base, badge.success)}>Active</span>` — badge with base + variant
 - **Class merging**: Always use `cn()` when combining conditional or overridden classes. Use `cva` for variant-based components (see `components/ui/button.tsx`).
 
 ---
@@ -201,11 +221,30 @@ Key distinction:
 ## 6. Components and UI
 
 - **Functional components**: Only function components; no class components.
-- **UI primitives**: Use and extend components in `components/ui/` (Button, Card, Input, Dialog, Select, Badge, Tabs, Textarea). They use Radix + Tailwind + `cva` + `cn`. Match their API (e.g. `variant`, `size`, `className`).
+- **UI primitives**: Use and extend components in `components/ui/`. They use Radix + Tailwind + `cva` + `cn`. Match their API (e.g. `variant`, `size`, `className`).
 - **Icons**: Use lucide-react only. Use outline icons exclusively. Do not mix outline and filled icons.
 - **Toasts**: Use **sonner** (`toast.success`, `toast.error`, `toast.warning`, etc.).
 - **Dialogs**: Use Radix-based Dialog from `components/ui/dialog.tsx` for modals (create/edit forms, confirmations).
 - **Tables**: Use a simple HTML table with Tailwind styling. No need for a table library — CRUD pages have simple data grids.
+
+### Button variants
+
+The Button component (`components/ui/button.tsx`) supports `asChild` via Radix Slot and these variants:
+
+| Variant | Usage | Classes |
+|---------|-------|---------|
+| `default` | Primary CTAs | `bg-telha text-white hover:bg-telha/90` |
+| `secondary` | Secondary actions | `bg-areia/20 text-verde hover:bg-areia/30` |
+| `outline` | Tertiary / cancel | `border border-areia bg-surface text-preto hover:bg-branco` |
+| `ghost` | Inline / table actions | `text-verde hover:bg-areia/10` |
+| `destructive` | Delete / danger | `bg-red-600 text-white hover:bg-red-700` |
+| `link` | Inline links | `text-telha underline-offset-4 hover:underline` |
+
+Sizes: `default` (h-10), `sm` (h-8), `lg` (h-12), `icon` (h-10 w-10).
+
+### Card sub-components
+
+The Card component (`components/ui/card.tsx`) exports: `Card`, `CardHeader`, `CardTitle`, `CardDescription`, `CardContent`, `CardFooter`. Use `CardTitle` and `CardDescription` inside `CardHeader` for consistent typography.
 
 ### Common CRUD page pattern
 
@@ -335,9 +374,10 @@ Do not override, reinterpret, or invent visual rules.
 
 ### 9.5 Buttons & Interactive Elements
 - **Primary (Telha)**: Only for main CTAs
-- **States**: Use opacity for hover (`hover:bg-telha/90`), scale for click (`active:scale-[0.98]`)
-- **Focus**: `focus:ring-telha`
-- **Padding**: `px-4 py-2` default
+- **States**: Use opacity for hover (`hover:bg-telha/90`), scale for click (`active:scale-[0.98]`). Never introduce new colors on hover.
+- **Focus**: Use `focus-visible:ring-telha` (not `focus:`) — keyboard-only focus rings.
+- **Padding**: `px-4 py-2` default, heights: `h-10` default, `h-8` sm, `h-12` lg.
+- **Variants**: 6 variants available — default, secondary, outline, ghost, destructive, link. See Section 6 for details.
 
 ### 9.6 Badges & States
 - **Shape**: `rounded-full` for pill-shaped badges
@@ -352,7 +392,8 @@ Do not override, reinterpret, or invent visual rules.
 - **Click**: `active:scale-[0.98]`
 
 ### 9.8 Forms
-- **Inputs**: `bg-white` (surface) with `border-areia`
+- **Inputs**: `bg-surface` (not `bg-white`) with `border-areia`. This ensures dark mode compatibility.
+- **Placeholders**: `placeholder:text-areia` (muted sand color, not verde).
 - **Focus**: `focus:ring-2 focus:ring-telha focus:border-telha`
 - **Labels**: Montserrat medium, `text-sm`, `text-preto`, `mb-2`
 
@@ -511,7 +552,11 @@ Use `gh` CLI for all GitHub operations. Never force-push or amend published comm
 - [ ] **React**: Functional components only; modularize; reuse `components/ui/` primitives.
 - [ ] **Component size**: Keep components under 300 lines; split if over 400 lines.
 - [ ] **Styling**: Tailwind only; use `cn()` and design tokens; avoid inline styles except when necessary.
-- [ ] **Centralized styles**: Use `src/styles/` for reusable patterns; avoid repeating className strings.
+- [ ] **Centralized styles**: Use `src/styles/` for reusable patterns (cards, badges, states, layout); avoid repeating className strings.
+- [ ] **`bg-surface` not `bg-white`**: Always use `bg-surface` for elevated surfaces (cards, inputs, modals, selects). Never hardcode `bg-white`.
+- [ ] **Dark mode**: Use `dark:` variants where tokens alone don't adapt. Test with `.dark` class.
+- [ ] **Focus**: Use `focus-visible:` (not `focus:`) for keyboard-only focus rings. Global focus-visible is defined in `index.css`.
+- [ ] **Placeholders**: Use `placeholder:text-areia` consistently across inputs.
 - [ ] **State**: Zustand for cross-page state (onboardingStore, etc.); Context for auth and UI; local state for component-only state.
 - [ ] **API**: Single `api.ts` client; add new methods to existing namespaces.
 - [ ] **Auth**: JWT tokens in localStorage; Axios interceptors for auth header and 401 refresh.

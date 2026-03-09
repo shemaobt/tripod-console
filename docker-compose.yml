@@ -1,0 +1,44 @@
+services:
+  gcp-secrets:
+    image: gcr.io/google.com/cloudsdktool/google-cloud-cli:alpine
+    container_name: tripod_console_gcp_secrets
+    environment:
+      SECRETS_PROJECT_ID: ${SECRETS_PROJECT_ID:-shemaobt-secrets}
+      BACKEND_TARGET: ${BACKEND_TARGET:-local}
+    volumes:
+      - gcp_secrets_env:/secrets
+      - ${HOME}/.config/gcloud:/host-gcloud:ro
+    command:
+      - sh
+      - -c
+      - |
+        if [ "$$BACKEND_TARGET" = "local" ]; then
+          printf "BACKEND_URL='http://host.docker.internal:8000'\n" > /secrets/.env
+          echo "Backend target: local (http://host.docker.internal:8000)"
+        else
+          cp -r /host-gcloud /tmp/gcloud
+          export CLOUDSDK_CONFIG=/tmp/gcloud
+          BACKEND_URL=$$(gcloud secrets versions access latest --secret=tripod_console_backend_url --project=$$SECRETS_PROJECT_ID | tr -d '\n')
+          printf "BACKEND_URL='%s'\n" "$$BACKEND_URL" > /secrets/.env
+          echo "Backend target: remote ($$BACKEND_URL)"
+        fi
+    restart: "no"
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: tripod_console
+    volumes:
+      - gcp_secrets_env:/run/secrets:ro
+    ports:
+      - "8080:8080"
+    depends_on:
+      gcp-secrets:
+        condition: service_completed_successfully
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+
+volumes:
+  gcp_secrets_env:

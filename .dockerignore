@@ -1,0 +1,33 @@
+node_modules
+dist
+.git
+.gitignore
+
+# Environment and secrets
+.env
+.env.*
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# Testing
+coverage
+
+# Build artifacts
+*.tsbuildinfo
+
+# Docker (keep nginx.conf and docker-entrypoint.sh — needed by Dockerfile)
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Documentation
+*.md
+LICENSE*
+
+# Dev container
+.devcontainer
+.claude
