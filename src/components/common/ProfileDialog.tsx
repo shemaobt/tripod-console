@@ -55,8 +55,10 @@ export function ProfileDialog({ open, onOpenChange }: ProfileDialogProps) {
       await refreshUser()
       toast.success("Profile updated")
       onOpenChange(false)
-    } catch {
-      toast.error("Failed to update profile")
+    } catch (err: unknown) {
+      const detail = (err as { response?: { data?: { detail?: string } } })
+        ?.response?.data?.detail
+      toast.error(detail || "Failed to update profile")
     } finally {
       setSaving(false)
     }
