@@ -39,10 +39,12 @@ function UserInfoCard({
   user,
   onToggleActive,
   onToggleAdmin,
+  onDelete,
 }: {
   user: UserListResponse
   onToggleActive: () => void
   onToggleAdmin: () => void
+  onDelete: () => void
 }) {
   return (
     <div className={`${card.base} p-4 sm:p-6`}>
@@ -54,12 +56,21 @@ function UserInfoCard({
             <UserIcon className="h-8 w-8 text-verde/30" />
           )}
         </div>
-        <div className="pt-2">
+        <div className="flex-1 pt-2">
           <h2 className="text-lg font-semibold text-preto">{user.email}</h2>
           <p className="text-sm text-verde">
             {user.display_name || "No display name"}
           </p>
         </div>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/30 shrink-0"
+          onClick={onDelete}
+        >
+          <Trash2 className="h-4 w-4 mr-1.5" />
+          Delete User
+        </Button>
       </div>
       <div className="flex flex-col sm:flex-row sm:flex-wrap gap-3 sm:gap-4 text-sm">
         <div className="flex items-center gap-2">
@@ -210,6 +221,7 @@ export default function UserDetailPage() {
   const [revokingRole, setRevokingRole] = useState<UserRoleResponse | null>(
     null,
   )
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
 
   async function fetchUser() {
     if (!userId) return
@@ -270,6 +282,17 @@ export default function UserDetailPage() {
       )
     } catch {
       toast.error("Failed to update user")
+    }
+  }
+
+  async function handleDeleteUser() {
+    if (!userId) return
+    try {
+      await usersAPI.delete(userId)
+      toast.success("User deleted")
+      navigate("/app/users")
+    } catch {
+      toast.error("Failed to delete user")
     }
   }
 
@@ -377,6 +400,7 @@ export default function UserDetailPage() {
         user={user}
         onToggleActive={handleToggleActive}
         onToggleAdmin={handleToggleAdmin}
+        onDelete={() => setDeleteConfirmOpen(true)}
       />
 
       <RolesTable
@@ -475,6 +499,16 @@ export default function UserDetailPage() {
         confirmLabel="Revoke"
         variant="destructive"
         onConfirm={handleRevokeRole}
+      />
+
+      <ConfirmDialog
+        open={deleteConfirmOpen}
+        onOpenChange={setDeleteConfirmOpen}
+        title="Delete User"
+        description={`Are you sure you want to permanently delete "${user.display_name || user.email}"? This will remove the user and all their roles, tokens, and access requests. This action cannot be undone.`}
+        confirmLabel="Delete User"
+        variant="destructive"
+        onConfirm={handleDeleteUser}
       />
     </div>
   )
