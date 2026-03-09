@@ -7,7 +7,6 @@ import Sidebar from "./Sidebar"
 
 export default function AppShell() {
   const { user, isLoading } = useAuth()
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
 
   if (isLoading) {
@@ -21,8 +20,6 @@ export default function AppShell() {
   return (
     <div className="min-h-screen bg-branco flex">
       <Sidebar
-        collapsed={sidebarCollapsed}
-        onToggle={() => setSidebarCollapsed((c) => !c)}
         mobileOpen={mobileOpen}
         onMobileClose={() => setMobileOpen(false)}
       />

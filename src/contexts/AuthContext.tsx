@@ -12,6 +12,7 @@ interface AuthContextValue {
   login: (email: string, password: string) => Promise<void>
   logout: () => Promise<void>
   isAppAdmin: (appKey: string) => boolean
+  refreshUser: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null)
@@ -52,9 +53,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     [navigate],
   )
 
+  const refreshUser = useCallback(async () => {
+    const { data } = await authAPI.me()
+    setUser(data)
+  }, [])
+
   const logout = useCallback(async () => {
+    const refreshToken = localStorage.getItem(REFRESH_TOKEN_KEY)
     try {
-      await authAPI.logout()
+      if (refreshToken) {
+        await authAPI.logout(refreshToken)
+      }
     } catch {
       // Ignore logout API errors — clear local state regardless
     }
@@ -103,8 +112,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   const value = useMemo<AuthContextValue>(
-    () => ({ user, isPlatformAdmin, appRoles, isLoading, login, logout, isAppAdmin }),
-    [user, isPlatformAdmin, appRoles, isLoading, login, logout, isAppAdmin],
+    () => ({ user, isPlatformAdmin, appRoles, isLoading, login, logout, isAppAdmin, refreshUser }),
+    [user, isPlatformAdmin, appRoles, isLoading, login, logout, isAppAdmin, refreshUser],
   )
 
   return (
