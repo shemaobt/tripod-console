@@ -2,6 +2,9 @@ export interface OrganizationResponse {
   id: string
   name: string
   slug: string
+  description: string | null
+  logo_url: string | null
+  manager_id: string | null
   created_at: string
   updated_at: string
 }
@@ -9,11 +12,17 @@ export interface OrganizationResponse {
 export interface OrganizationCreate {
   name: string
   slug: string
+  description?: string | null
+  logo_url?: string | null
+  manager_id?: string | null
 }
 
 export interface OrganizationUpdate {
   name?: string
   slug?: string
+  description?: string | null
+  logo_url?: string | null
+  manager_id?: string | null
 }
 
 export interface OrganizationMemberAdd {

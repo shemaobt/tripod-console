@@ -48,6 +48,7 @@ export interface UserAppResponse {
   is_active: boolean
   created_at: string
   roles: string[]
+  is_platform_admin: boolean
 }
 
 export interface AppRoleResponse {

@@ -53,3 +53,16 @@ export type {
   RoleAssignmentResponse,
   RoleCheckResponse,
 } from "./role"
+
+export type {
+  AccessRequestResponse,
+  AccessRequestReview,
+} from "./accessRequest"
+
+export type {
+  PhaseResponse,
+  PhaseCreate,
+  PhaseUpdate,
+  PhaseDependencyResponse,
+  ProjectPhaseResponse,
+} from "./phase"
