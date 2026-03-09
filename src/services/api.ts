@@ -34,6 +34,13 @@ import type {
   RoleRevokeRequest,
   RoleAssignmentResponse,
   RoleCheckResponse,
+  AccessRequestResponse,
+  AccessRequestReview,
+  PhaseResponse,
+  PhaseCreate,
+  PhaseUpdate,
+  PhaseDependencyResponse,
+  ProjectPhaseResponse,
 } from "@/types"
 
 const api = axios.create({
@@ -119,15 +126,19 @@ api.interceptors.response.use(
 export const authAPI = {
   login: (email: string, password: string) =>
     api.post<AuthResponse>("/auth/login", { email, password }),
-  logout: () => api.post("/auth/logout"),
+  logout: (refresh_token: string) =>
+    api.post("/auth/logout", { refresh_token }),
   refresh: (refresh_token: string) =>
     api.post<TokenResponse>("/auth/refresh", { refresh_token }),
   me: () => api.get<User>("/auth/me"),
+  updateMe: (data: { display_name?: string; avatar_url?: string | null }) =>
+    api.patch<User>("/auth/me", data),
   myRoles: () => api.get<MyRoleResponse[]>("/auth/my-roles"),
 }
 
 export const usersAPI = {
   list: () => api.get<UserListResponse[]>("/users"),
+  search: (q: string) => api.get<UserListResponse[]>("/users/search", { params: { q } }),
   get: (userId: string) => api.get<UserListResponse>(`/users/${userId}`),
   update: (userId: string, data: UserUpdate) =>
     api.patch<UserListResponse>(`/users/${userId}`, data),
@@ -142,6 +153,7 @@ export const appsAPI = {
   get: (appId: string) => api.get<AppResponse>(`/apps/${appId}`),
   update: (appId: string, data: AppUpdate) =>
     api.patch<AppResponse>(`/apps/${appId}`, data),
+  delete: (appId: string) => api.delete(`/apps/${appId}`),
   listRoles: (appId: string) =>
     api.get<AppRoleResponse[]>(`/apps/${appId}/roles`),
 }
@@ -207,6 +219,47 @@ export const projectsAPI = {
     api.delete(`/projects/${projectId}/access/users/${userId}`),
   revokeOrg: (projectId: string, orgId: string) =>
     api.delete(`/projects/${projectId}/access/organizations/${orgId}`),
+  listPhases: (projectId: string) =>
+    api.get<ProjectPhaseResponse[]>(`/projects/${projectId}/phases`),
+  attachPhase: (projectId: string, phaseId: string) =>
+    api.post(`/projects/${projectId}/phases`, { phase_id: phaseId }),
+  detachPhase: (projectId: string, phaseId: string) =>
+    api.delete(`/projects/${projectId}/phases/${phaseId}`),
+  updatePhaseStatus: (projectId: string, phaseId: string, status: string) =>
+    api.patch<ProjectPhaseResponse>(`/projects/${projectId}/phases/${phaseId}`, { status }),
+  listPhasesWithDeps: (projectId: string) =>
+    api.get<{ phases: ProjectPhaseResponse[]; dependencies: Record<string, string[]> }>(`/projects/${projectId}/phases-with-deps`),
+}
+
+export const phasesAPI = {
+  list: (projectId?: string) =>
+    api.get<PhaseResponse[]>("/phases", { params: projectId ? { project_id: projectId } : {} }),
+  create: (data: PhaseCreate) =>
+    api.post<PhaseResponse>("/phases", data),
+  get: (phaseId: string) =>
+    api.get<PhaseResponse>(`/phases/${phaseId}`),
+  update: (phaseId: string, data: PhaseUpdate) =>
+    api.patch<PhaseResponse>(`/phases/${phaseId}`, data),
+  delete: (phaseId: string) =>
+    api.delete(`/phases/${phaseId}`),
+  listDependencies: (phaseId: string) =>
+    api.get<PhaseDependencyResponse[]>(`/phases/${phaseId}/dependencies`),
+  addDependency: (phaseId: string, dependsOnId: string) =>
+    api.post<PhaseDependencyResponse>(`/phases/${phaseId}/dependencies`, { depends_on_id: dependsOnId }),
+  removeDependency: (phaseId: string, dependsOnId: string) =>
+    api.delete(`/phases/${phaseId}/dependencies/${dependsOnId}`),
+  listWithDependencies: () =>
+    api.get<{ phases: PhaseResponse[]; dependencies: Record<string, string[]> }>("/phases/with-dependencies"),
+}
+
+export const accessRequestsAPI = {
+  list: (params?: { app_key?: string; status?: string }) =>
+    api.get<AccessRequestResponse[]>("/access-requests", { params }),
+  review: (requestId: string, data: AccessRequestReview) =>
+    api.patch<AccessRequestResponse>(
+      `/access-requests/${requestId}/review`,
+      data,
+    ),
 }
 
 export const rolesAPI = {
@@ -218,6 +271,24 @@ export const rolesAPI = {
     api.get<RoleCheckResponse>("/roles/check", {
       params: { user_id: userId, app_key: appKey, role_key: roleKey },
     }),
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const placesAPI = {
+  autocomplete: (q: string) =>
+    api.get<any>("/places/autocomplete", { params: { q } }),
+  details: (placeId: string) =>
+    api.get<any>("/places/details", { params: { place_id: placeId } }),
+}
+
+export const uploadsAPI = {
+  image: (file: File, folder: string = "images") => {
+    const formData = new FormData()
+    formData.append("file", file)
+    return api.post<{ url: string }>(`/uploads/image?folder=${encodeURIComponent(folder)}`, formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    })
+  },
 }
 
 export default api
