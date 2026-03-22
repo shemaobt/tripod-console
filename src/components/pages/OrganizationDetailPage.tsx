@@ -382,6 +382,7 @@ function MembersTable({
 export default function OrganizationDetailPage() {
   const { orgId } = useParams<{ orgId: string }>()
   const navigate = useNavigate()
+  const { isPlatformAdmin } = useAuth()
 
   const [org, setOrg] = useState<OrganizationResponse | null>(null)
   const [orgLoading, setOrgLoading] = useState(true)
@@ -556,7 +557,6 @@ export default function OrganizationDetailPage() {
     )
   }
 
-  const { isPlatformAdmin } = useAuth()
   const memberUserIds = members.map((m) => m.user_id)
 
   return (
