@@ -12,6 +12,14 @@ import {
 } from "lucide-react"
 import { toast } from "sonner"
 import { orgsAPI, usersAPI } from "@/services/api"
+import { useAuth } from "@/contexts/AuthContext"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import type {
   OrganizationResponse,
   OrganizationMemberResponse,
@@ -259,11 +267,15 @@ function MembersTable({
   loading,
   onAddMember,
   onRemoveMember,
+  isPlatformAdmin,
+  onRoleChange,
 }: {
   members: OrganizationMemberResponse[]
   loading: boolean
   onAddMember: () => void
   onRemoveMember: (member: OrganizationMemberResponse) => void
+  isPlatformAdmin: boolean
+  onRoleChange: (member: OrganizationMemberResponse, role: string) => void
 }) {
   if (loading) {
     return <LoadingSpinner />
@@ -328,7 +340,22 @@ function MembersTable({
                     {member.display_name || "—"}
                   </td>
                   <td className="px-3 sm:px-6 py-3 sm:py-4 text-sm text-preto">
-                    {member.role}
+                    {isPlatformAdmin ? (
+                      <Select
+                        value={member.role}
+                        onValueChange={(value) => onRoleChange(member, value)}
+                      >
+                        <SelectTrigger className="w-[120px] h-8 text-xs">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="member">member</SelectItem>
+                          <SelectItem value="manager">manager</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      member.role
+                    )}
                   </td>
                   <td className="px-3 sm:px-6 py-3 sm:py-4 text-sm text-verde hidden md:table-cell">
                     {formatDate(member.joined_at)}
@@ -504,6 +531,19 @@ export default function OrganizationDetailPage() {
     }
   }
 
+  async function handleRoleChange(member: OrganizationMemberResponse, newRole: string) {
+    if (!orgId || member.role === newRole) return
+    try {
+      await orgsAPI.updateMemberRole(orgId, member.user_id, {
+        role: newRole as "member" | "manager",
+      })
+      toast.success("Role updated")
+      await fetchMembers()
+    } catch {
+      toast.error("Failed to update role")
+    }
+  }
+
   if (orgLoading) {
     return <LoadingSpinner />
   }
@@ -516,6 +556,7 @@ export default function OrganizationDetailPage() {
     )
   }
 
+  const { isPlatformAdmin } = useAuth()
   const memberUserIds = members.map((m) => m.user_id)
 
   return (
@@ -541,6 +582,8 @@ export default function OrganizationDetailPage() {
         loading={membersLoading}
         onAddMember={openAddDialog}
         onRemoveMember={setRemovingMember}
+        isPlatformAdmin={isPlatformAdmin}
+        onRoleChange={handleRoleChange}
       />
 
       {/* Add Member Dialog */}

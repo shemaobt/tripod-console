@@ -20,6 +20,7 @@ import type {
   OrganizationCreate,
   OrganizationUpdate,
   OrganizationMemberAdd,
+  OrganizationMemberRoleUpdate,
   OrganizationMemberResponse,
   ProjectResponse,
   ProjectCreate,
@@ -192,6 +193,8 @@ export const orgsAPI = {
     ),
   removeMember: (orgId: string, userId: string) =>
     api.delete(`/organizations/${orgId}/members/${userId}`),
+  updateMemberRole: (orgId: string, userId: string, data: OrganizationMemberRoleUpdate) =>
+    api.patch<OrganizationMemberResponse>(`/organizations/${orgId}/members/${userId}`, data),
 }
 
 export const projectsAPI = {

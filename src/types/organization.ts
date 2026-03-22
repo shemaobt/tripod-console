@@ -39,3 +39,7 @@ export interface OrganizationMemberResponse {
   email: string
   display_name: string | null
 }
+
+export interface OrganizationMemberRoleUpdate {
+  role: "member" | "manager"
+}

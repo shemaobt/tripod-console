@@ -33,6 +33,7 @@ export type {
   OrganizationUpdate,
   OrganizationMemberAdd,
   OrganizationMemberResponse,
+  OrganizationMemberRoleUpdate,
 } from "./organization"
 
 export type {
