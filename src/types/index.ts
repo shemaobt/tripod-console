@@ -5,6 +5,7 @@ export type {
   LoginRequest,
   TokenRefreshRequest,
   MyRoleResponse,
+  MyManagedOrgsResponse,
 } from "./auth"
 
 export type {

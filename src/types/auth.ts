@@ -31,3 +31,7 @@ export interface MyRoleResponse {
   app_key: string
   role_key: string
 }
+
+export interface MyManagedOrgsResponse {
+  managed_org_ids: string[]
+}
