@@ -114,7 +114,7 @@ function MobileNavItem({
 }
 
 export default function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
-  const { isPlatformAdmin, logout, user } = useAuth()
+  const { isPlatformAdmin, isManager, logout, user } = useAuth()
   const { resolvedTheme, setTheme } = useTheme()
   const [profileOpen, setProfileOpen] = useState(false)
 
@@ -175,11 +175,14 @@ export default function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
                 <SidebarIcon key={item.to} {...item} />
               ))}
 
-              <div className="w-6 border-t border-areia/15 my-1.5" />
-
-              {contentNavItems.map((item) => (
-                <SidebarIcon key={item.to} {...item} />
-              ))}
+              {(isPlatformAdmin || isManager) && (
+                <>
+                  <div className="w-6 border-t border-areia/15 my-1.5" />
+                  {contentNavItems.map((item) => (
+                    <SidebarIcon key={item.to} {...item} />
+                  ))}
+                </>
+              )}
 
               {isPlatformAdmin && (
                 <>
@@ -263,15 +266,18 @@ export default function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
                   />
                 ))}
 
-                <div className="my-2 border-t border-areia/15" />
-
-                {contentNavItems.map((item) => (
-                  <MobileNavItem
-                    key={item.to}
-                    {...item}
-                    onClose={onMobileClose}
-                  />
-                ))}
+                {(isPlatformAdmin || isManager) && (
+                  <>
+                    <div className="my-2 border-t border-areia/15" />
+                    {contentNavItems.map((item) => (
+                      <MobileNavItem
+                        key={item.to}
+                        {...item}
+                        onClose={onMobileClose}
+                      />
+                    ))}
+                  </>
+                )}
 
                 {isPlatformAdmin && (
                   <>
