@@ -195,7 +195,8 @@ export const orgsAPI = {
 }
 
 export const projectsAPI = {
-  list: () => api.get<ProjectResponse[]>("/projects"),
+  list: (params?: { organization_id?: string }) =>
+    api.get<ProjectResponse[]>("/projects", { params }),
   create: (data: ProjectCreate) =>
     api.post<ProjectResponse>("/projects", data),
   get: (projectId: string) =>
