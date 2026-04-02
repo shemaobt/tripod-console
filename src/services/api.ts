@@ -30,6 +30,7 @@ import type {
   ProjectGrantOrganizationAccess,
   ProjectUserAccessDetailResponse,
   ProjectOrganizationAccessDetailResponse,
+  ProjectUserAccessRoleUpdate,
   RoleAssignRequest,
   RoleRevokeRequest,
   RoleAssignmentResponse,
@@ -213,6 +214,11 @@ export const projectsAPI = {
   grantOrg: (projectId: string, data: ProjectGrantOrganizationAccess) =>
     api.post<ProjectOrganizationAccessResponse>(
       `/projects/${projectId}/access/organizations`,
+      data,
+    ),
+  updateUserRole: (projectId: string, userId: string, data: ProjectUserAccessRoleUpdate) =>
+    api.patch<ProjectUserAccessResponse>(
+      `/projects/${projectId}/access/users/${userId}`,
       data,
     ),
   revokeUser: (projectId: string, userId: string) =>
