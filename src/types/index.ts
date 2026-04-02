@@ -45,6 +45,7 @@ export type {
   ProjectGrantOrganizationAccess,
   ProjectUserAccessDetailResponse,
   ProjectOrganizationAccessDetailResponse,
+  ProjectUserAccessRoleUpdate,
 } from "./project"
 
 export type {
