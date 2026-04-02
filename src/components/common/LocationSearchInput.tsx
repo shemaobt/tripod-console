@@ -164,7 +164,9 @@ export function LocationSearchInput({
                   No locations found
                 </p>
               ) : (
-                suggestions.map((suggestion) => (
+                suggestions
+                .filter((s) => s.placePrediction)
+                .map((suggestion) => (
                   <button
                     key={suggestion.placePrediction.placeId}
                     type="button"
@@ -174,11 +176,15 @@ export function LocationSearchInput({
                     <MapPin className="h-4 w-4 text-verde/40 shrink-0" />
                     <div className="flex-1 min-w-0">
                       <p className="text-sm text-preto truncate">
-                        {suggestion.placePrediction.structuredFormat.mainText.text}
+                        {suggestion.placePrediction.structuredFormat?.mainText?.text ??
+                          suggestion.placePrediction.text?.text ??
+                          "Unknown"}
                       </p>
-                      <p className="text-xs text-verde/60 truncate">
-                        {suggestion.placePrediction.structuredFormat.secondaryText.text}
-                      </p>
+                      {suggestion.placePrediction.structuredFormat?.secondaryText?.text && (
+                        <p className="text-xs text-verde/60 truncate">
+                          {suggestion.placePrediction.structuredFormat.secondaryText.text}
+                        </p>
+                      )}
                     </div>
                   </button>
                 ))
