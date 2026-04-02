@@ -6,10 +6,11 @@ import {
   Pencil,
   Plus,
   Trash2,
+  User as UserIcon,
   Users,
 } from "lucide-react"
 import { toast } from "sonner"
-import { orgsAPI } from "@/services/api"
+import { orgsAPI, usersAPI } from "@/services/api"
 import type {
   OrganizationResponse,
   OrganizationMemberResponse,
@@ -30,6 +31,7 @@ import {
 } from "@/components/ui/dialog"
 import { LoadingSpinner } from "@/components/common/LoadingSpinner"
 import { EmptyState } from "@/components/common/EmptyState"
+import { InfoTooltip } from "@/components/common/InfoTooltip"
 import { ConfirmDialog } from "@/components/common/ConfirmDialog"
 import { ImageUpload } from "@/components/common/ImageUpload"
 import { UserSearchPicker } from "@/components/common/UserSearchPicker"
