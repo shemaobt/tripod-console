@@ -84,6 +84,9 @@ function AppInfoCard({
         <Badge variant={app.is_active ? "active" : "inactive"}>
           {app.is_active ? "Active" : "Inactive"}
         </Badge>
+        <Badge variant={app.auto_approve ? "active" : "inactive"}>
+          {app.auto_approve ? "Auto-approve: on" : "Auto-approve: off"}
+        </Badge>
       </div>
 
       <div className="flex flex-wrap gap-4 text-sm text-verde">
@@ -242,6 +245,7 @@ interface AppFormState {
   ios_url: string
   android_url: string
   is_active: boolean
+  auto_approve: boolean
 }
 
 function formFromApp(app: AppResponse): AppFormState {
@@ -254,6 +258,7 @@ function formFromApp(app: AppResponse): AppFormState {
     ios_url: app.ios_url ?? "",
     android_url: app.android_url ?? "",
     is_active: app.is_active,
+    auto_approve: app.auto_approve,
   }
 }
 
@@ -276,6 +281,7 @@ export default function AppDetailPage() {
     ios_url: "",
     android_url: "",
     is_active: true,
+    auto_approve: false,
   })
   const [saving, setSaving] = useState(false)
 
@@ -333,6 +339,7 @@ export default function AppDetailPage() {
         ios_url: form.ios_url.trim() || null,
         android_url: form.android_url.trim() || null,
         is_active: form.is_active,
+        auto_approve: form.auto_approve,
       })
       setApp(data)
       toast.success("App updated")
@@ -551,18 +558,35 @@ export default function AppDetailPage() {
             <div className="border-t border-areia/10" />
 
             {/* Status */}
-            <div className="flex items-center justify-between rounded-xl bg-surface-alt/40 px-4 py-3">
-              <div>
-                <Label htmlFor="edit-is-active" className="mb-0">Active</Label>
-                <p className="text-xs text-verde/50 mt-0.5">Users can access this app when active</p>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between rounded-xl bg-surface-alt/40 px-4 py-3">
+                <div>
+                  <Label htmlFor="edit-is-active" className="mb-0">Active</Label>
+                  <p className="text-xs text-verde/50 mt-0.5">Users can access this app when active</p>
+                </div>
+                <Switch
+                  id="edit-is-active"
+                  checked={form.is_active}
+                  onCheckedChange={(checked) =>
+                    setForm((f) => ({ ...f, is_active: checked }))
+                  }
+                />
               </div>
-              <Switch
-                id="edit-is-active"
-                checked={form.is_active}
-                onCheckedChange={(checked) =>
-                  setForm((f) => ({ ...f, is_active: checked }))
-                }
-              />
+              <div className="flex items-center justify-between rounded-xl bg-surface-alt/40 px-4 py-3">
+                <div className="pr-4">
+                  <Label htmlFor="edit-auto-approve" className="mb-0">Auto-approve access requests</Label>
+                  <p className="text-xs text-verde/50 mt-0.5">
+                    When enabled, new signups skip manual review and are granted the default role immediately. Currently pending requests are approved when you turn this on.
+                  </p>
+                </div>
+                <Switch
+                  id="edit-auto-approve"
+                  checked={form.auto_approve}
+                  onCheckedChange={(checked) =>
+                    setForm((f) => ({ ...f, auto_approve: checked }))
+                  }
+                />
+              </div>
             </div>
           </div>
           <DialogFooter className="border-t border-areia/10 pt-4 mt-2">

@@ -9,6 +9,7 @@ export interface AppResponse {
   android_url: string | null
   platform: string | null
   is_active: boolean
+  auto_approve: boolean
   created_at: string
 }
 
@@ -22,6 +23,7 @@ export interface AppCreate {
   android_url?: string | null
   platform?: string | null
   is_active?: boolean
+  auto_approve?: boolean
 }
 
 export interface AppUpdate {
@@ -33,6 +35,7 @@ export interface AppUpdate {
   android_url?: string | null
   platform?: string | null
   is_active?: boolean
+  auto_approve?: boolean
 }
 
 export interface UserAppResponse {
