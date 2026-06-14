@@ -5,6 +5,7 @@ import type {
   TokenResponse,
   User,
   MyRoleResponse,
+  MyManagedOrgsResponse,
   UserListResponse,
   UserUpdate,
   UserRoleResponse,
@@ -135,6 +136,7 @@ export const authAPI = {
   updateMe: (data: { display_name?: string; avatar_url?: string | null }) =>
     api.patch<User>("/auth/me", data),
   myRoles: () => api.get<MyRoleResponse[]>("/auth/my-roles"),
+  myManagedOrgs: () => api.get<MyManagedOrgsResponse>("/auth/my-managed-orgs"),
 }
 
 export const usersAPI = {

@@ -8,6 +8,9 @@ interface AuthContextValue {
   user: User | null
   isPlatformAdmin: boolean
   appRoles: MyRoleResponse[]
+  managedOrgIds: string[]
+  isManager: boolean
+  managedOrgId: string | null
   isLoading: boolean
   login: (email: string, password: string) => Promise<void>
   logout: () => Promise<void>
@@ -27,10 +30,16 @@ export function useAuth() {
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [appRoles, setAppRoles] = useState<MyRoleResponse[]>([])
+  const [managedOrgIds, setManagedOrgIds] = useState<string[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const navigate = useNavigate()
 
   const isPlatformAdmin = useMemo(() => user?.is_platform_admin ?? false, [user])
+  const isManager = useMemo(() => managedOrgIds.length > 0, [managedOrgIds])
+  const managedOrgId = useMemo(
+    () => (managedOrgIds.length === 1 ? managedOrgIds[0] : null),
+    [managedOrgIds],
+  )
 
   const isAppAdmin = useCallback(
     (appKey: string) =>
@@ -45,8 +54,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       localStorage.setItem(REFRESH_TOKEN_KEY, data.tokens.refresh_token)
       setUser(data.user)
 
-      const rolesRes = await authAPI.myRoles()
+      const [rolesRes, managedRes] = await Promise.all([
+        authAPI.myRoles(),
+        authAPI.myManagedOrgs(),
+      ])
       setAppRoles(rolesRes.data)
+      setManagedOrgIds(managedRes.data.managed_org_ids)
 
       navigate("/app/dashboard")
     },
@@ -71,6 +84,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     localStorage.removeItem(REFRESH_TOKEN_KEY)
     setUser(null)
     setAppRoles([])
+    setManagedOrgIds([])
     navigate("/login")
   }, [navigate])
 
@@ -85,13 +99,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     async function restoreSession() {
       try {
-        const [meRes, rolesRes] = await Promise.all([
+        const [meRes, rolesRes, managedRes] = await Promise.all([
           authAPI.me(),
           authAPI.myRoles(),
+          authAPI.myManagedOrgs(),
         ])
         if (!cancelled) {
           setUser(meRes.data)
           setAppRoles(rolesRes.data)
+          setManagedOrgIds(managedRes.data.managed_org_ids)
         }
       } catch {
         if (!cancelled) {
@@ -112,8 +128,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   const value = useMemo<AuthContextValue>(
-    () => ({ user, isPlatformAdmin, appRoles, isLoading, login, logout, isAppAdmin, refreshUser }),
-    [user, isPlatformAdmin, appRoles, isLoading, login, logout, isAppAdmin, refreshUser],
+    () => ({ user, isPlatformAdmin, appRoles, managedOrgIds, isManager, managedOrgId, isLoading, login, logout, isAppAdmin, refreshUser }),
+    [user, isPlatformAdmin, appRoles, managedOrgIds, isManager, managedOrgId, isLoading, login, logout, isAppAdmin, refreshUser],
   )
 
   return (
