@@ -6,10 +6,10 @@ import type {
   ProjectUserAccessDetailResponse,
   ProjectOrganizationAccessDetailResponse,
   OrganizationResponse,
+  UserListResponse,
 } from "@/types"
 import { card } from "@/styles"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import {
   Dialog,
@@ -31,6 +31,7 @@ import { EmptyState } from "@/components/common/EmptyState"
 import { InfoTooltip } from "@/components/common/InfoTooltip"
 import { ConfirmDialog } from "@/components/common/ConfirmDialog"
 import { FeatureSpotlight } from "@/components/common/FeatureSpotlight"
+import { UserSearchPicker } from "@/components/common/UserSearchPicker"
 
 import { formatDate } from "@/utils/format"
 
@@ -39,11 +40,13 @@ function UserAccessSection({
   loading,
   onGrant,
   onRevoke,
+  onRoleChange,
 }: {
   users: ProjectUserAccessDetailResponse[]
   loading: boolean
   onGrant: () => void
   onRevoke: (user: ProjectUserAccessDetailResponse) => void
+  onRoleChange: (userId: string, newRole: string) => void
 }) {
   if (loading) {
     return <LoadingSpinner size="sm" />
@@ -81,6 +84,9 @@ function UserAccessSection({
                 <th className="px-3 sm:px-6 py-3 sm:py-4 text-left text-verde/70 text-xs font-medium tracking-wider uppercase hidden sm:table-cell">
                   Display Name
                 </th>
+                <th className="px-3 sm:px-6 py-3 sm:py-4 text-left text-verde/70 text-xs font-medium tracking-wider uppercase">
+                  Role
+                </th>
                 <th className="px-3 sm:px-6 py-3 sm:py-4 text-left text-verde/70 text-xs font-medium tracking-wider uppercase hidden md:table-cell">
                   Granted
                 </th>
@@ -100,6 +106,20 @@ function UserAccessSection({
                   </td>
                   <td className="px-3 sm:px-6 py-3 sm:py-4 text-sm text-preto hidden sm:table-cell">
                     {user.display_name || "\u2014"}
+                  </td>
+                  <td className="px-3 sm:px-6 py-3 sm:py-4 text-sm">
+                    <Select
+                      value={user.role}
+                      onValueChange={(value) => onRoleChange(user.user_id, value)}
+                    >
+                      <SelectTrigger className="w-[120px] h-8 text-xs">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="member">Member</SelectItem>
+                        <SelectItem value="manager">Manager</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </td>
                   <td className="px-3 sm:px-6 py-3 sm:py-4 text-sm text-verde hidden md:table-cell">
                     {formatDate(user.granted_at)}
@@ -221,7 +241,8 @@ export function ProjectAccessTab({ projectId }: { projectId: string }) {
   const [orgsLoading, setOrgsLoading] = useState(true)
 
   const [grantUserOpen, setGrantUserOpen] = useState(false)
-  const [grantUserId, setGrantUserId] = useState("")
+  const [selectedUser, setSelectedUser] = useState<UserListResponse | null>(null)
+  const [grantRole, setGrantRole] = useState("member")
   const [grantingUser, setGrantingUser] = useState(false)
 
   const [grantOrgOpen, setGrantOrgOpen] = useState(false)
@@ -264,7 +285,8 @@ export function ProjectAccessTab({ projectId }: { projectId: string }) {
   }, [projectId])
 
   function openGrantUser() {
-    setGrantUserId("")
+    setSelectedUser(null)
+    setGrantRole("member")
     setGrantUserOpen(true)
   }
 
@@ -285,10 +307,13 @@ export function ProjectAccessTab({ projectId }: { projectId: string }) {
   }
 
   async function handleGrantUser() {
-    if (!grantUserId.trim()) return
+    if (!selectedUser) return
     setGrantingUser(true)
     try {
-      await projectsAPI.grantUser(projectId, { user_id: grantUserId.trim() })
+      await projectsAPI.grantUser(projectId, {
+        user_id: selectedUser.id,
+        role: grantRole,
+      })
       toast.success("User access granted")
       setGrantUserOpen(false)
       await fetchUserAccess()
@@ -323,6 +348,16 @@ export function ProjectAccessTab({ projectId }: { projectId: string }) {
       }
     } finally {
       setGrantingOrg(false)
+    }
+  }
+
+  async function handleRoleChange(userId: string, newRole: string) {
+    try {
+      await projectsAPI.updateUserRole(projectId, userId, { role: newRole })
+      toast.success("Role updated")
+      await fetchUserAccess()
+    } catch {
+      toast.error("Failed to update role")
     }
   }
 
@@ -362,6 +397,7 @@ export function ProjectAccessTab({ projectId }: { projectId: string }) {
           loading={usersLoading}
           onGrant={openGrantUser}
           onRevoke={setRevokingUser}
+          onRoleChange={handleRoleChange}
         />
 
         <OrgAccessSection
@@ -380,19 +416,29 @@ export function ProjectAccessTab({ projectId }: { projectId: string }) {
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-5 pt-1">
+              <UserSearchPicker
+                selectedUser={selectedUser}
+                onSelect={setSelectedUser}
+                excludeIds={userAccess.map((u) => u.user_id)}
+                label="User"
+                placeholder="Search users by email or name..."
+              />
               <div className="space-y-1.5">
-                <Label htmlFor="grant-user-id">
+                <Label>
                   <span className="inline-flex items-center">
-                    User ID
-                    <InfoTooltip content="The unique identifier of the user to grant access to." />
+                    Role
+                    <InfoTooltip content="The role this user will have within the project." />
                   </span>
                 </Label>
-                <Input
-                  id="grant-user-id"
-                  placeholder="Enter user ID"
-                  value={grantUserId}
-                  onChange={(e) => setGrantUserId(e.target.value)}
-                />
+                <Select value={grantRole} onValueChange={setGrantRole}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="member">Member</SelectItem>
+                    <SelectItem value="manager">Manager</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
             <DialogFooter className="border-t border-areia/10 pt-4 mt-2">
@@ -405,7 +451,7 @@ export function ProjectAccessTab({ projectId }: { projectId: string }) {
               </Button>
               <Button
                 onClick={handleGrantUser}
-                disabled={grantingUser || !grantUserId.trim()}
+                disabled={grantingUser || !selectedUser}
               >
                 {grantingUser ? "Granting..." : "Grant Access"}
               </Button>
