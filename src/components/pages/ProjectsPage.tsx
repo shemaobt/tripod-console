@@ -3,6 +3,7 @@ import { useNavigate } from "react-router"
 import { FolderOpen, Plus, Pencil, MapPin } from "lucide-react"
 import { toast } from "sonner"
 import { projectsAPI } from "@/services/api"
+import { useAuth } from "@/contexts/AuthContext"
 import type { ProjectResponse } from "@/types"
 import { useLanguagesStore } from "@/stores/languagesStore"
 import { Badge } from "@/components/ui/badge"
@@ -33,6 +34,7 @@ import { formatDate } from "@/utils/format"
 
 export default function ProjectsPage() {
   const navigate = useNavigate()
+  const { isManager, managedOrgId } = useAuth()
   const [projects, setProjects] = useState<ProjectResponse[]>([])
   const [loading, setLoading] = useState(true)
   const [dialogOpen, setDialogOpen] = useState(false)
@@ -48,7 +50,10 @@ export default function ProjectsPage() {
 
   async function fetchProjects() {
     try {
-      const { data } = await projectsAPI.list()
+      const params = isManager && managedOrgId
+        ? { organization_id: managedOrgId }
+        : undefined
+      const { data } = await projectsAPI.list(params)
       setProjects(data)
     } catch {
       toast.error("Failed to load projects")
