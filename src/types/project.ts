@@ -35,6 +35,7 @@ export interface ProjectUserAccessResponse {
   id: string
   project_id: string
   user_id: string
+  role: string
   granted_at: string
 }
 
@@ -47,6 +48,11 @@ export interface ProjectOrganizationAccessResponse {
 
 export interface ProjectGrantUserAccess {
   user_id: string
+  role?: string
+}
+
+export interface ProjectUserAccessRoleUpdate {
+  role: string
 }
 
 export interface ProjectGrantOrganizationAccess {
@@ -59,6 +65,8 @@ export interface ProjectUserAccessDetailResponse {
   user_id: string
   email: string
   display_name: string | null
+  avatar_url: string | null
+  role: string
   granted_at: string
 }
 
