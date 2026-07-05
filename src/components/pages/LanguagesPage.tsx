@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react"
-import { Languages, Plus, Pencil } from "lucide-react"
+import { Languages, Plus, Pencil, Trash2 } from "lucide-react"
 import { toast } from "sonner"
 import { languagesAPI } from "@/services/api"
 import type { LanguageResponse } from "@/types"
+import { useAuth } from "@/contexts/AuthContext"
 import { useLanguagesStore } from "@/stores/languagesStore"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -18,10 +19,12 @@ import {
 import { LoadingSpinner } from "@/components/common/LoadingSpinner"
 import { EmptyState } from "@/components/common/EmptyState"
 import { InfoTooltip } from "@/components/common/InfoTooltip"
+import { ConfirmDialog } from "@/components/common/ConfirmDialog"
 
 import { formatDate } from "@/utils/format"
 
 export default function LanguagesPage() {
+  const { isPlatformAdmin } = useAuth()
   const { languages, loading: storeLoading, lastFetched, fetch: fetchLanguages } = useLanguagesStore()
   const loading = storeLoading || (!lastFetched && languages.length === 0)
   const [dialogOpen, setDialogOpen] = useState(false)
@@ -29,6 +32,9 @@ export default function LanguagesPage() {
   const [editingLang, setEditingLang] = useState<LanguageResponse | null>(null)
   const [name, setName] = useState("")
   const [code, setCode] = useState("")
+
+  const [deleteTarget, setDeleteTarget] = useState<LanguageResponse | null>(null)
+  const [deleteStats, setDeleteStats] = useState<number | null>(null)
 
   useEffect(() => {
     fetchLanguages()
@@ -78,6 +84,37 @@ export default function LanguagesPage() {
     }
   }
 
+  async function openDeleteDialog(lang: LanguageResponse) {
+    setDeleteTarget(lang)
+    setDeleteStats(null)
+    try {
+      const { data } = await languagesAPI.stats(lang.id)
+      setDeleteStats(data.project_count)
+    } catch {
+      setDeleteStats(null)
+    }
+  }
+
+  async function handleDelete() {
+    if (!deleteTarget) return
+    try {
+      await languagesAPI.delete(deleteTarget.id)
+      toast.success("Language deactivated")
+      useLanguagesStore.getState().invalidate()
+      await fetchLanguages()
+    } catch {
+      toast.error("Failed to deactivate language")
+    } finally {
+      setDeleteTarget(null)
+    }
+  }
+
+  const deleteDescription = deleteTarget
+    ? deleteStats === null
+      ? `Checking how many projects use "${deleteTarget.name}"...`
+      : `"${deleteTarget.name}" is used in ${deleteStats} project${deleteStats !== 1 ? "s" : ""}. Deactivating it hides it from new project creation but won't affect existing projects. You can restore it later.`
+    : ""
+
   if (loading) {
     return <LoadingSpinner />
   }
@@ -115,15 +152,28 @@ export default function LanguagesPage() {
               key={lang.id}
               className="group relative rounded-2xl border border-areia/20 bg-surface p-5 shadow-sm hover:shadow-md hover:border-telha/30 transition-all duration-200 cursor-default"
             >
-              <Button
-                variant="ghost"
-                size="sm"
-                className="absolute top-2 right-2 h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                onClick={() => openEditDialog(lang)}
-                aria-label={`Edit ${lang.name}`}
-              >
-                <Pencil className="h-3.5 w-3.5" />
-              </Button>
+              <div className="absolute top-2 right-2 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 w-8 p-0"
+                  onClick={() => openEditDialog(lang)}
+                  aria-label={`Edit ${lang.name}`}
+                >
+                  <Pencil className="h-3.5 w-3.5" />
+                </Button>
+                {isPlatformAdmin && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                    onClick={() => openDeleteDialog(lang)}
+                    aria-label={`Deactivate ${lang.name}`}
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
+                )}
+              </div>
               <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-azul/15 to-azul/5 flex items-center justify-center mx-auto">
                 <span className="text-2xl font-mono font-bold text-azul">
                   {lang.code}
@@ -202,6 +252,15 @@ export default function LanguagesPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <ConfirmDialog
+        open={deleteTarget !== null}
+        onOpenChange={(open) => { if (!open) setDeleteTarget(null) }}
+        title="Deactivate Language"
+        description={deleteDescription}
+        confirmLabel="Deactivate"
+        onConfirm={handleDelete}
+      />
     </div>
   )
 }

@@ -18,6 +18,7 @@ import type {
   LanguageResponse,
   LanguageCreate,
   LanguageUpdate,
+  LanguageStatsResponse,
   OrganizationResponse,
   OrganizationCreate,
   OrganizationUpdate,
@@ -176,6 +177,10 @@ export const languagesAPI = {
     api.post<LanguageResponse>("/languages", data),
   update: (languageId: string, data: LanguageUpdate) =>
     api.put<LanguageResponse>(`/languages/${languageId}`, data),
+  delete: (languageId: string) =>
+    api.delete<void>(`/languages/${languageId}`),
+  stats: (languageId: string) =>
+    api.get<LanguageStatsResponse>(`/languages/${languageId}/stats`),
   get: (languageId: string) =>
     api.get<LanguageResponse>(`/languages/${languageId}`),
   getByCode: (code: string) =>
