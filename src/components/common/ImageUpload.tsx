@@ -1,5 +1,5 @@
 import { useRef, useState } from "react"
-import { Upload, X, Loader2 } from "lucide-react"
+import { Upload, X, Loader2, Camera } from "lucide-react"
 import { toast } from "sonner"
 import { uploadsAPI } from "@/services/api"
 import { cn } from "@/utils/cn"
@@ -86,6 +86,31 @@ export function ImageUpload({
           />
         ) : (
           placeholder || <Upload className="h-6 w-6 text-verde/30 group-hover:text-verde/50 transition-colors" />
+        )}
+        {value && !uploading && (
+          <div
+            className={cn(
+              "absolute inset-0 flex items-center justify-center gap-2 bg-preto/50 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity",
+              shape === "circle" ? "rounded-full" : "rounded-xl",
+            )}
+          >
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click() }}
+              aria-label="Change image"
+              className="flex items-center justify-center h-7 w-7 rounded-full bg-surface/90 text-preto hover:bg-surface transition-colors"
+            >
+              <Camera className="h-3.5 w-3.5" />
+            </button>
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); onChange(null) }}
+              aria-label="Remove image"
+              className="flex items-center justify-center h-7 w-7 rounded-full bg-surface/90 text-red-600 hover:bg-surface transition-colors"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          </div>
         )}
         <input
           ref={fileInputRef}
