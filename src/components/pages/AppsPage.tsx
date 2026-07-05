@@ -26,6 +26,7 @@ import { ConfirmDialog } from "@/components/common/ConfirmDialog"
 import { ImageUpload } from "@/components/common/ImageUpload"
 import { PlatformMultiSelect } from "@/components/common/PlatformMultiSelect"
 import { Switch } from "@/components/ui/switch"
+import { platformLabel } from "@/constants/platforms"
 
 interface AppFormState {
   app_key: string
@@ -232,8 +233,10 @@ export default function AppsPage() {
                 {app.description && (
                   <p className="text-xs text-verde/60 line-clamp-2 mb-3">{app.description}</p>
                 )}
-                <div className="flex items-center gap-2">
-                  <Badge variant="default">{app.platforms[0] ?? "web"}</Badge>
+                <div className="flex flex-wrap items-center gap-2">
+                  {app.platforms.map((platform) => (
+                    <Badge key={platform} variant="default">{platformLabel(platform)}</Badge>
+                  ))}
                   <Badge variant={app.is_active ? "active" : "inactive"}>
                     {app.is_active ? "Active" : "Inactive"}
                   </Badge>

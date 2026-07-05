@@ -1,10 +1,5 @@
 import { cn } from "@/utils/cn"
-
-const PLATFORM_OPTIONS = [
-  { value: "web", label: "Web" },
-  { value: "android", label: "Android" },
-  { value: "ios", label: "iOS" },
-]
+import { PLATFORM_OPTIONS } from "@/constants/platforms"
 
 interface PlatformMultiSelectProps {
   value: string[]
