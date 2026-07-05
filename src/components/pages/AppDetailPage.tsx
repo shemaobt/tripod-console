@@ -20,13 +20,6 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -38,6 +31,7 @@ import { LoadingSpinner } from "@/components/common/LoadingSpinner"
 import { EmptyState } from "@/components/common/EmptyState"
 import { InfoTooltip } from "@/components/common/InfoTooltip"
 import { ImageUpload } from "@/components/common/ImageUpload"
+import { PlatformMultiSelect } from "@/components/common/PlatformMultiSelect"
 import { ConfirmDialog } from "@/components/common/ConfirmDialog"
 import { Switch } from "@/components/ui/switch"
 
@@ -236,24 +230,10 @@ function AppRolesTable({
   )
 }
 
-function legacyToPlatforms(value: string): string[] {
-  if (value === "both") return ["web", "android", "ios"]
-  if (value === "mobile") return ["android", "ios"]
-  return ["web"]
-}
-
-function platformsToLegacy(platforms: string[]): string {
-  const hasWeb = platforms.includes("web")
-  const hasMobile = platforms.includes("android") || platforms.includes("ios")
-  if (hasWeb && hasMobile) return "both"
-  if (hasMobile) return "mobile"
-  return "web"
-}
-
 interface AppFormState {
   name: string
   description: string
-  platform: string
+  platforms: string[]
   icon_url: string
   app_url: string
   ios_url: string
@@ -266,7 +246,7 @@ function formFromApp(app: AppResponse): AppFormState {
   return {
     name: app.name,
     description: app.description ?? "",
-    platform: platformsToLegacy(app.platforms),
+    platforms: app.platforms,
     icon_url: app.icon_url ?? "",
     app_url: app.app_url ?? "",
     ios_url: app.ios_url ?? "",
@@ -289,7 +269,7 @@ export default function AppDetailPage() {
   const [form, setForm] = useState<AppFormState>({
     name: "",
     description: "",
-    platform: "web",
+    platforms: ["web"],
     icon_url: "",
     app_url: "",
     ios_url: "",
@@ -342,12 +322,16 @@ export default function AppDetailPage() {
 
   async function handleSave() {
     if (!appId || !form.name.trim()) return
+    if (form.platforms.length === 0) {
+      toast.error("Select at least one platform")
+      return
+    }
     setSaving(true)
     try {
       const { data } = await appsAPI.update(appId, {
         name: form.name.trim(),
         description: form.description.trim() || null,
-        platforms: legacyToPlatforms(form.platform),
+        platforms: form.platforms,
         icon_url: form.icon_url.trim() || null,
         app_url: form.app_url.trim() || null,
         ios_url: form.ios_url.trim() || null,
@@ -497,23 +481,15 @@ export default function AppDetailPage() {
               <div className="space-y-1.5">
                 <Label htmlFor="edit-platform">
                   <span className="inline-flex items-center">
-                    Platform
-                    <InfoTooltip content="The platform this app targets: web, mobile, or both." />
+                    Platforms
+                    <InfoTooltip content="The platforms this app targets. Select one or more (Web, Android, iOS)." />
                   </span>
                 </Label>
-                <Select
-                  value={form.platform}
-                  onValueChange={(v) => setForm((f) => ({ ...f, platform: v }))}
-                >
-                  <SelectTrigger id="edit-platform">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="web">Web</SelectItem>
-                    <SelectItem value="mobile">Mobile</SelectItem>
-                    <SelectItem value="both">Both</SelectItem>
-                  </SelectContent>
-                </Select>
+                <PlatformMultiSelect
+                  id="edit-platform"
+                  value={form.platforms}
+                  onChange={(platforms) => setForm((f) => ({ ...f, platforms }))}
+                />
               </div>
               <div className="space-y-1.5">
                 <Label>App Icon</Label>
