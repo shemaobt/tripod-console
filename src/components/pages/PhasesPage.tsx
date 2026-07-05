@@ -175,15 +175,13 @@ export default function PhasesPage() {
             />
           </div>
 
-          {/* Table + Dependency Panel side by side */}
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-            {/* Phase Table */}
-            <div className={card.padded}>
-              <h2 className="text-sm font-semibold text-verde mb-4 flex items-center gap-1">
-                All Phases
-                <InfoTooltip content="Click a phase in the graph to manage its dependencies." />
-              </h2>
-              <div className="overflow-auto">
+          {/* Phase Table — full width */}
+          <div className={card.padded}>
+            <h2 className="text-sm font-semibold text-verde mb-4 flex items-center gap-1">
+              All Phases
+              <InfoTooltip content="Click a phase (here or in the graph) to manage its dependencies." />
+            </h2>
+            <div className="overflow-auto">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-areia/20">
@@ -211,7 +209,7 @@ export default function PhasesPage() {
                             "border-t border-areia/10 hover:bg-surface-alt/50 transition-colors cursor-pointer",
                             selectedPhaseId === phase.id && "bg-surface-alt",
                           )}
-                          onClick={() => setSelectedPhaseId(selectedPhaseId === phase.id ? null : phase.id)}
+                          onClick={() => setSelectedPhaseId(phase.id)}
                         >
                           <td className="px-3 py-3 font-medium text-preto">
                             {phase.name}
@@ -247,24 +245,6 @@ export default function PhasesPage() {
                   </tbody>
                 </table>
               </div>
-            </div>
-
-            {/* Dependency Panel */}
-            <div>
-              {selectedPhase ? (
-                <DependencyPanel
-                  selectedPhase={selectedPhase}
-                  phases={phases}
-                  dependencies={allDeps.get(selectedPhaseId!) ?? []}
-                  onAddDependency={handleAddDependency}
-                  onRemoveDependency={handleRemoveDependency}
-                />
-              ) : (
-                <div className={cn(card.padded, "flex items-center justify-center text-sm text-verde/50")} style={{ minHeight: 120 }}>
-                  Select a phase to manage its dependencies
-                </div>
-              )}
-            </div>
           </div>
         </div>
       )}
@@ -319,6 +299,30 @@ export default function PhasesPage() {
                   : "Create Phase"}
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dependency Management */}
+      <Dialog
+        open={selectedPhase !== null}
+        onOpenChange={(open) => { if (!open) setSelectedPhaseId(null) }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{selectedPhase?.name}</DialogTitle>
+            <DialogDescription>
+              Manage which phases must be completed before this one can start.
+            </DialogDescription>
+          </DialogHeader>
+          {selectedPhase && (
+            <DependencyPanel
+              selectedPhase={selectedPhase}
+              phases={phases}
+              dependencies={allDeps.get(selectedPhase.id) ?? []}
+              onAddDependency={handleAddDependency}
+              onRemoveDependency={handleRemoveDependency}
+            />
+          )}
         </DialogContent>
       </Dialog>
 
