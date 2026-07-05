@@ -1,20 +1,14 @@
 import { useEffect, useState, useCallback, useMemo } from "react"
-import { Check, X, Inbox, Filter, CheckCircle2, XCircle, Clock, MessageSquare, Calendar } from "lucide-react"
+import { Check, X, Inbox, CheckCircle2, XCircle, Clock, MessageSquare, Calendar } from "lucide-react"
 import { toast } from "sonner"
 import { accessRequestsAPI } from "@/services/api"
 import type { AccessRequestResponse, UserListResponse, AppResponse } from "@/types"
 import { cn } from "@/utils/cn"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 import { LoadingSpinner } from "@/components/common/LoadingSpinner"
 import { EmptyState } from "@/components/common/EmptyState"
+import { FilterBar } from "@/components/common/FilterBar"
 import { ReviewDialog } from "@/components/pages/ReviewDialog"
 import { UserAvatar } from "@/components/pages/UsersPage/UserAvatar"
 import { formatDate, timeAgo } from "@/utils/format"
@@ -78,36 +72,34 @@ export function AccessRequestsSection({ users, apps }: AccessRequestsSectionProp
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-areia/15 bg-surface-alt/30 p-3.5">
-        <Filter className="h-4 w-4 text-verde/40" />
-        <Select value={filterApp} onValueChange={setFilterApp}>
-          <SelectTrigger className="w-full sm:w-48 bg-surface">
-            <SelectValue placeholder="All Apps" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Apps</SelectItem>
-            {apps.map((app) => (
-              <SelectItem key={app.id} value={app.app_key}>
-                {app.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Select value={filterStatus} onValueChange={setFilterStatus}>
-          <SelectTrigger className="w-full sm:w-40 bg-surface">
-            <SelectValue placeholder="All Statuses" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Statuses</SelectItem>
-            <SelectItem value="pending">Pending</SelectItem>
-            <SelectItem value="approved">Approved</SelectItem>
-            <SelectItem value="rejected">Rejected</SelectItem>
-          </SelectContent>
-        </Select>
-        <span className="text-xs text-verde/60 tabular-nums ml-auto">
-          {loading ? "..." : `${requests.length} request${requests.length !== 1 ? "s" : ""}`}
-        </span>
-      </div>
+      <FilterBar
+        filters={[
+          {
+            key: "app",
+            label: "All Apps",
+            value: filterApp,
+            onChange: setFilterApp,
+            options: [
+              { value: "all", label: "All Apps" },
+              ...apps.map((app) => ({ value: app.app_key, label: app.name })),
+            ],
+          },
+          {
+            key: "status",
+            label: "All Statuses",
+            value: filterStatus,
+            onChange: setFilterStatus,
+            className: "w-full sm:w-40",
+            options: [
+              { value: "all", label: "All Statuses" },
+              { value: "pending", label: "Pending" },
+              { value: "approved", label: "Approved" },
+              { value: "rejected", label: "Rejected" },
+            ],
+          },
+        ]}
+        resultLabel={loading ? "..." : `${requests.length} request${requests.length !== 1 ? "s" : ""}`}
+      />
 
       {loading ? (
         <LoadingSpinner />
