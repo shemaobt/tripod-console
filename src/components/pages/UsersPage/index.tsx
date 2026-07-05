@@ -1,19 +1,12 @@
 import { useEffect, useState, useMemo } from "react"
-import { Users, Inbox, Search, Filter } from "lucide-react"
+import { Users, Inbox } from "lucide-react"
 import { toast } from "sonner"
 import { usersAPI, appsAPI } from "@/services/api"
 import type { UserListResponse, UserRoleResponse, AppResponse } from "@/types"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import { Input } from "@/components/ui/input"
 import { LoadingSpinner } from "@/components/common/LoadingSpinner"
 import { EmptyState } from "@/components/common/EmptyState"
+import { FilterBar } from "@/components/common/FilterBar"
 import { InfoTooltip } from "@/components/common/InfoTooltip"
 import { AccessRequestsSection } from "@/components/pages/AccessRequestsSection"
 import { UserCard } from "./UserCard"
@@ -97,36 +90,26 @@ export default function UsersPage() {
 
         <TabsContent value="users">
           <div className="space-y-5">
-            <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-areia/15 bg-surface-alt/30 p-3.5">
-              <div className="relative flex-1 min-w-0 sm:min-w-[200px]">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-verde/30" />
-                <Input
-                  placeholder="Search by email or name..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="pl-9 bg-surface border-areia/20"
-                />
-              </div>
-              <div className="flex items-center gap-2">
-                <Filter className="h-4 w-4 text-verde/30" />
-                <Select value={filterApp} onValueChange={setFilterApp}>
-                  <SelectTrigger className="w-full sm:w-48 bg-surface">
-                    <SelectValue placeholder="All Apps" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Apps</SelectItem>
-                    {apps.map((app) => (
-                      <SelectItem key={app.id} value={app.app_key}>
-                        {app.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <span className="text-xs text-verde/50 tabular-nums ml-auto">
-                {filteredUsers.length} result{filteredUsers.length !== 1 ? "s" : ""}
-              </span>
-            </div>
+            <FilterBar
+              search={{
+                value: search,
+                onChange: setSearch,
+                placeholder: "Search by email or name...",
+              }}
+              filters={[
+                {
+                  key: "app",
+                  label: "All Apps",
+                  value: filterApp,
+                  onChange: setFilterApp,
+                  options: [
+                    { value: "all", label: "All Apps" },
+                    ...apps.map((app) => ({ value: app.app_key, label: app.name })),
+                  ],
+                },
+              ]}
+              resultLabel={`${filteredUsers.length} result${filteredUsers.length !== 1 ? "s" : ""}`}
+            />
 
             {filteredUsers.length === 0 ? (
               <EmptyState
