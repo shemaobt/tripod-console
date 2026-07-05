@@ -2,6 +2,7 @@ import { useEffect, useState } from "react"
 import { Plus, Trash2, Users, Building2 } from "lucide-react"
 import { toast } from "sonner"
 import { projectsAPI, orgsAPI } from "@/services/api"
+import { useAuth } from "@/contexts/AuthContext"
 import type {
   ProjectUserAccessDetailResponse,
   ProjectOrganizationAccessDetailResponse,
@@ -38,12 +39,14 @@ import { formatDate } from "@/utils/format"
 function UserAccessSection({
   users,
   loading,
+  isPlatformAdmin,
   onGrant,
   onRevoke,
   onRoleChange,
 }: {
   users: ProjectUserAccessDetailResponse[]
   loading: boolean
+  isPlatformAdmin: boolean
   onGrant: () => void
   onRevoke: (user: ProjectUserAccessDetailResponse) => void
   onRoleChange: (userId: string, newRole: string) => void
@@ -108,18 +111,22 @@ function UserAccessSection({
                     {user.display_name || "\u2014"}
                   </td>
                   <td className="px-3 sm:px-6 py-3 sm:py-4 text-sm">
-                    <Select
-                      value={user.role}
-                      onValueChange={(value) => onRoleChange(user.user_id, value)}
-                    >
-                      <SelectTrigger className="w-[120px] h-8 text-xs">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="member">Member</SelectItem>
-                        <SelectItem value="manager">Manager</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    {isPlatformAdmin ? (
+                      <Select
+                        value={user.role}
+                        onValueChange={(value) => onRoleChange(user.user_id, value)}
+                      >
+                        <SelectTrigger className="w-[120px] h-8 text-xs">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="member">Member</SelectItem>
+                          <SelectItem value="manager">Manager</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      <span className="text-preto capitalize">{user.role}</span>
+                    )}
                   </td>
                   <td className="px-3 sm:px-6 py-3 sm:py-4 text-sm text-verde hidden md:table-cell">
                     {formatDate(user.granted_at)}
@@ -231,6 +238,7 @@ function OrgAccessSection({
 }
 
 export function ProjectAccessTab({ projectId }: { projectId: string }) {
+  const { isPlatformAdmin } = useAuth()
   const [userAccess, setUserAccess] = useState<
     ProjectUserAccessDetailResponse[]
   >([])
@@ -395,6 +403,7 @@ export function ProjectAccessTab({ projectId }: { projectId: string }) {
         <UserAccessSection
           users={userAccess}
           loading={usersLoading}
+          isPlatformAdmin={isPlatformAdmin}
           onGrant={openGrantUser}
           onRevoke={setRevokingUser}
           onRoleChange={handleRoleChange}

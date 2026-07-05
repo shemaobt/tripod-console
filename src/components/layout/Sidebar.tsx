@@ -3,7 +3,6 @@ import { NavLink, useLocation } from "react-router-dom"
 import {
   LayoutGrid,
   Languages,
-  Building2,
   FolderOpen,
   GitBranch,
   Globe,
@@ -35,7 +34,6 @@ const mainNavItems = [
 
 const contentNavItems = [
   { to: "/app/languages", label: "Languages", icon: Languages },
-  { to: "/app/organizations", label: "Organizations", icon: Building2 },
   { to: "/app/projects", label: "Projects", icon: FolderOpen },
   { to: "/app/phases", label: "Phases", icon: GitBranch },
   { to: "/app/map", label: "Map", icon: Globe },

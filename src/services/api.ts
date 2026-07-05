@@ -6,6 +6,7 @@ import type {
   User,
   MyRoleResponse,
   MyManagedOrgsResponse,
+  MyManagedProjectsResponse,
   UserListResponse,
   UserUpdate,
   UserRoleResponse,
@@ -137,6 +138,8 @@ export const authAPI = {
     api.patch<User>("/auth/me", data),
   myRoles: () => api.get<MyRoleResponse[]>("/auth/my-roles"),
   myManagedOrgs: () => api.get<MyManagedOrgsResponse>("/auth/my-managed-orgs"),
+  myManagedProjects: () =>
+    api.get<MyManagedProjectsResponse>("/auth/my-managed-projects"),
 }
 
 export const usersAPI = {
