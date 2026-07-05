@@ -1,4 +1,4 @@
-import { LayoutGrid, ExternalLink, Smartphone, ArrowUpRight, Shield, CircleSlash } from "lucide-react"
+import { LayoutGrid, Globe, Apple, Smartphone, ArrowUpRight, Shield, CircleSlash } from "lucide-react"
 import type { UserAppResponse } from "@/types"
 import { cn } from "@/utils/cn"
 import { Badge } from "@/components/ui/badge"
@@ -83,7 +83,7 @@ export function AppCard({ app }: { app: UserAppResponse }) {
               rel="noopener noreferrer"
               className={cn(buttonVariants({ size: "sm" }), "gap-1.5")}
             >
-              <ExternalLink className="h-3.5 w-3.5" />
+              <Globe className="h-3.5 w-3.5" />
               Launch
             </a>
           )}
@@ -94,7 +94,7 @@ export function AppCard({ app }: { app: UserAppResponse }) {
               rel="noopener noreferrer"
               className={cn(buttonVariants({ variant: "outline", size: "sm" }), "gap-1.5")}
             >
-              <Smartphone className="h-3.5 w-3.5" />
+              <Apple className="h-3.5 w-3.5" />
               iOS
             </a>
           )}
