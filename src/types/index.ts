@@ -25,6 +25,7 @@ export type {
 export type {
   LanguageResponse,
   LanguageCreate,
+  LanguageUpdate,
 } from "./language"
 
 export type {
