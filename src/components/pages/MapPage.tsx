@@ -131,8 +131,13 @@ function ProjectPopupContent({
       {/* Phases */}
       {phases.length > 0 && (
         <div style={{ marginBottom: 10 }}>
-          <div style={{ fontSize: 10, color: `${VERDE}99`, textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 500, marginBottom: 6 }}>
-            Phases
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
+            <div style={{ fontSize: 10, color: `${VERDE}99`, textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 500 }}>
+              Phases
+            </div>
+            <div style={{ fontSize: 10, color: "#777D45", fontWeight: 600 }}>
+              {phases.filter((p) => p.status === "completed").length}/{phases.length} completed
+            </div>
           </div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
             {phases.map((p) => {
