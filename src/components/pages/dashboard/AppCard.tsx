@@ -3,21 +3,7 @@ import type { UserAppResponse } from "@/types"
 import { cn } from "@/utils/cn"
 import { Badge } from "@/components/ui/badge"
 import { buttonVariants } from "@/components/ui/button"
-
-function platformLabel(platform: string | null): string {
-  switch (platform) {
-    case "ios":
-      return "iOS"
-    case "android":
-      return "Android"
-    case "mobile":
-      return "Mobile"
-    case "both":
-      return "Web + Mobile"
-    default:
-      return "Web"
-  }
-}
+import { platformLabel } from "@/constants/platforms"
 
 export function AppCard({ app }: { app: UserAppResponse }) {
   const hasLinks = app.app_url || app.ios_url || app.android_url
@@ -84,7 +70,9 @@ export function AppCard({ app }: { app: UserAppResponse }) {
           {!app.is_platform_admin && app.roles.length === 0 && (
             <Badge variant="inactive">No role</Badge>
           )}
-          <Badge variant="success">{platformLabel(app.platforms[0] ?? null)}</Badge>
+          {app.platforms.map((platform) => (
+            <Badge key={platform} variant="success">{platformLabel(platform)}</Badge>
+          ))}
         </div>
 
         <div className="flex flex-wrap items-center gap-2 mt-auto pt-3 border-t border-areia/10">
