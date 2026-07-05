@@ -185,6 +185,20 @@ function ProjectPopupContent({
           </div>
         )}
         <div>
+          <div style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 10, color: `${VERDE}99`, textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 500 }}>
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke={VERDE} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+              <circle cx="9" cy="7" r="4" />
+              <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+              <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+            </svg>
+            Team
+          </div>
+          <div style={{ fontSize: 12, color: "#0A0703", fontWeight: 500, marginTop: 1 }}>
+            {project.team_size} {project.team_size === 1 ? "member" : "members"}
+          </div>
+        </div>
+        <div>
           <div style={{ fontSize: 10, color: `${VERDE}99`, textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 500 }}>
             Coordinates
           </div>
