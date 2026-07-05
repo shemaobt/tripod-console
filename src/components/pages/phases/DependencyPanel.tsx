@@ -31,6 +31,14 @@ export function DependencyPanel({
 
   return (
     <div>
+      {selectedPhase.description ? (
+        <p className="text-sm text-verde/70 leading-relaxed mb-4">
+          {selectedPhase.description}
+        </p>
+      ) : (
+        <p className="text-sm text-verde/40 italic mb-4">No description</p>
+      )}
+
       <h4 className="text-xs font-semibold text-verde/70 uppercase tracking-wide mb-2">
         Dependencies
       </h4>
