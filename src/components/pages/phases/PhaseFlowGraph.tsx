@@ -351,6 +351,7 @@ export function PhaseFlowGraph({
                   onClick={(e) => handleNodeClick(phase.id, e)}
                   style={{ transition: "opacity 0.2s" }}
                 >
+                  <title>{phase.description || "No description"}</title>
                   <rect
                     x={pos.x}
                     y={pos.y}
