@@ -80,7 +80,7 @@ function AppInfoCard({
       )}
 
       <div className="flex flex-wrap gap-3 mb-4">
-        <Badge variant="default">{app.platform ?? "web"}</Badge>
+        <Badge variant="default">{app.platforms[0] ?? "web"}</Badge>
         <Badge variant={app.is_active ? "active" : "inactive"}>
           {app.is_active ? "Active" : "Inactive"}
         </Badge>
@@ -236,6 +236,20 @@ function AppRolesTable({
   )
 }
 
+function legacyToPlatforms(value: string): string[] {
+  if (value === "both") return ["web", "android", "ios"]
+  if (value === "mobile") return ["android", "ios"]
+  return ["web"]
+}
+
+function platformsToLegacy(platforms: string[]): string {
+  const hasWeb = platforms.includes("web")
+  const hasMobile = platforms.includes("android") || platforms.includes("ios")
+  if (hasWeb && hasMobile) return "both"
+  if (hasMobile) return "mobile"
+  return "web"
+}
+
 interface AppFormState {
   name: string
   description: string
@@ -252,7 +266,7 @@ function formFromApp(app: AppResponse): AppFormState {
   return {
     name: app.name,
     description: app.description ?? "",
-    platform: app.platform ?? "web",
+    platform: platformsToLegacy(app.platforms),
     icon_url: app.icon_url ?? "",
     app_url: app.app_url ?? "",
     ios_url: app.ios_url ?? "",
@@ -333,7 +347,7 @@ export default function AppDetailPage() {
       const { data } = await appsAPI.update(appId, {
         name: form.name.trim(),
         description: form.description.trim() || null,
-        platform: form.platform,
+        platforms: legacyToPlatforms(form.platform),
         icon_url: form.icon_url.trim() || null,
         app_url: form.app_url.trim() || null,
         ios_url: form.ios_url.trim() || null,
