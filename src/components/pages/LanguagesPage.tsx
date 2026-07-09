@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react"
 import { Languages, Plus, Pencil, Trash2 } from "lucide-react"
 import { toast } from "sonner"
-import { languagesAPI } from "@/services/api"
-import type { LanguageResponse } from "@/types"
-import { useAuth } from "@/contexts/AuthContext"
+import { languagesAPI, changeRequestsAPI } from "@/services/api"
+import type { LanguageResponse, LanguageStatsResponse } from "@/types"
 import { useLanguagesStore } from "@/stores/languagesStore"
+import { useAuth } from "@/contexts/AuthContext"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -19,27 +19,32 @@ import {
 import { LoadingSpinner } from "@/components/common/LoadingSpinner"
 import { EmptyState } from "@/components/common/EmptyState"
 import { InfoTooltip } from "@/components/common/InfoTooltip"
-import { ConfirmDialog } from "@/components/common/ConfirmDialog"
+import { ChangeRequestsSection } from "@/components/pages/ChangeRequestsSection"
 
 import { formatDate } from "@/utils/format"
 
 export default function LanguagesPage() {
-  const { isPlatformAdmin } = useAuth()
+  const { user, isPlatformAdmin, isManager } = useAuth()
+  const canRequestEdit = isManager && !isPlatformAdmin
   const { languages, loading: storeLoading, lastFetched, fetch: fetchLanguages } = useLanguagesStore()
   const loading = storeLoading || (!lastFetched && languages.length === 0)
   const [dialogOpen, setDialogOpen] = useState(false)
-  const [creating, setCreating] = useState(false)
+  const [saving, setSaving] = useState(false)
   const [editingLang, setEditingLang] = useState<LanguageResponse | null>(null)
   const [name, setName] = useState("")
   const [code, setCode] = useState("")
-
   const [deleteTarget, setDeleteTarget] = useState<LanguageResponse | null>(null)
-  const [deleteStats, setDeleteStats] = useState<number | null>(null)
+  const [deleteStats, setDeleteStats] = useState<LanguageStatsResponse | null>(null)
+  const [deleting, setDeleting] = useState(false)
 
   useEffect(() => {
     fetchLanguages()
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  function canDeactivate(lang: LanguageResponse) {
+    return isPlatformAdmin || (isManager && lang.created_by === user?.id)
+  }
 
   function openCreateDialog() {
     setEditingLang(null)
@@ -57,30 +62,51 @@ export default function LanguagesPage() {
 
   async function handleSave() {
     if (!name.trim() || code.trim().length !== 3) return
-    setCreating(true)
+    setSaving(true)
     try {
       if (editingLang) {
-        await languagesAPI.update(editingLang.id, {
+        if (isPlatformAdmin) {
+          await languagesAPI.update(editingLang.id, {
+            name: name.trim(),
+            code: code.trim().toLowerCase(),
+          })
+          toast.success("Language updated")
+          useLanguagesStore.getState().invalidate()
+          await fetchLanguages()
+        } else {
+          await changeRequestsAPI.create({
+            kind: "edit_language",
+            language_id: editingLang.id,
+            name: name.trim(),
+            code: code.trim().toLowerCase(),
+          })
+          toast.success("Edit request submitted for a platform admin to review")
+        }
+      } else if (isPlatformAdmin) {
+        await languagesAPI.create({ name: name.trim(), code: code.trim().toLowerCase() })
+        toast.success("Language created")
+        useLanguagesStore.getState().invalidate()
+        await fetchLanguages()
+      } else {
+        await changeRequestsAPI.create({
+          kind: "create_language",
           name: name.trim(),
           code: code.trim().toLowerCase(),
         })
-        toast.success("Language updated")
-      } else {
-        await languagesAPI.create({ name: name.trim(), code: code.trim().toLowerCase() })
-        toast.success("Language created")
+        toast.success("Request submitted for a platform admin to review")
       }
       setDialogOpen(false)
-      useLanguagesStore.getState().invalidate()
-      await fetchLanguages()
     } catch (err: unknown) {
       const status = (err as { response?: { status?: number } })?.response?.status
       if (status === 409) {
         toast.error("A language with this code already exists")
+      } else if (status === 403) {
+        toast.error("You can only request edits for languages used by your projects")
       } else {
-        toast.error(editingLang ? "Failed to update language" : "Failed to create language")
+        toast.error("Something went wrong. Please try again.")
       }
     } finally {
-      setCreating(false)
+      setSaving(false)
     }
   }
 
@@ -89,31 +115,36 @@ export default function LanguagesPage() {
     setDeleteStats(null)
     try {
       const { data } = await languagesAPI.stats(lang.id)
-      setDeleteStats(data.project_count)
+      setDeleteStats(data)
     } catch {
       setDeleteStats(null)
     }
   }
 
-  async function handleDelete() {
-    if (!deleteTarget) return
+  const blockedByProjects = (deleteStats?.project_count ?? 0) > 0
+
+  async function handleDeactivate() {
+    if (!deleteTarget || deleteStats === null || blockedByProjects) return
+    setDeleting(true)
     try {
       await languagesAPI.delete(deleteTarget.id)
       toast.success("Language deactivated")
+      setDeleteTarget(null)
       useLanguagesStore.getState().invalidate()
       await fetchLanguages()
-    } catch {
-      toast.error("Failed to deactivate language")
+    } catch (err: unknown) {
+      const status = (err as { response?: { status?: number } })?.response?.status
+      if (status === 409) {
+        toast.error("This language is used by projects and cannot be deactivated")
+      } else if (status === 403) {
+        toast.error("You can only deactivate languages you created")
+      } else {
+        toast.error("Failed to deactivate language")
+      }
     } finally {
-      setDeleteTarget(null)
+      setDeleting(false)
     }
   }
-
-  const deleteDescription = deleteTarget
-    ? deleteStats === null
-      ? `Checking how many projects use "${deleteTarget.name}"...`
-      : `"${deleteTarget.name}" is used in ${deleteStats} project${deleteStats !== 1 ? "s" : ""}. Deactivating it hides it from new project creation but won't affect existing projects. You can restore it later.`
-    : ""
 
   if (loading) {
     return <LoadingSpinner />
@@ -137,6 +168,14 @@ export default function LanguagesPage() {
         </Button>
       </div>
 
+      {isPlatformAdmin && (
+        <ChangeRequestsSection
+          kinds={["create_language", "edit_language"]}
+          title="Language requests"
+          description="Managers' requests to create or edit a language. Accept to apply the change or reject."
+        />
+      )}
+
       {languages.length === 0 ? (
         <EmptyState
           icon={Languages}
@@ -153,20 +192,22 @@ export default function LanguagesPage() {
               className="group relative rounded-2xl border border-areia/20 bg-surface p-5 shadow-sm hover:shadow-md hover:border-telha/30 transition-all duration-200 cursor-default"
             >
               <div className="absolute top-2 right-2 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-8 w-8 p-0"
-                  onClick={() => openEditDialog(lang)}
-                  aria-label={`Edit ${lang.name}`}
-                >
-                  <Pencil className="h-3.5 w-3.5" />
-                </Button>
-                {isPlatformAdmin && (
+                {(isPlatformAdmin || canRequestEdit) && (
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                    className="h-8 w-8 p-0"
+                    onClick={() => openEditDialog(lang)}
+                    aria-label={`Edit ${lang.name}`}
+                  >
+                    <Pencil className="h-3.5 w-3.5" />
+                  </Button>
+                )}
+                {canDeactivate(lang) && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/30"
                     onClick={() => openDeleteDialog(lang)}
                     aria-label={`Deactivate ${lang.name}`}
                   >
@@ -193,11 +234,21 @@ export default function LanguagesPage() {
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{editingLang ? "Edit Language" : "Create Language"}</DialogTitle>
-            <DialogDescription>
+            <DialogTitle>
               {editingLang
-                ? "Update the language name or code."
-                : "Add a new target language for your translation projects."}
+                ? isPlatformAdmin
+                  ? "Edit Language"
+                  : "Request Language Edit"
+                : isPlatformAdmin
+                  ? "Create Language"
+                  : "Request New Language"}
+            </DialogTitle>
+            <DialogDescription>
+              {isPlatformAdmin
+                ? editingLang
+                  ? "Update the language name or code."
+                  : "Add a new target language for your translation projects."
+                : "Your request will be sent to a platform admin to review before it is applied."}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-5 pt-1">
@@ -233,34 +284,71 @@ export default function LanguagesPage() {
             <Button
               variant="outline"
               onClick={() => setDialogOpen(false)}
-              disabled={creating}
+              disabled={saving}
             >
               Cancel
             </Button>
             <Button
               onClick={handleSave}
-              disabled={creating || !name.trim() || code.trim().length !== 3}
+              disabled={saving || !name.trim() || code.trim().length !== 3}
             >
-              {creating
-                ? editingLang
-                  ? "Saving..."
-                  : "Creating..."
-                : editingLang
-                  ? "Save Changes"
-                  : "Create"}
+              {saving
+                ? !isPlatformAdmin
+                  ? "Submitting..."
+                  : editingLang
+                    ? "Saving..."
+                    : "Creating..."
+                : !isPlatformAdmin
+                  ? "Submit Request"
+                  : editingLang
+                    ? "Save Changes"
+                    : "Create"}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      <ConfirmDialog
-        open={deleteTarget !== null}
-        onOpenChange={(open) => { if (!open) setDeleteTarget(null) }}
-        title="Deactivate Language"
-        description={deleteDescription}
-        confirmLabel="Deactivate"
-        onConfirm={handleDelete}
-      />
+      <Dialog open={deleteTarget !== null} onOpenChange={(open) => { if (!open) setDeleteTarget(null) }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Deactivate Language</DialogTitle>
+            <DialogDescription>
+              {deleteTarget
+                ? deleteStats === null
+                  ? `Checking which projects use "${deleteTarget.name}"...`
+                  : blockedByProjects
+                    ? `"${deleteTarget.name}" is used by ${deleteStats.project_count} project${deleteStats.project_count !== 1 ? "s" : ""} and cannot be deactivated. Reassign or remove it from these projects first.`
+                    : `Deactivating "${deleteTarget.name}" hides it from new project creation. Existing projects are unaffected and it can be restored later.`
+                : ""}
+            </DialogDescription>
+          </DialogHeader>
+          {blockedByProjects && deleteStats && (
+            <ul className="mt-1 max-h-40 overflow-y-auto rounded-lg border border-areia/30 bg-surface-alt/50 divide-y divide-areia/20">
+              {deleteStats.projects.map((project) => (
+                <li key={project.id} className="px-3 py-2 text-sm text-preto">
+                  {project.name}
+                </li>
+              ))}
+            </ul>
+          )}
+          <DialogFooter className="border-t border-areia/10 pt-4 mt-2">
+            <Button
+              variant="outline"
+              onClick={() => setDeleteTarget(null)}
+              disabled={deleting}
+            >
+              {blockedByProjects ? "Close" : "Cancel"}
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDeactivate}
+              disabled={deleteStats === null || blockedByProjects || deleting}
+            >
+              {deleting ? "Deactivating..." : "Deactivate"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

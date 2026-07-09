@@ -2,7 +2,6 @@ import { useEffect, useState } from "react"
 import { Plus, Trash2, Users, Building2 } from "lucide-react"
 import { toast } from "sonner"
 import { projectsAPI, orgsAPI } from "@/services/api"
-import { useAuth } from "@/contexts/AuthContext"
 import type {
   ProjectUserAccessDetailResponse,
   ProjectOrganizationAccessDetailResponse,
@@ -33,6 +32,7 @@ import { InfoTooltip } from "@/components/common/InfoTooltip"
 import { ConfirmDialog } from "@/components/common/ConfirmDialog"
 import { FeatureSpotlight } from "@/components/common/FeatureSpotlight"
 import { UserSearchPicker } from "@/components/common/UserSearchPicker"
+import { useAuth } from "@/contexts/AuthContext"
 
 import { formatDate } from "@/utils/format"
 
@@ -40,6 +40,7 @@ function UserAccessSection({
   users,
   loading,
   isPlatformAdmin,
+  isProjectManager,
   onGrant,
   onRevoke,
   onRoleChange,
@@ -47,6 +48,7 @@ function UserAccessSection({
   users: ProjectUserAccessDetailResponse[]
   loading: boolean
   isPlatformAdmin: boolean
+  isProjectManager: boolean
   onGrant: () => void
   onRevoke: (user: ProjectUserAccessDetailResponse) => void
   onRoleChange: (userId: string, newRole: string) => void
@@ -55,6 +57,10 @@ function UserAccessSection({
     return <LoadingSpinner size="sm" />
   }
 
+  const canGrant = isPlatformAdmin || isProjectManager
+  const canManageUser = (role: string) =>
+    isPlatformAdmin || (isProjectManager && role === "member")
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -62,10 +68,12 @@ function UserAccessSection({
           Users with Access
           <InfoTooltip content="Individual users who have been granted direct access to this project." />
         </h3>
-        <Button size="sm" onClick={onGrant}>
-          <Plus className="h-4 w-4" />
-          Grant User
-        </Button>
+        {canGrant && (
+          <Button size="sm" onClick={onGrant}>
+            <Plus className="h-4 w-4" />
+            Grant User
+          </Button>
+        )}
       </div>
 
       {users.length === 0 ? (
@@ -73,8 +81,8 @@ function UserAccessSection({
           icon={Users}
           title="No users with direct access"
           description="Grant individual users access to this project. Users can also gain access through their organization membership."
-          actionLabel="Grant User Access"
-          onAction={onGrant}
+          actionLabel={canGrant ? "Grant User Access" : undefined}
+          onAction={canGrant ? onGrant : undefined}
         />
       ) : (
         <div className={`${card.base} overflow-hidden`}>
@@ -111,7 +119,7 @@ function UserAccessSection({
                     {user.display_name || "\u2014"}
                   </td>
                   <td className="px-3 sm:px-6 py-3 sm:py-4 text-sm">
-                    {isPlatformAdmin ? (
+                    {canManageUser(user.role) ? (
                       <Select
                         value={user.role}
                         onValueChange={(value) => onRoleChange(user.user_id, value)}
@@ -132,13 +140,15 @@ function UserAccessSection({
                     {formatDate(user.granted_at)}
                   </td>
                   <td className="px-3 sm:px-6 py-3 sm:py-4 text-right">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => onRevoke(user)}
-                    >
-                      <Trash2 className="h-4 w-4 text-red-600 dark:text-red-400" />
-                    </Button>
+                    {canManageUser(user.role) && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => onRevoke(user)}
+                      >
+                        <Trash2 className="h-4 w-4 text-red-600 dark:text-red-400" />
+                      </Button>
+                    )}
                   </td>
                 </tr>
               ))}
@@ -238,7 +248,7 @@ function OrgAccessSection({
 }
 
 export function ProjectAccessTab({ projectId }: { projectId: string }) {
-  const { isPlatformAdmin } = useAuth()
+  const { user, isPlatformAdmin } = useAuth()
   const [userAccess, setUserAccess] = useState<
     ProjectUserAccessDetailResponse[]
   >([])
@@ -393,6 +403,10 @@ export function ProjectAccessTab({ projectId }: { projectId: string }) {
     }
   }
 
+  const isProjectManager = userAccess.some(
+    (u) => u.user_id === user?.id && u.role === "manager",
+  )
+
   return (
     <FeatureSpotlight
       featureKey="project-access-first-visit"
@@ -404,6 +418,7 @@ export function ProjectAccessTab({ projectId }: { projectId: string }) {
           users={userAccess}
           loading={usersLoading}
           isPlatformAdmin={isPlatformAdmin}
+          isProjectManager={isProjectManager}
           onGrant={openGrantUser}
           onRevoke={setRevokingUser}
           onRoleChange={handleRoleChange}

@@ -27,6 +27,7 @@ export type {
   LanguageResponse,
   LanguageCreate,
   LanguageUpdate,
+  LanguageProjectRef,
   LanguageStatsResponse,
 } from "./language"
 
@@ -63,6 +64,13 @@ export type {
   AccessRequestResponse,
   AccessRequestReview,
 } from "./accessRequest"
+
+export type {
+  ChangeRequestKind,
+  ChangeRequestResponse,
+  ChangeRequestCreate,
+  ChangeRequestReview,
+} from "./changeRequest"
 
 export type {
   PhaseResponse,

@@ -41,6 +41,9 @@ import type {
   RoleCheckResponse,
   AccessRequestResponse,
   AccessRequestReview,
+  ChangeRequestResponse,
+  ChangeRequestCreate,
+  ChangeRequestReview,
   PhaseResponse,
   PhaseCreate,
   PhaseUpdate,
@@ -283,6 +286,19 @@ export const accessRequestsAPI = {
   review: (requestId: string, data: AccessRequestReview) =>
     api.patch<AccessRequestResponse>(
       `/access-requests/${requestId}/review`,
+      data,
+    ),
+}
+
+export const changeRequestsAPI = {
+  list: (params?: { kind?: string; status?: string }) =>
+    api.get<ChangeRequestResponse[]>("/change-requests", { params }),
+  mine: () => api.get<ChangeRequestResponse[]>("/change-requests/mine"),
+  create: (data: ChangeRequestCreate) =>
+    api.post<ChangeRequestResponse>("/change-requests", data),
+  review: (requestId: string, data: ChangeRequestReview) =>
+    api.patch<ChangeRequestResponse>(
+      `/change-requests/${requestId}/review`,
       data,
     ),
 }

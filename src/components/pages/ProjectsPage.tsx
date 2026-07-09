@@ -2,10 +2,11 @@ import { useEffect, useState } from "react"
 import { useNavigate } from "react-router"
 import { FolderOpen, Plus, Pencil, MapPin } from "lucide-react"
 import { toast } from "sonner"
-import { projectsAPI, languagesAPI } from "@/services/api"
+import { projectsAPI, changeRequestsAPI } from "@/services/api"
 import { useAuth } from "@/contexts/AuthContext"
 import type { ProjectResponse } from "@/types"
 import { useLanguagesStore } from "@/stores/languagesStore"
+import { ChangeRequestsSection } from "@/components/pages/ChangeRequestsSection"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -34,7 +35,7 @@ import { formatDate } from "@/utils/format"
 
 export default function ProjectsPage() {
   const navigate = useNavigate()
-  const { isManager, managedOrgId } = useAuth()
+  const { isPlatformAdmin, isManager, managedOrgId } = useAuth()
   const [projects, setProjects] = useState<ProjectResponse[]>([])
   const [loading, setLoading] = useState(true)
   const [dialogOpen, setDialogOpen] = useState(false)
@@ -46,12 +47,7 @@ export default function ProjectsPage() {
   const [description, setDescription] = useState("")
   const [languageId, setLanguageId] = useState("")
 
-  const [langDialogOpen, setLangDialogOpen] = useState(false)
-  const [newLangName, setNewLangName] = useState("")
-  const [newLangCode, setNewLangCode] = useState("")
-  const [creatingLang, setCreatingLang] = useState(false)
-
-  const { languages, loading: languagesLoading, fetch: fetchLanguages, invalidate: invalidateLanguages, getLanguageName } = useLanguagesStore()
+  const { languages, loading: languagesLoading, fetch: fetchLanguages, getLanguageName } = useLanguagesStore()
 
   async function fetchProjects() {
     try {
@@ -101,13 +97,21 @@ export default function ProjectsPage() {
           language_id: languageId,
         })
         toast.success("Project updated")
-      } else {
+      } else if (isPlatformAdmin) {
         await projectsAPI.create({
           name: name.trim(),
           description: description.trim() || undefined,
           language_id: languageId,
         })
         toast.success("Project created")
+      } else {
+        await changeRequestsAPI.create({
+          kind: "create_project",
+          name: name.trim(),
+          description: description.trim() || undefined,
+          language_id: languageId,
+        })
+        toast.success("Request submitted for a platform admin to review")
       }
       setDialogOpen(false)
       await fetchProjects()
@@ -125,38 +129,6 @@ export default function ProjectsPage() {
       }
     } finally {
       setSaving(false)
-    }
-  }
-
-  function openLanguageDialog() {
-    setNewLangName("")
-    setNewLangCode("")
-    setLangDialogOpen(true)
-  }
-
-  async function handleCreateLanguage() {
-    if (!newLangName.trim() || !newLangCode.trim()) return
-    setCreatingLang(true)
-    try {
-      const { data } = await languagesAPI.create({
-        name: newLangName.trim(),
-        code: newLangCode.trim(),
-      })
-      invalidateLanguages()
-      await fetchLanguages()
-      setLanguageId(data.id)
-      setLangDialogOpen(false)
-      toast.success("Language created")
-    } catch (err: unknown) {
-      const status = (err as { response?: { status?: number } })?.response
-        ?.status
-      if (status === 409) {
-        toast.error("A language with this code already exists")
-      } else {
-        toast.error("Failed to create language")
-      }
-    } finally {
-      setCreatingLang(false)
     }
   }
 
@@ -181,6 +153,14 @@ export default function ProjectsPage() {
           New Project
         </Button>
       </div>
+
+      {isPlatformAdmin && (
+        <ChangeRequestsSection
+          kinds={["create_project"]}
+          title="Project requests"
+          description="Managers' requests to create a project. Accept to create it (optionally granting the requester manager access) or reject."
+        />
+      )}
 
       {projects.length === 0 ? (
         <EmptyState
@@ -242,12 +222,18 @@ export default function ProjectsPage() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {editingProject ? "Edit Project" : "Create Project"}
+              {editingProject
+                ? "Edit Project"
+                : isPlatformAdmin
+                  ? "Create Project"
+                  : "Request New Project"}
             </DialogTitle>
             <DialogDescription>
               {editingProject
                 ? "Update this project's details."
-                : "Projects represent translation or documentation efforts tied to a language."}
+                : isPlatformAdmin
+                  ? "Projects represent translation or documentation efforts tied to a language."
+                  : "Your request will be sent to a platform admin to review before the project is created."}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-5 pt-1">
@@ -271,19 +257,7 @@ export default function ProjectsPage() {
               />
             </div>
             <div className="space-y-1.5">
-              <div className="flex items-center justify-between">
-                <Label>Language</Label>
-                <Button
-                  type="button"
-                  variant="link"
-                  size="sm"
-                  className="h-auto p-0 text-xs"
-                  onClick={openLanguageDialog}
-                >
-                  <Plus className="h-3 w-3 mr-1" />
-                  New language
-                </Button>
-              </div>
+              <Label>Language</Label>
               {languagesLoading ? (
                 <p className="text-sm text-verde">Loading languages...</p>
               ) : (
@@ -317,56 +291,14 @@ export default function ProjectsPage() {
               {saving
                 ? editingProject
                   ? "Saving..."
-                  : "Creating..."
+                  : isPlatformAdmin
+                    ? "Creating..."
+                    : "Submitting..."
                 : editingProject
                   ? "Save"
-                  : "Create"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={langDialogOpen} onOpenChange={setLangDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Create Language</DialogTitle>
-            <DialogDescription>
-              Add a new language without leaving the project form.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-2">
-            <div className="space-y-1.5">
-              <Label htmlFor="new-lang-name">Name</Label>
-              <Input
-                id="new-lang-name"
-                placeholder="e.g. Portuguese"
-                value={newLangName}
-                onChange={(e) => setNewLangName(e.target.value)}
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="new-lang-code">Code</Label>
-              <Input
-                id="new-lang-code"
-                placeholder="e.g. pt"
-                value={newLangCode}
-                onChange={(e) => setNewLangCode(e.target.value)}
-              />
-            </div>
-          </div>
-          <DialogFooter className="border-t border-areia/10 pt-4 mt-2">
-            <Button
-              variant="outline"
-              onClick={() => setLangDialogOpen(false)}
-              disabled={creatingLang}
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleCreateLanguage}
-              disabled={creatingLang || !newLangName.trim() || !newLangCode.trim()}
-            >
-              {creatingLang ? "Creating..." : "Create"}
+                  : isPlatformAdmin
+                    ? "Create"
+                    : "Submit Request"}
             </Button>
           </DialogFooter>
         </DialogContent>
