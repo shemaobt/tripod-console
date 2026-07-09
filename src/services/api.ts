@@ -16,6 +16,7 @@ import type {
   AppRoleResponse,
   LanguageResponse,
   LanguageCreate,
+  LanguageStatsResponse,
   OrganizationResponse,
   OrganizationCreate,
   OrganizationUpdate,
@@ -174,6 +175,10 @@ export const languagesAPI = {
     api.get<LanguageResponse>(`/languages/${languageId}`),
   getByCode: (code: string) =>
     api.get<LanguageResponse>(`/languages/code/${code}`),
+  stats: (languageId: string) =>
+    api.get<LanguageStatsResponse>(`/languages/${languageId}/stats`),
+  delete: (languageId: string) =>
+    api.delete<void>(`/languages/${languageId}`),
 }
 
 export const orgsAPI = {

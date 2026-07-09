@@ -25,6 +25,8 @@ export type {
 export type {
   LanguageResponse,
   LanguageCreate,
+  LanguageProjectRef,
+  LanguageStatsResponse,
 } from "./language"
 
 export type {

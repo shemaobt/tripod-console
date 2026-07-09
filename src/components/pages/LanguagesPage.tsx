@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react"
-import { Languages, Plus } from "lucide-react"
+import { Languages, Plus, Trash2 } from "lucide-react"
 import { toast } from "sonner"
 import { languagesAPI } from "@/services/api"
+import type { LanguageResponse, LanguageStatsResponse } from "@/types"
 import { useLanguagesStore } from "@/stores/languagesStore"
+import { useAuth } from "@/contexts/AuthContext"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -21,17 +23,25 @@ import { InfoTooltip } from "@/components/common/InfoTooltip"
 import { formatDate } from "@/utils/format"
 
 export default function LanguagesPage() {
+  const { user, isPlatformAdmin, isManager } = useAuth()
   const { languages, loading: storeLoading, lastFetched, fetch: fetchLanguages } = useLanguagesStore()
   const loading = storeLoading || (!lastFetched && languages.length === 0)
   const [dialogOpen, setDialogOpen] = useState(false)
   const [creating, setCreating] = useState(false)
   const [name, setName] = useState("")
   const [code, setCode] = useState("")
+  const [deleteTarget, setDeleteTarget] = useState<LanguageResponse | null>(null)
+  const [deleteStats, setDeleteStats] = useState<LanguageStatsResponse | null>(null)
+  const [deleting, setDeleting] = useState(false)
 
   useEffect(() => {
     fetchLanguages()
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  function canDeactivate(lang: LanguageResponse) {
+    return isPlatformAdmin || (isManager && lang.created_by === user?.id)
+  }
 
   function openDialog() {
     setName("")
@@ -57,6 +67,42 @@ export default function LanguagesPage() {
       }
     } finally {
       setCreating(false)
+    }
+  }
+
+  async function openDeleteDialog(lang: LanguageResponse) {
+    setDeleteTarget(lang)
+    setDeleteStats(null)
+    try {
+      const { data } = await languagesAPI.stats(lang.id)
+      setDeleteStats(data)
+    } catch {
+      setDeleteStats(null)
+    }
+  }
+
+  const blockedByProjects = (deleteStats?.project_count ?? 0) > 0
+
+  async function handleDeactivate() {
+    if (!deleteTarget || deleteStats === null || blockedByProjects) return
+    setDeleting(true)
+    try {
+      await languagesAPI.delete(deleteTarget.id)
+      toast.success("Language deactivated")
+      setDeleteTarget(null)
+      useLanguagesStore.getState().invalidate()
+      await fetchLanguages()
+    } catch (err: unknown) {
+      const status = (err as { response?: { status?: number } })?.response?.status
+      if (status === 409) {
+        toast.error("This language is used by projects and cannot be deactivated")
+      } else if (status === 403) {
+        toast.error("You can only deactivate languages you created")
+      } else {
+        toast.error("Failed to deactivate language")
+      }
+    } finally {
+      setDeleting(false)
     }
   }
 
@@ -95,8 +141,19 @@ export default function LanguagesPage() {
           {languages.map((lang) => (
             <div
               key={lang.id}
-              className="group rounded-2xl border border-areia/20 bg-surface p-5 shadow-sm hover:shadow-md hover:border-telha/30 transition-all duration-200 cursor-default"
+              className="group relative rounded-2xl border border-areia/20 bg-surface p-5 shadow-sm hover:shadow-md hover:border-telha/30 transition-all duration-200 cursor-default"
             >
+              {canDeactivate(lang) && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="absolute top-2 right-2 h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/30 opacity-0 group-hover:opacity-100 transition-opacity"
+                  onClick={() => openDeleteDialog(lang)}
+                  aria-label={`Deactivate ${lang.name}`}
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                </Button>
+              )}
               <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-azul/15 to-azul/5 flex items-center justify-center mx-auto">
                 <span className="text-2xl font-mono font-bold text-azul">
                   {lang.code}
@@ -163,6 +220,48 @@ export default function LanguagesPage() {
               disabled={creating || !name.trim() || code.trim().length !== 3}
             >
               {creating ? "Creating..." : "Create"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={deleteTarget !== null} onOpenChange={(open) => { if (!open) setDeleteTarget(null) }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Deactivate Language</DialogTitle>
+            <DialogDescription>
+              {deleteTarget
+                ? deleteStats === null
+                  ? `Checking which projects use "${deleteTarget.name}"...`
+                  : blockedByProjects
+                    ? `"${deleteTarget.name}" is used by ${deleteStats.project_count} project${deleteStats.project_count !== 1 ? "s" : ""} and cannot be deactivated. Reassign or remove it from these projects first.`
+                    : `Deactivating "${deleteTarget.name}" hides it from new project creation. Existing projects are unaffected and it can be restored later.`
+                : ""}
+            </DialogDescription>
+          </DialogHeader>
+          {blockedByProjects && deleteStats && (
+            <ul className="mt-1 max-h-40 overflow-y-auto rounded-lg border border-areia/30 bg-surface-alt/50 divide-y divide-areia/20">
+              {deleteStats.projects.map((project) => (
+                <li key={project.id} className="px-3 py-2 text-sm text-preto">
+                  {project.name}
+                </li>
+              ))}
+            </ul>
+          )}
+          <DialogFooter className="border-t border-areia/10 pt-4 mt-2">
+            <Button
+              variant="outline"
+              onClick={() => setDeleteTarget(null)}
+              disabled={deleting}
+            >
+              {blockedByProjects ? "Close" : "Cancel"}
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDeactivate}
+              disabled={deleteStats === null || blockedByProjects || deleting}
+            >
+              {deleting ? "Deactivating..." : "Deactivate"}
             </Button>
           </DialogFooter>
         </DialogContent>
