@@ -2,10 +2,11 @@ import { useEffect, useState } from "react"
 import { useNavigate } from "react-router"
 import { FolderOpen, Plus, Pencil, MapPin } from "lucide-react"
 import { toast } from "sonner"
-import { projectsAPI } from "@/services/api"
+import { projectsAPI, changeRequestsAPI } from "@/services/api"
 import { useAuth } from "@/contexts/AuthContext"
 import type { ProjectResponse } from "@/types"
 import { useLanguagesStore } from "@/stores/languagesStore"
+import { ChangeRequestsSection } from "@/components/pages/ChangeRequestsSection"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -34,7 +35,7 @@ import { formatDate } from "@/utils/format"
 
 export default function ProjectsPage() {
   const navigate = useNavigate()
-  const { isManager, managedOrgId } = useAuth()
+  const { isPlatformAdmin, isManager, managedOrgId } = useAuth()
   const [projects, setProjects] = useState<ProjectResponse[]>([])
   const [loading, setLoading] = useState(true)
   const [dialogOpen, setDialogOpen] = useState(false)
@@ -96,13 +97,21 @@ export default function ProjectsPage() {
           language_id: languageId,
         })
         toast.success("Project updated")
-      } else {
+      } else if (isPlatformAdmin) {
         await projectsAPI.create({
           name: name.trim(),
           description: description.trim() || undefined,
           language_id: languageId,
         })
         toast.success("Project created")
+      } else {
+        await changeRequestsAPI.create({
+          kind: "create_project",
+          name: name.trim(),
+          description: description.trim() || undefined,
+          language_id: languageId,
+        })
+        toast.success("Request submitted for a platform admin to review")
       }
       setDialogOpen(false)
       await fetchProjects()
@@ -144,6 +153,14 @@ export default function ProjectsPage() {
           New Project
         </Button>
       </div>
+
+      {isPlatformAdmin && (
+        <ChangeRequestsSection
+          kinds={["create_project"]}
+          title="Project requests"
+          description="Managers' requests to create a project. Accept to create it (optionally granting the requester manager access) or reject."
+        />
+      )}
 
       {projects.length === 0 ? (
         <EmptyState
@@ -205,12 +222,18 @@ export default function ProjectsPage() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {editingProject ? "Edit Project" : "Create Project"}
+              {editingProject
+                ? "Edit Project"
+                : isPlatformAdmin
+                  ? "Create Project"
+                  : "Request New Project"}
             </DialogTitle>
             <DialogDescription>
               {editingProject
                 ? "Update this project's details."
-                : "Projects represent translation or documentation efforts tied to a language."}
+                : isPlatformAdmin
+                  ? "Projects represent translation or documentation efforts tied to a language."
+                  : "Your request will be sent to a platform admin to review before the project is created."}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-5 pt-1">
@@ -268,10 +291,14 @@ export default function ProjectsPage() {
               {saving
                 ? editingProject
                   ? "Saving..."
-                  : "Creating..."
+                  : isPlatformAdmin
+                    ? "Creating..."
+                    : "Submitting..."
                 : editingProject
                   ? "Save"
-                  : "Create"}
+                  : isPlatformAdmin
+                    ? "Create"
+                    : "Submit Request"}
             </Button>
           </DialogFooter>
         </DialogContent>
