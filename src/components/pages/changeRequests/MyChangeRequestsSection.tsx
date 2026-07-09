@@ -11,9 +11,10 @@ import { ChangeRequestCard } from "@/components/pages/changeRequests/ChangeReque
 
 interface MyChangeRequestsSectionProps {
   kinds?: ChangeRequestKind[]
+  emptyLabel?: string
 }
 
-export function MyChangeRequestsSection({ kinds }: MyChangeRequestsSectionProps) {
+export function MyChangeRequestsSection({ kinds, emptyLabel }: MyChangeRequestsSectionProps) {
   const kindKey = kinds ? kinds.join(",") : ""
   const fetchLanguages = useLanguagesStore((s) => s.fetch)
   const [requests, setRequests] = useState<ChangeRequestResponse[]>([])
@@ -68,7 +69,10 @@ export function MyChangeRequestsSection({ kinds }: MyChangeRequestsSectionProps)
         <EmptyState
           icon={Inbox}
           title="No requests yet"
-          description="When you request a new project or language, or an edit, it appears here with its status. Once a platform admin reviews it, their notes show up too."
+          description={
+            emptyLabel ??
+            "When you submit a request, it appears here with its status. Once a platform admin reviews it, their notes show up too."
+          }
         />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

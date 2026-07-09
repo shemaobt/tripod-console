@@ -162,7 +162,10 @@ export default function ProjectsPage() {
                 onReviewed={fetchProjects}
               />
             ) : (
-              <MyChangeRequestsSection />
+              <MyChangeRequestsSection
+                kinds={["create_project"]}
+                emptyLabel="When you request a new project, it appears here with its status. Once a platform admin reviews it, their notes show up too."
+              />
             )}
           </TabsContent>
         </Tabs>

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { Languages, Plus, Pencil, Trash2, Inbox } from "lucide-react"
+import { Languages, Plus, Pencil, Trash2, Inbox, ClipboardList } from "lucide-react"
 import { toast } from "sonner"
 import { languagesAPI, changeRequestsAPI } from "@/services/api"
 import type { LanguageResponse, LanguageStatsResponse } from "@/types"
@@ -21,6 +21,7 @@ import { LoadingSpinner } from "@/components/common/LoadingSpinner"
 import { EmptyState } from "@/components/common/EmptyState"
 import { InfoTooltip } from "@/components/common/InfoTooltip"
 import { ChangeRequestsSection } from "@/components/pages/ChangeRequestsSection"
+import { MyChangeRequestsSection } from "@/components/pages/changeRequests/MyChangeRequestsSection"
 
 import { formatDate } from "@/utils/format"
 
@@ -224,7 +225,7 @@ export default function LanguagesPage() {
         </Button>
       </div>
 
-      {isPlatformAdmin ? (
+      {isPlatformAdmin || canRequestEdit ? (
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList>
             <TabsTrigger value="languages">
@@ -232,17 +233,28 @@ export default function LanguagesPage() {
               Languages
             </TabsTrigger>
             <TabsTrigger value="requests">
-              <Inbox className="h-4 w-4 mr-1.5" />
-              Requests
+              {isPlatformAdmin ? (
+                <Inbox className="h-4 w-4 mr-1.5" />
+              ) : (
+                <ClipboardList className="h-4 w-4 mr-1.5" />
+              )}
+              {isPlatformAdmin ? "Requests" : "My Requests"}
             </TabsTrigger>
           </TabsList>
           <TabsContent value="languages">{languagesView}</TabsContent>
           <TabsContent value="requests">
-            <ChangeRequestsSection
-              kinds={["create_language", "edit_language"]}
-              emptyLabel="Managers' requests to create or edit a language appear here. Accept to apply the change or reject."
-              onReviewed={refreshLanguages}
-            />
+            {isPlatformAdmin ? (
+              <ChangeRequestsSection
+                kinds={["create_language", "edit_language"]}
+                emptyLabel="Managers' requests to create or edit a language appear here. Accept to apply the change or reject."
+                onReviewed={refreshLanguages}
+              />
+            ) : (
+              <MyChangeRequestsSection
+                kinds={["create_language", "edit_language"]}
+                emptyLabel="When you request a new language or an edit, it appears here with its status. Once a platform admin reviews it, their notes show up too."
+              />
+            )}
           </TabsContent>
         </Tabs>
       ) : (
