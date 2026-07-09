@@ -11,6 +11,8 @@ export interface ChangeRequestResponse {
   code: string | null
   description: string | null
   language_id: string | null
+  new_language_name: string | null
+  new_language_code: string | null
   grant_manager_access: boolean
   reviewed_by: string | null
   reviewed_at: string | null
@@ -25,6 +27,8 @@ export interface ChangeRequestCreate {
   code?: string
   description?: string
   language_id?: string
+  new_language_name?: string
+  new_language_code?: string
 }
 
 export interface ChangeRequestReview {

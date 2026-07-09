@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { Languages, Plus, Pencil } from "lucide-react"
+import { Languages, Plus, Pencil, Inbox } from "lucide-react"
 import { toast } from "sonner"
 import { languagesAPI, changeRequestsAPI } from "@/services/api"
 import type { LanguageResponse } from "@/types"
@@ -8,6 +8,7 @@ import { useAuth } from "@/contexts/AuthContext"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import {
   Dialog,
   DialogContent,
@@ -27,7 +28,10 @@ export default function LanguagesPage() {
   const { isPlatformAdmin, isManager } = useAuth()
   const canRequestEdit = isManager && !isPlatformAdmin
   const { languages, loading: storeLoading, lastFetched, fetch: fetchLanguages } = useLanguagesStore()
-  const loading = storeLoading || (!lastFetched && languages.length === 0)
+  // Full-page spinner only on the initial load; background refreshes (e.g. after
+  // reviewing a request) keep the page and the active tab mounted.
+  const loading = (storeLoading || !lastFetched) && languages.length === 0
+  const [activeTab, setActiveTab] = useState("languages")
   const [dialogOpen, setDialogOpen] = useState(false)
   const [saving, setSaving] = useState(false)
   const [editingLang, setEditingLang] = useState<LanguageResponse | null>(null)
@@ -38,6 +42,11 @@ export default function LanguagesPage() {
     fetchLanguages()
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  function refreshLanguages() {
+    useLanguagesStore.getState().invalidate()
+    return fetchLanguages()
+  }
 
   function openCreateDialog() {
     setEditingLang(null)
@@ -68,8 +77,7 @@ export default function LanguagesPage() {
       } else if (isPlatformAdmin) {
         await languagesAPI.create({ name: name.trim(), code: code.trim().toLowerCase() })
         toast.success("Language created")
-        useLanguagesStore.getState().invalidate()
-        await fetchLanguages()
+        await refreshLanguages()
       } else {
         await changeRequestsAPI.create({
           kind: "create_language",
@@ -97,6 +105,49 @@ export default function LanguagesPage() {
     return <LoadingSpinner />
   }
 
+  const languagesView =
+    languages.length === 0 ? (
+      <EmptyState
+        icon={Languages}
+        title="No languages yet"
+        description="Languages define the translation targets for your projects. Create one to get started."
+        actionLabel="Create Language"
+        onAction={openCreateDialog}
+      />
+    ) : (
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+        {languages.map((lang) => (
+          <div
+            key={lang.id}
+            className="group relative rounded-2xl border border-areia/20 bg-surface p-5 shadow-sm hover:shadow-md hover:border-telha/30 transition-all duration-200 cursor-default"
+          >
+            {canRequestEdit && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="absolute top-2 right-2 h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                onClick={() => openEditDialog(lang)}
+                aria-label={`Request edit for ${lang.name}`}
+              >
+                <Pencil className="h-3.5 w-3.5" />
+              </Button>
+            )}
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-azul/15 to-azul/5 flex items-center justify-center mx-auto">
+              <span className="text-2xl font-mono font-bold text-azul">
+                {lang.code}
+              </span>
+            </div>
+            <p className="text-sm font-medium text-preto text-center mt-3">
+              {lang.name}
+            </p>
+            <p className="text-xs text-verde/50 text-center mt-1">
+              {formatDate(lang.created_at)}
+            </p>
+          </div>
+        ))}
+      </div>
+    )
+
   return (
     <div className="p-6 md:p-8 lg:p-10 space-y-6">
       <div className="flex items-center justify-between">
@@ -111,58 +162,33 @@ export default function LanguagesPage() {
         </div>
         <Button onClick={openCreateDialog} className="rounded-xl">
           <Plus className="h-4 w-4" />
-          New Language
+          {isPlatformAdmin ? "New Language" : "Request Language"}
         </Button>
       </div>
 
-      {isPlatformAdmin && (
-        <ChangeRequestsSection
-          kinds={["create_language", "edit_language"]}
-          title="Language requests"
-          description="Managers' requests to create or edit a language. Accept to apply the change or reject."
-        />
-      )}
-
-      {languages.length === 0 ? (
-        <EmptyState
-          icon={Languages}
-          title="No languages yet"
-          description="Languages define the translation targets for your projects. Create one to get started."
-          actionLabel="Create Language"
-          onAction={openCreateDialog}
-        />
+      {isPlatformAdmin ? (
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList>
+            <TabsTrigger value="languages">
+              <Languages className="h-4 w-4 mr-1.5" />
+              Languages
+            </TabsTrigger>
+            <TabsTrigger value="requests">
+              <Inbox className="h-4 w-4 mr-1.5" />
+              Requests
+            </TabsTrigger>
+          </TabsList>
+          <TabsContent value="languages">{languagesView}</TabsContent>
+          <TabsContent value="requests">
+            <ChangeRequestsSection
+              kinds={["create_language", "edit_language"]}
+              emptyLabel="Managers' requests to create or edit a language appear here. Accept to apply the change or reject."
+              onReviewed={refreshLanguages}
+            />
+          </TabsContent>
+        </Tabs>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-          {languages.map((lang) => (
-            <div
-              key={lang.id}
-              className="group relative rounded-2xl border border-areia/20 bg-surface p-5 shadow-sm hover:shadow-md hover:border-telha/30 transition-all duration-200 cursor-default"
-            >
-              {canRequestEdit && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="absolute top-2 right-2 h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                  onClick={() => openEditDialog(lang)}
-                  aria-label={`Request edit for ${lang.name}`}
-                >
-                  <Pencil className="h-3.5 w-3.5" />
-                </Button>
-              )}
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-azul/15 to-azul/5 flex items-center justify-center mx-auto">
-                <span className="text-2xl font-mono font-bold text-azul">
-                  {lang.code}
-                </span>
-              </div>
-              <p className="text-sm font-medium text-preto text-center mt-3">
-                {lang.name}
-              </p>
-              <p className="text-xs text-verde/50 text-center mt-1">
-                {formatDate(lang.created_at)}
-              </p>
-            </div>
-          ))}
-        </div>
+        languagesView
       )}
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>

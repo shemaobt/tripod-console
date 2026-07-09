@@ -1,17 +1,9 @@
 import { useCallback, useEffect, useState } from "react"
-import {
-  Calendar,
-  Check,
-  FolderPlus,
-  Languages,
-  Loader2,
-  Pencil,
-  X,
-} from "lucide-react"
+import { Inbox, Loader2 } from "lucide-react"
 import { toast } from "sonner"
 import { changeRequestsAPI } from "@/services/api"
 import type { ChangeRequestKind, ChangeRequestResponse } from "@/types"
-import { Badge } from "@/components/ui/badge"
+import { useLanguagesStore } from "@/stores/languagesStore"
 import { Button } from "@/components/ui/button"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
@@ -25,28 +17,22 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { LoadingSpinner } from "@/components/common/LoadingSpinner"
-import { UserAvatar } from "@/components/pages/UsersPage/UserAvatar"
-import { timeAgo } from "@/utils/format"
-
-const kindConfig: Record<
-  ChangeRequestKind,
-  { label: string; icon: React.ComponentType<{ className?: string }> }
-> = {
-  create_project: { label: "New project", icon: FolderPlus },
-  create_language: { label: "New language", icon: Languages },
-  edit_language: { label: "Edit language", icon: Pencil },
-}
+import { EmptyState } from "@/components/common/EmptyState"
+import { FilterBar } from "@/components/common/FilterBar"
+import { ChangeRequestCard } from "@/components/pages/changeRequests/ChangeRequestCard"
 
 interface ChangeRequestsSectionProps {
   kinds: ChangeRequestKind[]
-  title: string
-  description: string
+  emptyLabel: string
+  onReviewed?: () => void
 }
 
-export function ChangeRequestsSection({ kinds, title, description }: ChangeRequestsSectionProps) {
+export function ChangeRequestsSection({ kinds, emptyLabel, onReviewed }: ChangeRequestsSectionProps) {
   const kindKey = kinds.join(",")
+  const fetchLanguages = useLanguagesStore((s) => s.fetch)
   const [requests, setRequests] = useState<ChangeRequestResponse[]>([])
   const [loading, setLoading] = useState(true)
+  const [filterStatus, setFilterStatus] = useState("pending")
   const [reviewTarget, setReviewTarget] = useState<ChangeRequestResponse | null>(null)
   const [reviewAction, setReviewAction] = useState<"approved" | "rejected">("approved")
   const [reason, setReason] = useState("")
@@ -56,7 +42,8 @@ export function ChangeRequestsSection({ kinds, title, description }: ChangeReque
   const fetchRequests = useCallback(async () => {
     setLoading(true)
     try {
-      const { data } = await changeRequestsAPI.list({ status: "pending" })
+      const params = filterStatus === "all" ? {} : { status: filterStatus }
+      const { data } = await changeRequestsAPI.list(params)
       const allowed = new Set(kindKey.split(","))
       setRequests(data.filter((r) => allowed.has(r.kind)))
     } catch {
@@ -64,11 +51,12 @@ export function ChangeRequestsSection({ kinds, title, description }: ChangeReque
     } finally {
       setLoading(false)
     }
-  }, [kindKey])
+  }, [kindKey, filterStatus])
 
   useEffect(() => {
+    fetchLanguages()
     fetchRequests()
-  }, [fetchRequests])
+  }, [fetchLanguages, fetchRequests])
 
   function openReview(req: ChangeRequestResponse, action: "approved" | "rejected") {
     setReviewTarget(req)
@@ -88,8 +76,15 @@ export function ChangeRequestsSection({ kinds, title, description }: ChangeReque
           reviewTarget.kind === "create_project" ? grantManager : undefined,
       })
       toast.success(reviewAction === "approved" ? "Request approved" : "Request rejected")
+      if (reviewAction === "approved" && reviewTarget.new_language_name) {
+        // Approval also created a new language — refresh the store so
+        // project cards resolve its name instead of showing the raw id.
+        useLanguagesStore.getState().invalidate()
+        await useLanguagesStore.getState().fetch()
+      }
       setReviewTarget(null)
-      fetchRequests()
+      await fetchRequests()
+      onReviewed?.()
     } catch {
       toast.error("Failed to review request")
     } finally {
@@ -97,107 +92,51 @@ export function ChangeRequestsSection({ kinds, title, description }: ChangeReque
     }
   }
 
-  if (loading || requests.length === 0) {
-    return loading ? <LoadingSpinner size="sm" /> : null
-  }
-
   const isApprove = reviewAction === "approved"
   const isProjectReview = reviewTarget?.kind === "create_project"
 
   return (
-    <div className="space-y-4 rounded-2xl border border-telha/20 bg-surface-alt/30 p-5">
-      <div>
-        <h3 className="text-base font-semibold text-preto tracking-tight">
-          {title}
-          <Badge variant="default" className="ml-2">
-            {requests.length}
-          </Badge>
-        </h3>
-        <p className="text-sm text-verde/60 mt-1">{description}</p>
-      </div>
+    <div className="space-y-4">
+      <FilterBar
+        filters={[
+          {
+            key: "status",
+            label: "All Statuses",
+            value: filterStatus,
+            onChange: setFilterStatus,
+            className: "w-full sm:w-44",
+            options: [
+              { value: "pending", label: "Pending" },
+              { value: "approved", label: "Approved" },
+              { value: "rejected", label: "Rejected" },
+              { value: "all", label: "All Statuses" },
+            ],
+          },
+        ]}
+        resultLabel={loading ? "..." : `${requests.length} request${requests.length !== 1 ? "s" : ""}`}
+      />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {requests.map((req) => {
-          const config = kindConfig[req.kind]
-          const KindIcon = config.icon
-          return (
-            <div
+      {loading ? (
+        <LoadingSpinner />
+      ) : requests.length === 0 ? (
+        <EmptyState
+          icon={Inbox}
+          title={filterStatus === "pending" ? "No pending requests" : "No requests"}
+          description={emptyLabel}
+        />
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {requests.map((req) => (
+            <ChangeRequestCard
               key={req.id}
-              className="rounded-2xl border border-telha/20 bg-surface shadow-sm overflow-hidden"
-            >
-              <div className="h-0.5 bg-gradient-to-r from-telha/60 via-telha/30 to-transparent" />
-              <div className="p-5">
-                <div className="flex items-start gap-3.5">
-                  <UserAvatar
-                    name={req.requester_display_name}
-                    email={req.requester_email}
-                    avatarUrl={null}
-                    size="md"
-                  />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-preto truncate">
-                      {req.requester_display_name || req.requester_email}
-                    </p>
-                    {req.requester_display_name && (
-                      <p className="text-xs text-verde/50 truncate mt-0.5">
-                        {req.requester_email}
-                      </p>
-                    )}
-                  </div>
-                  <Badge variant="default">
-                    <KindIcon className="h-3 w-3 mr-1" />
-                    {config.label}
-                  </Badge>
-                </div>
-
-                <div className="mt-4 space-y-1 rounded-lg bg-surface-alt/50 p-3">
-                  {req.name && (
-                    <p className="text-sm text-preto">
-                      <span className="text-verde/50">Name:</span> {req.name}
-                    </p>
-                  )}
-                  {req.code && (
-                    <p className="text-sm text-preto">
-                      <span className="text-verde/50">Code:</span> {req.code}
-                    </p>
-                  )}
-                  {req.description && (
-                    <p className="text-xs text-verde/60 leading-relaxed">{req.description}</p>
-                  )}
-                </div>
-
-                <div className="mt-3 flex items-center">
-                  <span className="text-[11px] text-verde/40 tabular-nums flex items-center gap-1">
-                    <Calendar className="h-3 w-3" />
-                    {timeAgo(req.requested_at)}
-                  </span>
-                </div>
-
-                <div className="mt-4 pt-3.5 border-t border-areia/15 flex items-center gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="flex-1 gap-1.5 text-verde-claro border-verde-claro/30 hover:bg-verde-claro/10 hover:border-verde-claro/50"
-                    onClick={() => openReview(req, "approved")}
-                  >
-                    <Check className="h-3.5 w-3.5" />
-                    Accept
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="flex-1 gap-1.5 text-red-600 border-red-200 hover:bg-red-50 hover:border-red-300 dark:text-red-400 dark:border-red-800/40 dark:hover:bg-red-950/30"
-                    onClick={() => openReview(req, "rejected")}
-                  >
-                    <X className="h-3.5 w-3.5" />
-                    Reject
-                  </Button>
-                </div>
-              </div>
-            </div>
-          )
-        })}
-      </div>
+              req={req}
+              showStatus={req.status !== "pending"}
+              onApprove={() => openReview(req, "approved")}
+              onReject={() => openReview(req, "rejected")}
+            />
+          ))}
+        </div>
+      )}
 
       <Dialog
         open={reviewTarget !== null}
@@ -217,6 +156,16 @@ export function ChangeRequestsSection({ kinds, title, description }: ChangeReque
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 pt-2">
+            {isApprove && isProjectReview && reviewTarget?.new_language_name && (
+              <p className="text-xs text-verde/60 rounded-lg bg-surface-alt/50 p-2.5">
+                Accepting will also create the new language{" "}
+                <span className="font-medium text-preto">
+                  {reviewTarget.new_language_name}
+                  {reviewTarget.new_language_code ? ` (${reviewTarget.new_language_code})` : ""}
+                </span>
+                .
+              </p>
+            )}
             {isApprove && isProjectReview && (
               <div className="flex items-start justify-between gap-4 rounded-lg border border-areia/20 bg-surface-alt/40 p-3">
                 <div>
@@ -239,20 +188,21 @@ export function ChangeRequestsSection({ kinds, title, description }: ChangeReque
               <Textarea
                 id="review-reason"
                 placeholder={
-                  isApprove ? "Any notes..." : "Why is this request being rejected..."
+                  isApprove
+                    ? "Any notes for the requester..."
+                    : "Why is this request being rejected..."
                 }
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
                 rows={3}
               />
+              <p className="text-xs text-verde/50">
+                Shared with the requester in their requests view.
+              </p>
             </div>
           </div>
           <DialogFooter className="border-t border-areia/10 pt-4 mt-2">
-            <Button
-              variant="outline"
-              onClick={() => setReviewTarget(null)}
-              disabled={submitting}
-            >
+            <Button variant="outline" onClick={() => setReviewTarget(null)} disabled={submitting}>
               Cancel
             </Button>
             <Button
