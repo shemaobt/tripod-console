@@ -18,10 +18,12 @@ import {
 import { LoadingSpinner } from "@/components/common/LoadingSpinner"
 import { EmptyState } from "@/components/common/EmptyState"
 import { InfoTooltip } from "@/components/common/InfoTooltip"
+import { useAuth } from "@/contexts/AuthContext"
 
 import { formatDate } from "@/utils/format"
 
 export default function LanguagesPage() {
+  const { isPlatformAdmin } = useAuth()
   const { languages, loading: storeLoading, lastFetched, fetch: fetchLanguages } = useLanguagesStore()
   const loading = storeLoading || (!lastFetched && languages.length === 0)
   const [dialogOpen, setDialogOpen] = useState(false)
@@ -115,15 +117,17 @@ export default function LanguagesPage() {
               key={lang.id}
               className="group relative rounded-2xl border border-areia/20 bg-surface p-5 shadow-sm hover:shadow-md hover:border-telha/30 transition-all duration-200 cursor-default"
             >
-              <Button
-                variant="ghost"
-                size="sm"
-                className="absolute top-2 right-2 h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                onClick={() => openEditDialog(lang)}
-                aria-label={`Edit ${lang.name}`}
-              >
-                <Pencil className="h-3.5 w-3.5" />
-              </Button>
+              {isPlatformAdmin && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="absolute top-2 right-2 h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                  onClick={() => openEditDialog(lang)}
+                  aria-label={`Edit ${lang.name}`}
+                >
+                  <Pencil className="h-3.5 w-3.5" />
+                </Button>
+              )}
               <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-azul/15 to-azul/5 flex items-center justify-center mx-auto">
                 <span className="text-2xl font-mono font-bold text-azul">
                   {lang.code}
