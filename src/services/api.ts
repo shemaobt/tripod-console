@@ -9,6 +9,7 @@ import type {
   MyManagedProjectsResponse,
   UserListResponse,
   UserUpdate,
+  UserRoleUpdate,
   UserRoleResponse,
   AppResponse,
   AppCreate,
@@ -153,6 +154,8 @@ export const usersAPI = {
   get: (userId: string) => api.get<UserListResponse>(`/users/${userId}`),
   update: (userId: string, data: UserUpdate) =>
     api.patch<UserListResponse>(`/users/${userId}`, data),
+  updateRole: (userId: string, data: UserRoleUpdate) =>
+    api.put<UserListResponse>(`/users/${userId}/role`, data),
   delete: (userId: string) => api.delete(`/users/${userId}`),
   listRoles: (userId: string) =>
     api.get<UserRoleResponse[]>(`/users/${userId}/roles`),

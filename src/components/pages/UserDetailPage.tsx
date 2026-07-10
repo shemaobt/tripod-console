@@ -1,13 +1,26 @@
 import { useEffect, useState } from "react"
 import { useParams, useNavigate } from "react-router"
-import { ArrowLeft, KeyRound, Plus, Trash2, User as UserIcon } from "lucide-react"
+import {
+  ArrowLeft,
+  KeyRound,
+  Plus,
+  Shield,
+  Trash2,
+  User as UserIcon,
+  UserCog,
+  type LucideIcon,
+} from "lucide-react"
 import { toast } from "sonner"
-import { usersAPI, appsAPI, rolesAPI } from "@/services/api"
+import { usersAPI, appsAPI, projectsAPI, rolesAPI } from "@/services/api"
+import { useAuth } from "@/contexts/AuthContext"
 import type {
   UserListResponse,
+  UserRole,
+  UserRoleUpdate,
   UserRoleResponse,
   AppResponse,
   AppRoleResponse,
+  ProjectResponse,
 } from "@/types"
 import { card } from "@/styles"
 import { Button } from "@/components/ui/button"
@@ -35,17 +48,43 @@ import { ConfirmDialog } from "@/components/common/ConfirmDialog"
 
 import { formatDate } from "@/utils/format"
 
+const roleBadge: Record<
+  UserRole,
+  { variant: "admin" | "manager" | "member"; icon: LucideIcon; label: string }
+> = {
+  platform_admin: { variant: "admin", icon: Shield, label: "Admin" },
+  manager: { variant: "manager", icon: UserCog, label: "Manager" },
+  member: { variant: "member", icon: UserIcon, label: "Member" },
+}
+
+const roleOptions: { value: UserRole; label: string }[] = [
+  { value: "member", label: "Member" },
+  { value: "manager", label: "Manager" },
+  { value: "platform_admin", label: "Platform Admin" },
+]
+
+function getUserRole(user: UserListResponse): UserRole {
+  return user.role ?? (user.is_platform_admin ? "platform_admin" : "member")
+}
+
 function UserInfoCard({
   user,
+  isSelf,
+  roleSaving,
+  onRoleSelect,
   onToggleActive,
-  onToggleAdmin,
   onDelete,
 }: {
   user: UserListResponse
+  isSelf: boolean
+  roleSaving: boolean
+  onRoleSelect: (role: UserRole) => void
   onToggleActive: () => void
-  onToggleAdmin: () => void
   onDelete: () => void
 }) {
+  const role = getUserRole(user)
+  const { variant, icon: RoleIcon, label } = roleBadge[role]
+
   return (
     <div className={`${card.base} p-4 sm:p-6`}>
       <div className="flex items-start gap-3 sm:gap-4 mb-4">
@@ -85,18 +124,36 @@ function UserInfoCard({
         <div className="flex items-center gap-2">
           <span className="text-verde">
             <span className="inline-flex items-center">
-              Platform Admin
-              <InfoTooltip content="Platform admins have full access to all resources including user management and app configuration." />
+              Role:
+              <InfoTooltip
+                content={
+                  isSelf
+                    ? "You cannot change your own role"
+                    : "Members have basic access, managers oversee specific projects, and platform admins have full access to all resources."
+                }
+              />
             </span>
           </span>
-          {user.is_platform_admin ? (
-            <Badge variant="success">Yes</Badge>
-          ) : (
-            <Badge variant="default">No</Badge>
-          )}
-          <Button variant="outline" size="sm" onClick={onToggleAdmin}>
-            {user.is_platform_admin ? "Remove Admin" : "Make Admin"}
-          </Button>
+          <Badge variant={variant}>
+            <RoleIcon className="h-3 w-3 mr-1" />
+            {label}
+          </Badge>
+          <Select
+            value={role}
+            onValueChange={(value) => onRoleSelect(value as UserRole)}
+            disabled={isSelf || roleSaving}
+          >
+            <SelectTrigger className="h-8 w-44">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {roleOptions.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </div>
       <div className="mt-3 text-sm text-verde">
@@ -204,6 +261,7 @@ function RolesTable({
 export default function UserDetailPage() {
   const { userId } = useParams<{ userId: string }>()
   const navigate = useNavigate()
+  const { user: currentUser } = useAuth()
 
   const [user, setUser] = useState<UserListResponse | null>(null)
   const [userLoading, setUserLoading] = useState(true)
@@ -222,6 +280,13 @@ export default function UserDetailPage() {
     null,
   )
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
+
+  const [managerDialogOpen, setManagerDialogOpen] = useState(false)
+  const [projects, setProjects] = useState<ProjectResponse[]>([])
+  const [projectsLoading, setProjectsLoading] = useState(false)
+  const [selectedProjectIds, setSelectedProjectIds] = useState<string[]>([])
+  const [roleSaving, setRoleSaving] = useState(false)
+  const [memberConfirmOpen, setMemberConfirmOpen] = useState(false)
 
   async function fetchUser() {
     if (!userId) return
@@ -268,21 +333,66 @@ export default function UserDetailPage() {
     }
   }
 
-  async function handleToggleAdmin() {
-    if (!userId || !user) return
+  async function applyRoleUpdate(update: UserRoleUpdate) {
+    if (!userId) return false
+    setRoleSaving(true)
     try {
-      const { data } = await usersAPI.update(userId, {
-        is_platform_admin: !user.is_platform_admin,
-      })
-      setUser(data)
-      toast.success(
-        data.is_platform_admin
-          ? "User is now a platform admin"
-          : "Platform admin removed",
-      )
-    } catch {
-      toast.error("Failed to update user")
+      await usersAPI.updateRole(userId, update)
+      const roleLabel = roleOptions.find((o) => o.value === update.role)?.label
+      toast.success(`User role updated to ${roleLabel}`)
+      await fetchUser()
+      return true
+    } catch (err: unknown) {
+      const detail = (err as { response?: { data?: { detail?: string } } })
+        ?.response?.data?.detail
+      toast.error(detail || "Failed to update role")
+      return false
+    } finally {
+      setRoleSaving(false)
     }
+  }
+
+  async function openManagerDialog() {
+    setSelectedProjectIds([])
+    setManagerDialogOpen(true)
+    if (projects.length === 0) {
+      setProjectsLoading(true)
+      try {
+        const { data } = await projectsAPI.list()
+        setProjects(data)
+      } catch {
+        toast.error("Failed to load projects")
+      } finally {
+        setProjectsLoading(false)
+      }
+    }
+  }
+
+  function handleRoleSelect(role: UserRole) {
+    if (!user || role === getUserRole(user)) return
+    if (role === "platform_admin") {
+      applyRoleUpdate({ role: "platform_admin" })
+    } else if (role === "manager") {
+      openManagerDialog()
+    } else {
+      setMemberConfirmOpen(true)
+    }
+  }
+
+  function toggleProjectSelection(projectId: string) {
+    setSelectedProjectIds((prev) =>
+      prev.includes(projectId)
+        ? prev.filter((id) => id !== projectId)
+        : [...prev, projectId],
+    )
+  }
+
+  async function handleConfirmManager() {
+    const ok = await applyRoleUpdate({
+      role: "manager",
+      project_ids: selectedProjectIds,
+    })
+    if (ok) setManagerDialogOpen(false)
   }
 
   async function handleDeleteUser() {
@@ -398,8 +508,10 @@ export default function UserDetailPage() {
 
       <UserInfoCard
         user={user}
+        isSelf={currentUser?.id === userId}
+        roleSaving={roleSaving}
+        onRoleSelect={handleRoleSelect}
         onToggleActive={handleToggleActive}
-        onToggleAdmin={handleToggleAdmin}
         onDelete={() => setDeleteConfirmOpen(true)}
       />
 
@@ -488,6 +600,68 @@ export default function UserDetailPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <Dialog open={managerDialogOpen} onOpenChange={setManagerDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Select projects this user will manage</DialogTitle>
+            <DialogDescription>
+              Managers oversee specific projects. Select at least one project
+              to grant this user the manager role.
+            </DialogDescription>
+          </DialogHeader>
+          {projectsLoading ? (
+            <p className="text-sm text-verde">Loading projects...</p>
+          ) : projects.length === 0 ? (
+            <p className="text-sm text-verde">
+              No projects available. Create a project before assigning a
+              manager.
+            </p>
+          ) : (
+            <div className="max-h-64 overflow-y-auto rounded-lg border border-areia/30 divide-y divide-areia/10">
+              {projects.map((project) => (
+                <label
+                  key={project.id}
+                  className="flex items-center gap-3 px-3 py-2.5 cursor-pointer hover:bg-surface-alt/50"
+                >
+                  <input
+                    type="checkbox"
+                    className="h-4 w-4 accent-telha"
+                    checked={selectedProjectIds.includes(project.id)}
+                    onChange={() => toggleProjectSelection(project.id)}
+                  />
+                  <span className="text-sm text-preto">{project.name}</span>
+                </label>
+              ))}
+            </div>
+          )}
+          <DialogFooter className="border-t border-areia/10 pt-4 mt-2">
+            <Button
+              variant="outline"
+              onClick={() => setManagerDialogOpen(false)}
+              disabled={roleSaving}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleConfirmManager}
+              disabled={roleSaving || selectedProjectIds.length === 0}
+            >
+              {roleSaving ? "Saving..." : "Make Manager"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <ConfirmDialog
+        open={memberConfirmOpen}
+        onOpenChange={setMemberConfirmOpen}
+        title="Set Role to Member"
+        description={`Are you sure you want to set "${user.display_name || user.email}" as a member? All projects this user currently manages will be demoted to member access.`}
+        confirmLabel="Set as Member"
+        variant="default"
+        onConfirm={() => applyRoleUpdate({ role: "member" })}
+      />
 
       <ConfirmDialog
         open={revokingRole !== null}

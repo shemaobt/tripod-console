@@ -17,6 +17,11 @@ export interface UserUpdate {
   avatar_url?: string | null
 }
 
+export interface UserRoleUpdate {
+  role: UserRole;
+  project_ids?: string[];
+}
+
 export interface UserRoleResponse {
   app_key: string
   role_key: string
