@@ -50,6 +50,10 @@ import type {
   PhaseUpdate,
   PhaseDependencyResponse,
   ProjectPhaseResponse,
+  PublicLanguageOption,
+  PublicLanguageRequestCreate,
+  PublicProjectRequestCreate,
+  PublicRequestResponse,
 } from "@/types"
 
 const api = axios.create({
@@ -332,6 +336,14 @@ export const uploadsAPI = {
       headers: { "Content-Type": "multipart/form-data" },
     })
   },
+}
+
+export const publicAPI = {
+  listLanguages: () => api.get<PublicLanguageOption[]>("/public/languages"),
+  requestLanguage: (data: PublicLanguageRequestCreate) =>
+    api.post<PublicRequestResponse>("/public/requests/language", data),
+  requestProject: (data: PublicProjectRequestCreate) =>
+    api.post<PublicRequestResponse>("/public/requests/project", data),
 }
 
 export default api
