@@ -31,11 +31,14 @@ export function LanguageRequestForm({
   const [submitting, setSubmitting] = useState(false)
 
   const normalizedCode = code.trim().toLowerCase()
-  const codeExists = languages.some((lang) => lang.code === normalizedCode)
+  const normalizedName = name.trim().toLowerCase()
+  const codeExists = languages.some((lang) => lang.code.toLowerCase() === normalizedCode)
+  const nameExists = languages.some((lang) => lang.name.toLowerCase() === normalizedName)
   const canSubmit =
     requesterValid &&
     name.trim().length > 0 &&
-    normalizedCode.length === 3 &&
+    !nameExists &&
+    /^[A-Za-z]{3}$/.test(code.trim()) &&
     !codeExists &&
     (!RECAPTCHA_ENABLED || !!captchaToken) &&
     !submitting
@@ -59,13 +62,17 @@ export function LanguageRequestForm({
       })
       onSuccess()
     } catch (err: unknown) {
-      const status = (err as { response?: { status?: number } })?.response?.status
-      if (status === 409) {
-        toast.error("A language with this code already exists or was already requested")
-      } else if (status === 429) {
+      const response = (err as { response?: { status?: number; data?: { detail?: string } } })
+        ?.response
+      const detail = typeof response?.data?.detail === "string" ? response.data.detail : null
+      if (response?.status === 409) {
+        toast.error(detail || "A language with this name or code already exists")
+      } else if (response?.status === 429) {
         toast.error("Too many requests. Please wait a moment and try again.")
-      } else if (status === 400) {
-        toast.error("reCAPTCHA verification failed. Please try again.")
+      } else if (response?.status === 422) {
+        toast.error("Please check your email address and the form fields.")
+      } else if (response?.status === 400) {
+        toast.error(detail || "The request was rejected. Please try again.")
       } else {
         toast.error("Failed to submit the request")
       }
@@ -85,6 +92,11 @@ export function LanguageRequestForm({
           value={name}
           onChange={(e) => setName(e.target.value)}
         />
+        {nameExists && (
+          <p className="text-xs text-red-600 dark:text-red-400">
+            This language name is already registered in the system.
+          </p>
+        )}
       </div>
       <div className="space-y-2">
         <Label htmlFor="request-lang-code">
