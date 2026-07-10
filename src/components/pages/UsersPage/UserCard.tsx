@@ -1,6 +1,13 @@
 import { useNavigate } from "react-router"
-import { Calendar, Shield, ChevronRight } from "lucide-react"
-import type { UserListResponse, UserRoleResponse, AppResponse } from "@/types"
+import {
+  Calendar,
+  Shield,
+  ChevronRight,
+  UserCog,
+  User as UserIcon,
+  type LucideIcon,
+} from "lucide-react"
+import type { UserListResponse, UserRoleResponse, AppResponse, UserRole } from "@/types"
 import { cn } from "@/utils/cn"
 import { Badge } from "@/components/ui/badge"
 import { card } from "@/styles"
@@ -11,6 +18,15 @@ interface UserCardProps {
   user: UserListResponse
   roles: UserRoleResponse[]
   apps: AppResponse[]
+}
+
+const roleBadge: Record<
+  UserRole,
+  { variant: "admin" | "manager" | "member"; icon: LucideIcon; label: string }
+> = {
+  platform_admin: { variant: "admin", icon: Shield, label: "Admin" },
+  manager: { variant: "manager", icon: UserCog, label: "Manager" },
+  member: { variant: "member", icon: UserIcon, label: "Member" },
 }
 
 function getUniqueApps(roles: UserRoleResponse[], apps: AppResponse[]) {
@@ -24,6 +40,8 @@ function getUniqueApps(roles: UserRoleResponse[], apps: AppResponse[]) {
 export function UserCard({ user, roles, apps }: UserCardProps) {
   const navigate = useNavigate()
   const userApps = getUniqueApps(roles, apps)
+  const role = user.role ?? (user.is_platform_admin ? "platform_admin" : "member")
+  const { variant, icon: RoleIcon, label } = roleBadge[role]
 
   return (
     <div
@@ -54,12 +72,10 @@ export function UserCard({ user, roles, apps }: UserCardProps) {
             <Badge variant={user.is_active ? "active" : "inactive"}>
               {user.is_active ? "Active" : "Inactive"}
             </Badge>
-            {user.is_platform_admin && (
-              <Badge variant="admin">
-                <Shield className="h-3 w-3 mr-1" />
-                Admin
-              </Badge>
-            )}
+            <Badge variant={variant}>
+              <RoleIcon className="h-3 w-3 mr-1" />
+              {label}
+            </Badge>
           </div>
         </div>
       </div>
