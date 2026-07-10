@@ -12,6 +12,7 @@ const buttonVariants = cva(
         secondary: "bg-areia/20 text-verde hover:bg-areia/30",
         destructive: "bg-red-600 text-white hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-600",
         outline: "border border-areia bg-surface text-preto hover:bg-branco",
+        "outline-destructive": "border border-red-200 bg-surface text-red-600 hover:bg-red-50 hover:text-red-700 dark:border-red-800/40 dark:text-red-400 dark:hover:bg-red-950/30",
         ghost: "text-verde hover:bg-areia/10",
         link: "text-telha underline-offset-4 hover:underline",
       },

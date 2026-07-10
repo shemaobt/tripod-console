@@ -63,9 +63,9 @@ function UserInfoCard({
           </p>
         </div>
         <Button
-          variant="ghost"
+          variant="outline-destructive"
           size="sm"
-          className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/30 shrink-0"
+          className="shrink-0"
           onClick={onDelete}
         >
           <Trash2 className="h-4 w-4 mr-1.5" />
@@ -78,7 +78,7 @@ function UserInfoCard({
           <Badge variant={user.is_active ? "active" : "inactive"}>
             {user.is_active ? "Active" : "Inactive"}
           </Badge>
-          <Button variant="ghost" size="sm" onClick={onToggleActive}>
+          <Button variant="outline" size="sm" onClick={onToggleActive}>
             {user.is_active ? "Deactivate" : "Activate"}
           </Button>
         </div>
@@ -94,7 +94,7 @@ function UserInfoCard({
           ) : (
             <Badge variant="default">No</Badge>
           )}
-          <Button variant="ghost" size="sm" onClick={onToggleAdmin}>
+          <Button variant="outline" size="sm" onClick={onToggleAdmin}>
             {user.is_platform_admin ? "Remove Admin" : "Make Admin"}
           </Button>
         </div>
