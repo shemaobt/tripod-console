@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { Link } from "react-router-dom"
 import { toast } from "sonner"
 import { CheckCircle2 } from "lucide-react"
@@ -18,24 +18,29 @@ export default function PublicRequestPage() {
   const [requesterEmail, setRequesterEmail] = useState("")
   const [languages, setLanguages] = useState<PublicLanguageOption[]>([])
   const [languagesLoading, setLanguagesLoading] = useState(true)
+  const [languagesError, setLanguagesError] = useState(false)
   const [submittedEmail, setSubmittedEmail] = useState<string | null>(null)
 
   const requesterValid =
     requesterName.trim().length > 0 && EMAIL_PATTERN.test(requesterEmail.trim())
 
-  useEffect(() => {
-    async function fetchLanguages() {
-      try {
-        const { data } = await publicAPI.listLanguages()
-        setLanguages(data)
-      } catch {
-        toast.error("Failed to load languages")
-      } finally {
-        setLanguagesLoading(false)
-      }
+  const fetchLanguages = useCallback(async () => {
+    setLanguagesLoading(true)
+    setLanguagesError(false)
+    try {
+      const { data } = await publicAPI.listLanguages()
+      setLanguages(data)
+    } catch {
+      setLanguagesError(true)
+      toast.error("Failed to load languages")
+    } finally {
+      setLanguagesLoading(false)
     }
-    fetchLanguages()
   }, [])
+
+  useEffect(() => {
+    fetchLanguages()
+  }, [fetchLanguages])
 
   function handleSuccess() {
     setSubmittedEmail(requesterEmail.trim())
@@ -146,17 +151,27 @@ export default function PublicRequestPage() {
                       Language
                     </TabsTrigger>
                   </TabsList>
-                  <TabsContent value="project">
+                  <TabsContent
+                    value="project"
+                    forceMount
+                    className="data-[state=inactive]:hidden"
+                  >
                     <ProjectRequestForm
                       requesterName={requesterName}
                       requesterEmail={requesterEmail}
                       requesterValid={requesterValid}
                       languages={languages}
                       languagesLoading={languagesLoading}
+                      languagesError={languagesError}
+                      onRetryLanguages={fetchLanguages}
                       onSuccess={handleSuccess}
                     />
                   </TabsContent>
-                  <TabsContent value="language">
+                  <TabsContent
+                    value="language"
+                    forceMount
+                    className="data-[state=inactive]:hidden"
+                  >
                     <LanguageRequestForm
                       requesterName={requesterName}
                       requesterEmail={requesterEmail}

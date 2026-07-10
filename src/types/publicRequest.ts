@@ -17,7 +17,9 @@ export interface PublicProjectRequestCreate {
   requester_email: string
   name: string
   description?: string | null
-  language_id: string
+  language_id?: string
+  new_language_name?: string
+  new_language_code?: string
   recaptcha_token?: string
 }
 
@@ -31,5 +33,7 @@ export interface PublicRequestResponse {
   code: string | null
   description: string | null
   language_id: string | null
+  new_language_name: string | null
+  new_language_code: string | null
   requested_at: string
 }
