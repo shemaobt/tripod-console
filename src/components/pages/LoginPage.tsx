@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { Navigate } from "react-router-dom"
+import { Link, Navigate } from "react-router-dom"
 import { toast } from "sonner"
 import { useAuth } from "@/contexts/AuthContext"
 import { Input } from "@/components/ui/input"
@@ -182,9 +182,17 @@ export default function LoginPage() {
 
             {/* Footer */}
             <div className="mt-10 pt-6 border-t border-areia/15 flex items-center justify-between">
-              <p className="text-sm text-verde/40">
-                Need access? Contact your administrator.
-              </p>
+              <div className="space-y-1">
+                <p className="text-sm text-verde/40">
+                  Need access? Contact your administrator.
+                </p>
+                <Link
+                  to="/request"
+                  className="text-sm font-medium text-telha hover:underline"
+                >
+                  Request a new project or language
+                </Link>
+              </div>
               <div className="hidden lg:flex items-center gap-2">
                 <div className="h-6 w-6 rounded-md bg-telha/8 flex items-center justify-center">
                   <img src="/assets/icon-dark.svg" alt="" className="h-3.5 w-3.5 opacity-35" />
