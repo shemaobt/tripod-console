@@ -2,8 +2,9 @@ import { useEffect, useRef } from "react"
 
 const SCRIPT_ID = "recaptcha-api-script"
 const SCRIPT_SRC = "https://www.google.com/recaptcha/api.js?render=explicit"
-const TEST_SITE_KEY = "6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI"
-const SITE_KEY = import.meta.env.VITE_RECAPTCHA_SITE_KEY || TEST_SITE_KEY
+const SITE_KEY = import.meta.env.VITE_RECAPTCHA_SITE_KEY ?? ""
+
+export const RECAPTCHA_ENABLED = SITE_KEY.length > 0
 
 interface GreCaptcha {
   render: (
@@ -38,6 +39,7 @@ export function ReCaptcha({ onChange }: ReCaptchaProps) {
   }, [onChange])
 
   useEffect(() => {
+    if (!RECAPTCHA_ENABLED) return
     if (!document.getElementById(SCRIPT_ID)) {
       const script = document.createElement("script")
       script.id = SCRIPT_ID
@@ -64,6 +66,8 @@ export function ReCaptcha({ onChange }: ReCaptchaProps) {
 
     return () => window.clearInterval(interval)
   }, [])
+
+  if (!RECAPTCHA_ENABLED) return null
 
   return <div ref={containerRef} className="min-h-[78px]" />
 }

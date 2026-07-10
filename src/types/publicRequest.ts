@@ -9,7 +9,7 @@ export interface PublicLanguageRequestCreate {
   requester_email: string
   name: string
   code: string
-  recaptcha_token: string
+  recaptcha_token?: string
 }
 
 export interface PublicProjectRequestCreate {
@@ -18,7 +18,7 @@ export interface PublicProjectRequestCreate {
   name: string
   description?: string | null
   language_id: string
-  recaptcha_token: string
+  recaptcha_token?: string
 }
 
 export interface PublicRequestResponse {

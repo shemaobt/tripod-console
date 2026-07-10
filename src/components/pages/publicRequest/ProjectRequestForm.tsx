@@ -14,7 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { InfoTooltip } from "@/components/common/InfoTooltip"
-import { ReCaptcha } from "@/components/common/ReCaptcha"
+import { ReCaptcha, RECAPTCHA_ENABLED } from "@/components/common/ReCaptcha"
 import { Loader2 } from "lucide-react"
 
 interface ProjectRequestFormProps {
@@ -45,7 +45,7 @@ export function ProjectRequestForm({
     requesterValid &&
     name.trim().length > 0 &&
     languageId.length > 0 &&
-    !!captchaToken &&
+    (!RECAPTCHA_ENABLED || !!captchaToken) &&
     !submitting
 
   function resetCaptcha() {
@@ -55,7 +55,7 @@ export function ProjectRequestForm({
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!canSubmit || !captchaToken) return
+    if (!canSubmit) return
     setSubmitting(true)
     try {
       await publicAPI.requestProject({
@@ -64,12 +64,14 @@ export function ProjectRequestForm({
         name: name.trim(),
         description: description.trim() || undefined,
         language_id: languageId,
-        recaptcha_token: captchaToken,
+        recaptcha_token: captchaToken ?? undefined,
       })
       onSuccess()
     } catch (err: unknown) {
       const status = (err as { response?: { status?: number } })?.response?.status
-      if (status === 400) {
+      if (status === 429) {
+        toast.error("Too many requests. Please wait a moment and try again.")
+      } else if (status === 400) {
         toast.error("reCAPTCHA verification failed. Please try again.")
       } else {
         toast.error("Failed to submit the request")

@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { InfoTooltip } from "@/components/common/InfoTooltip"
-import { ReCaptcha } from "@/components/common/ReCaptcha"
+import { ReCaptcha, RECAPTCHA_ENABLED } from "@/components/common/ReCaptcha"
 import { Loader2 } from "lucide-react"
 
 interface LanguageRequestFormProps {
@@ -37,7 +37,7 @@ export function LanguageRequestForm({
     name.trim().length > 0 &&
     normalizedCode.length === 3 &&
     !codeExists &&
-    !!captchaToken &&
+    (!RECAPTCHA_ENABLED || !!captchaToken) &&
     !submitting
 
   function resetCaptcha() {
@@ -47,7 +47,7 @@ export function LanguageRequestForm({
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!canSubmit || !captchaToken) return
+    if (!canSubmit) return
     setSubmitting(true)
     try {
       await publicAPI.requestLanguage({
@@ -55,13 +55,15 @@ export function LanguageRequestForm({
         requester_email: requesterEmail.trim(),
         name: name.trim(),
         code: normalizedCode,
-        recaptcha_token: captchaToken,
+        recaptcha_token: captchaToken ?? undefined,
       })
       onSuccess()
     } catch (err: unknown) {
       const status = (err as { response?: { status?: number } })?.response?.status
       if (status === 409) {
         toast.error("A language with this code already exists or was already requested")
+      } else if (status === 429) {
+        toast.error("Too many requests. Please wait a moment and try again.")
       } else if (status === 400) {
         toast.error("reCAPTCHA verification failed. Please try again.")
       } else {
