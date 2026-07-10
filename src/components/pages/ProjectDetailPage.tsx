@@ -256,10 +256,9 @@ function LocationSection({
         </Button>
         {(location || manualLat || manualLng) && (
           <Button
-            variant="ghost"
+            variant="outline-destructive"
             size="sm"
             onClick={handleClearLocation}
-            className="text-red-600 dark:text-red-400"
           >
             Clear Location
           </Button>
