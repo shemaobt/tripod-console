@@ -13,6 +13,8 @@ const badgeVariants = cva(
         active: "bg-verde-claro/20 text-verde-claro",
         inactive: "bg-areia/30 text-verde",
         admin: "bg-telha/15 text-telha border border-telha/30",
+        manager: "bg-azul/25 text-verde border border-azul/60",
+        member: "bg-areia/30 text-verde border border-areia",
       },
     },
     defaultVariants: {

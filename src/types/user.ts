@@ -1,3 +1,5 @@
+export type UserRole = "member" | "manager" | "platform_admin";
+
 export interface UserListResponse {
   id: string
   email: string
@@ -5,6 +7,7 @@ export interface UserListResponse {
   avatar_url: string | null
   is_active: boolean
   is_platform_admin: boolean
+  role?: UserRole;
   created_at: string
 }
 
@@ -12,6 +15,11 @@ export interface UserUpdate {
   is_active?: boolean
   is_platform_admin?: boolean
   avatar_url?: string | null
+}
+
+export interface UserRoleUpdate {
+  role: UserRole;
+  project_ids?: string[];
 }
 
 export interface UserRoleResponse {
