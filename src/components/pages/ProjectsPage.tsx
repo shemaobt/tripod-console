@@ -64,6 +64,7 @@ export default function ProjectsPage() {
 
   useEffect(() => {
     fetchProjects()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   function openCreateDialog() {
