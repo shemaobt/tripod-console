@@ -12,12 +12,14 @@ export function UserSearchPicker({
   selectedUser,
   onSelect,
   excludeIds,
+  excludePlatformAdmins,
   label,
   placeholder,
 }: {
   selectedUser: UserListResponse | null
   onSelect: (user: UserListResponse | null) => void
   excludeIds?: string[]
+  excludePlatformAdmins?: boolean
   label?: string
   placeholder?: string
 }) {
@@ -68,9 +70,11 @@ export function UserSearchPicker({
     return () => document.removeEventListener("mousedown", handleClickOutside)
   }, [])
 
-  const filtered = excludeIds
-    ? results.filter((u) => !excludeIds.includes(u.id))
-    : results
+  const filtered = results.filter(
+    (u) =>
+      !(excludePlatformAdmins && u.is_platform_admin) &&
+      !excludeIds?.includes(u.id),
+  )
 
   return (
     <div ref={containerRef} className="space-y-1.5">
@@ -129,7 +133,9 @@ export function UserSearchPicker({
                 </div>
               ) : filtered.length === 0 ? (
                 <p className="text-sm text-verde/50 text-center py-4">
-                  {results.length > 0 && excludeIds ? "All results already added" : "No users found"}
+                  {results.length > 0
+                    ? "All matching users are already added or unavailable"
+                    : "No users found"}
                 </p>
               ) : (
                 filtered.map((user) => (
