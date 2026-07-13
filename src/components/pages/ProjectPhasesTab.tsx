@@ -1,25 +1,17 @@
 import { useEffect, useState, useMemo, useCallback, useRef } from "react"
-import { Plus, X, Check, Circle, Loader2, AlertTriangle, GitBranch } from "lucide-react"
+import { Check, Circle, Loader2, AlertTriangle, GitBranch } from "lucide-react"
 import { toast } from "sonner"
 import { projectsAPI } from "@/services/api"
-import { usePhasesStore } from "@/stores/phasesStore"
-import type { ProjectPhaseResponse } from "@/types"
+import { PHASE_STATUSES } from "@/types"
+import type { PhaseStatus, ProjectPhaseResponse } from "@/types"
 import { cn } from "@/utils/cn"
 import { card } from "@/styles"
-import { Button } from "@/components/ui/button"
 import { LoadingSpinner } from "@/components/common/LoadingSpinner"
 import { EmptyState } from "@/components/common/EmptyState"
 import { InfoTooltip } from "@/components/common/InfoTooltip"
 import {
-  Dialog, DialogContent, DialogDescription, DialogFooter,
-  DialogHeader, DialogTitle,
-} from "@/components/ui/dialog"
-import {
   Popover, PopoverContent, PopoverTrigger,
 } from "@/components/ui/popover"
-import { ConfirmDialog } from "@/components/common/ConfirmDialog"
-
-type PhaseStatus = "not_started" | "in_progress" | "completed" | "blocked"
 
 const STATUS_CONFIG: Record<PhaseStatus, {
   label: string
@@ -52,8 +44,6 @@ const STATUS_CONFIG: Record<PhaseStatus, {
     icon: AlertTriangle,
   },
 }
-
-const ALL_STATUSES: PhaseStatus[] = ["not_started", "in_progress", "completed", "blocked"]
 
 const NODE_WIDTH = 180
 const NODE_HEIGHT = 64
@@ -138,7 +128,7 @@ function buildLayout(
       const node: LayoutNode = {
         phaseId: id,
         name: phase.phase_name,
-        status: phase.status as PhaseStatus,
+        status: phase.status,
         col,
         row,
         x,
@@ -177,11 +167,9 @@ function buildLayout(
 function PhaseNode({
   node,
   onStatusClick,
-  onDetach,
 }: {
   node: LayoutNode
   onStatusClick: (node: LayoutNode) => void
-  onDetach: (node: LayoutNode) => void
 }) {
   const config = STATUS_CONFIG[node.status]
   const StatusIcon = config.icon
@@ -191,7 +179,7 @@ function PhaseNode({
       <foreignObject x={node.x} y={node.y} width={NODE_WIDTH} height={NODE_HEIGHT}>
         <div
           className={cn(
-            "h-full rounded-lg border-2 px-3 py-2 flex flex-col justify-center cursor-pointer transition-all duration-200 hover:shadow-md group relative",
+            "h-full rounded-lg border-2 px-3 py-2 flex flex-col justify-center cursor-pointer transition-all duration-200 hover:shadow-md",
             config.nodeClasses,
           )}
           onClick={() => onStatusClick(node)}
@@ -210,16 +198,6 @@ function PhaseNode({
               {config.label}
             </span>
           </div>
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation()
-              onDetach(node)
-            }}
-            className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity p-0.5 rounded hover:bg-red-100 dark:hover:bg-red-950/30"
-          >
-            <X className="h-3 w-3 text-red-500 dark:text-red-400" />
-          </button>
         </div>
       </foreignObject>
     </g>
@@ -263,7 +241,7 @@ function StatusPopover({
       <PopoverContent side="right" className="w-48 p-2">
         <p className="text-xs font-medium text-verde mb-2 px-2">Update Status</p>
         <div className="space-y-0.5">
-          {ALL_STATUSES.map((status) => {
+          {PHASE_STATUSES.map((status) => {
             const config = STATUS_CONFIG[status]
             const StatusIcon = config.icon
             const isActive = node.status === status
@@ -291,112 +269,11 @@ function StatusPopover({
   )
 }
 
-function AttachPhaseDialog({
-  open,
-  onOpenChange,
-  projectId,
-  attachedPhaseIds,
-  onAttached,
-}: {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  projectId: string
-  attachedPhaseIds: Set<string>
-  onAttached: () => void
-}) {
-  const { phases: allPhases, loading, fetch: fetchGlobalPhases } = usePhasesStore()
-  const [attaching, setAttaching] = useState<string | null>(null)
-
-  useEffect(() => {
-    if (!open) return
-    fetchGlobalPhases()
-  }, [open, fetchGlobalPhases])
-
-  const available = useMemo(
-    () => allPhases.filter((p) => !attachedPhaseIds.has(p.id)),
-    [allPhases, attachedPhaseIds],
-  )
-
-  async function handleAttach(phaseId: string) {
-    setAttaching(phaseId)
-    try {
-      await projectsAPI.attachPhase(projectId, phaseId)
-      toast.success("Phase attached to project")
-      onAttached()
-    } catch {
-      toast.error("Failed to attach phase")
-    } finally {
-      setAttaching(null)
-    }
-  }
-
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Attach Phase</DialogTitle>
-          <DialogDescription>
-            Select a global phase to attach to this project. Attached phases can be tracked with status updates.
-          </DialogDescription>
-        </DialogHeader>
-        <div className="max-h-64 overflow-y-auto -mx-2">
-          {loading ? (
-            <LoadingSpinner size="sm" />
-          ) : available.length === 0 ? (
-            <p className="text-sm text-verde/60 text-center py-6">
-              {allPhases.length === 0
-                ? "No global phases have been created yet."
-                : "All available phases are already attached."}
-            </p>
-          ) : (
-            <div className="space-y-1 px-2">
-              {available.map((phase) => (
-                <div
-                  key={phase.id}
-                  className="flex items-center justify-between px-3 py-2.5 rounded-lg hover:bg-surface-alt/50 transition-colors"
-                >
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium text-preto truncate">{phase.name}</p>
-                    {phase.description && (
-                      <p className="text-xs text-verde/60 truncate mt-0.5">{phase.description}</p>
-                    )}
-                  </div>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => handleAttach(phase.id)}
-                    disabled={attaching === phase.id}
-                    className="ml-3 shrink-0"
-                  >
-                    {attaching === phase.id ? (
-                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                    ) : (
-                      <Plus className="h-3.5 w-3.5" />
-                    )}
-                    Attach
-                  </Button>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-        <DialogFooter className="border-t border-areia/10 pt-4 mt-2">
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Close
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  )
-}
-
 export function ProjectPhasesTab({ projectId }: { projectId: string }) {
   const [phases, setPhases] = useState<ProjectPhaseResponse[]>([])
   const [deps, setDeps] = useState<Map<string, string[]>>(new Map())
   const [loading, setLoading] = useState(true)
-  const [attachOpen, setAttachOpen] = useState(false)
   const [statusNode, setStatusNode] = useState<LayoutNode | null>(null)
-  const [detachTarget, setDetachTarget] = useState<LayoutNode | null>(null)
   const statusAnchorRef = useRef<HTMLDivElement>(null)
 
   const fetchPhases = useCallback(async () => {
@@ -420,7 +297,6 @@ export function ProjectPhasesTab({ projectId }: { projectId: string }) {
   }, [fetchPhases])
 
   const layout = useMemo(() => buildLayout(phases, deps), [phases, deps])
-  const attachedIds = useMemo(() => new Set(phases.map((p) => p.phase_id)), [phases])
 
   async function handleStatusUpdate(phaseId: string, status: PhaseStatus) {
     setStatusNode(null)
@@ -433,22 +309,6 @@ export function ProjectPhasesTab({ projectId }: { projectId: string }) {
     }
   }
 
-  async function handleDetach() {
-    if (!detachTarget) return
-    try {
-      await projectsAPI.detachPhase(projectId, detachTarget.phaseId)
-      toast.success("Phase detached from project")
-      setDetachTarget(null)
-      await fetchPhases()
-    } catch {
-      toast.error("Failed to detach phase")
-    }
-  }
-
-  function handleAttached() {
-    fetchPhases()
-  }
-
   if (loading) {
     return <LoadingSpinner />
   }
@@ -458,21 +318,15 @@ export function ProjectPhasesTab({ projectId }: { projectId: string }) {
       <div className="flex items-center justify-between">
         <h3 className="text-base font-semibold text-preto tracking-tight flex items-center">
           Phases
-          <InfoTooltip content="Track project progress through phases. Each phase can have a status that reflects its current state within this project." />
+          <InfoTooltip content="Every phase defined by a platform admin applies to all projects. Set each phase's status to track this project's progress." />
         </h3>
-        <Button size="sm" onClick={() => setAttachOpen(true)}>
-          <Plus className="h-4 w-4" />
-          Attach Phase
-        </Button>
       </div>
 
       {phases.length === 0 ? (
         <EmptyState
           icon={GitBranch}
-          title="No phases attached"
-          description="Attach global phases to this project to track progress through each stage. Phases can have dependencies that define the workflow order."
-          actionLabel="Attach Phase"
-          onAction={() => setAttachOpen(true)}
+          title="No phases defined yet"
+          description="Phases and their dependencies are defined by a platform admin and apply to every project. Once created, they appear here and you can track this project's progress by setting each phase's status."
         />
       ) : (
         <div className={cn(card.base, "overflow-hidden")}>
@@ -505,7 +359,6 @@ export function ProjectPhasesTab({ projectId }: { projectId: string }) {
                   key={node.phaseId}
                   node={node}
                   onStatusClick={setStatusNode}
-                  onDetach={setDetachTarget}
                 />
               ))}
             </svg>
@@ -518,28 +371,10 @@ export function ProjectPhasesTab({ projectId }: { projectId: string }) {
             />
           </div>
           <div className="px-4 py-2.5 border-t border-areia/10 bg-surface-alt/30">
-            <p className="text-xs text-verde/50">Click a phase to update its status. Hover and click the x to detach.</p>
+            <p className="text-xs text-verde/50">Click a phase to update its status.</p>
           </div>
         </div>
       )}
-
-      <AttachPhaseDialog
-        open={attachOpen}
-        onOpenChange={setAttachOpen}
-        projectId={projectId}
-        attachedPhaseIds={attachedIds}
-        onAttached={handleAttached}
-      />
-
-      <ConfirmDialog
-        open={detachTarget !== null}
-        onOpenChange={(open) => { if (!open) setDetachTarget(null) }}
-        title="Detach Phase"
-        description={`Are you sure you want to detach "${detachTarget?.name ?? "this phase"}" from the project? The phase status for this project will be removed.`}
-        confirmLabel="Detach"
-        variant="destructive"
-        onConfirm={handleDetach}
-      />
     </div>
   )
 }

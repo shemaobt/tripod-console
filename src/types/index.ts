@@ -80,6 +80,7 @@ export type {
   PhaseUpdate,
   PhaseDependencyResponse,
   ProjectPhaseResponse,
+  PhaseStatus,
 } from "./phase"
 
 export type {
@@ -88,3 +89,5 @@ export type {
   PublicProjectRequestCreate,
   PublicRequestResponse,
 } from "./publicRequest"
+
+export { PHASE_STATUSES } from "./phase"

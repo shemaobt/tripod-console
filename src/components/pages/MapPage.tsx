@@ -5,7 +5,7 @@ import L from "leaflet"
 import "leaflet/dist/leaflet.css"
 import { Globe, MapPin, ChevronLeft, ChevronRight, Search } from "lucide-react"
 import { projectsAPI } from "@/services/api"
-import type { ProjectResponse, ProjectPhaseResponse } from "@/types"
+import type { PhaseStatus, ProjectResponse, ProjectPhaseResponse } from "@/types"
 import { useLanguagesStore } from "@/stores/languagesStore"
 import { LoadingSpinner } from "@/components/common/LoadingSpinner"
 import { Input } from "@/components/ui/input"
@@ -42,7 +42,7 @@ function FlyToProject({ lat, lng }: { lat: number; lng: number }) {
   return null
 }
 
-const PHASE_STATUS_COLORS: Record<string, { bg: string; text: string; dot: string }> = {
+const PHASE_STATUS_COLORS: Record<PhaseStatus, { bg: string; text: string; dot: string }> = {
   not_started: { bg: `${AREIA}30`, text: VERDE, dot: `${AREIA}` },
   in_progress: { bg: `${AZUL}30`, text: AZUL, dot: AZUL },
   completed: { bg: "#777D4530", text: "#777D45", dot: "#777D45" },
@@ -141,7 +141,7 @@ function ProjectPopupContent({
           </div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
             {phases.map((p) => {
-              const colors = PHASE_STATUS_COLORS[p.status] ?? PHASE_STATUS_COLORS.not_started
+              const colors = PHASE_STATUS_COLORS[p.status]
               return (
                 <span
                   key={p.phase_id}

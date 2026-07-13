@@ -35,11 +35,11 @@ const mainNavItems = [
 const contentNavItems = [
   { to: "/app/languages", label: "Languages", icon: Languages },
   { to: "/app/projects", label: "Projects", icon: FolderOpen },
-  { to: "/app/phases", label: "Phases", icon: GitBranch },
   { to: "/app/map", label: "Map", icon: Globe },
 ]
 
 const adminNavItems = [
+  { to: "/app/phases", label: "Phases", icon: GitBranch },
   { to: "/app/users", label: "Users", icon: Users },
   { to: "/app/apps", label: "Manage Apps", icon: AppWindow },
 ]
