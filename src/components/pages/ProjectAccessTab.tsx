@@ -322,6 +322,8 @@ export function ProjectAccessTab({ projectId }: { projectId: string }) {
         ?.status
       if (status === 409) {
         toast.error("This user already has access to the project")
+      } else if (status === 400) {
+        toast.error("Platform admins can't be added to a project")
       } else {
         toast.error("Failed to grant user access")
       }
@@ -420,6 +422,7 @@ export function ProjectAccessTab({ projectId }: { projectId: string }) {
                 selectedUser={selectedUser}
                 onSelect={setSelectedUser}
                 excludeIds={userAccess.map((u) => u.user_id)}
+                excludePlatformAdmins
                 label="User"
                 placeholder="Search users by email or name..."
               />
