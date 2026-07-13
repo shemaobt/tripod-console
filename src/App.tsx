@@ -47,7 +47,7 @@ function App() {
               <Route path="users/:userId" element={<AdminRoute><UserDetailPage /></AdminRoute>} />
               <Route path="apps" element={<AdminRoute><AppsPage /></AdminRoute>} />
               <Route path="apps/:appId" element={<AdminRoute><AppDetailPage /></AdminRoute>} />
-              <Route path="phases" element={<PhasesPage />} />
+              <Route path="phases" element={<AdminRoute><PhasesPage /></AdminRoute>} />
               <Route path="map" element={<MapPage />} />
             </Route>
 
