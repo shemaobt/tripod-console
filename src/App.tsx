@@ -17,9 +17,11 @@ import PhasesPage from "@/components/pages/PhasesPage"
 import MapPage from "@/components/pages/MapPage"
 import NotFoundPage from "@/components/pages/NotFoundPage"
 import AccessDeniedPage from "@/components/pages/AccessDeniedPage"
+import { LoadingSpinner } from "@/components/common/LoadingSpinner"
 
 function AdminRoute({ children }: { children: React.ReactNode }) {
-  const { isPlatformAdmin } = useAuth()
+  const { isPlatformAdmin, isLoading } = useAuth()
+  if (isLoading) return <LoadingSpinner size="lg" />
   if (!isPlatformAdmin) return <AccessDeniedPage />
   return <>{children}</>
 }

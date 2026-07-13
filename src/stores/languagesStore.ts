@@ -8,6 +8,7 @@ interface LanguagesStore {
   lastFetched: number | null
   fetch: () => Promise<LanguageResponse[]>
   invalidate: () => void
+  reset: () => void
   getLanguageName: (langId: string) => string
 }
 
@@ -48,6 +49,10 @@ export const useLanguagesStore = create<LanguagesStore>((set, get) => ({
 
   invalidate: () => {
     set({ lastFetched: null })
+  },
+
+  reset: () => {
+    set({ languages: [], loading: false, lastFetched: null })
   },
 
   getLanguageName: (langId: string) => {
