@@ -4,6 +4,7 @@ import { ThemeProvider } from "@/contexts/ThemeContext"
 import { AuthProvider, useAuth } from "@/contexts/AuthContext"
 import AppShell from "@/components/layout/AppShell"
 import LoginPage from "@/components/pages/LoginPage"
+import PublicRequestPage from "@/components/pages/publicRequest"
 import DashboardPage from "@/components/pages/DashboardPage"
 import LanguagesPage from "@/components/pages/LanguagesPage"
 import OrganizationsPage from "@/components/pages/OrganizationsPage"
@@ -32,6 +33,7 @@ function App() {
         <AuthProvider>
           <Routes>
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/request" element={<PublicRequestPage />} />
 
             <Route path="/" element={<Navigate to="/app/dashboard" replace />} />
 

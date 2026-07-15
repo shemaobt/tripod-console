@@ -68,3 +68,10 @@ export type {
   PhaseDependencyResponse,
   ProjectPhaseResponse,
 } from "./phase"
+
+export type {
+  PublicLanguageOption,
+  PublicLanguageRequestCreate,
+  PublicProjectRequestCreate,
+  PublicRequestResponse,
+} from "./publicRequest"

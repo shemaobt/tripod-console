@@ -43,11 +43,27 @@ import type {
   PhaseUpdate,
   PhaseDependencyResponse,
   ProjectPhaseResponse,
+  PublicLanguageOption,
+  PublicLanguageRequestCreate,
+  PublicProjectRequestCreate,
+  PublicRequestResponse,
 } from "@/types"
 
 const api = axios.create({
   baseURL: "/api",
 })
+
+const PUBLIC_PATHS = ["/request"]
+
+function redirectToLoginUnlessPublic() {
+  const { pathname } = window.location
+  const isPublic = PUBLIC_PATHS.some(
+    (path) => pathname === path || pathname.startsWith(`${path}/`),
+  )
+  if (!isPublic) {
+    window.location.href = "/login"
+  }
+}
 
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem(ACCESS_TOKEN_KEY)
@@ -100,7 +116,7 @@ api.interceptors.response.use(
       isRefreshing = false
       localStorage.removeItem(ACCESS_TOKEN_KEY)
       localStorage.removeItem(REFRESH_TOKEN_KEY)
-      window.location.href = "/login"
+      redirectToLoginUnlessPublic()
       return Promise.reject(error)
     }
 
@@ -117,7 +133,7 @@ api.interceptors.response.use(
       processQueue(refreshError, null)
       localStorage.removeItem(ACCESS_TOKEN_KEY)
       localStorage.removeItem(REFRESH_TOKEN_KEY)
-      window.location.href = "/login"
+      redirectToLoginUnlessPublic()
       return Promise.reject(refreshError)
     } finally {
       isRefreshing = false
@@ -302,6 +318,14 @@ export const uploadsAPI = {
       headers: { "Content-Type": "multipart/form-data" },
     })
   },
+}
+
+export const publicAPI = {
+  listLanguages: () => api.get<PublicLanguageOption[]>("/public/languages"),
+  requestLanguage: (data: PublicLanguageRequestCreate) =>
+    api.post<PublicRequestResponse>("/public/requests/language", data),
+  requestProject: (data: PublicProjectRequestCreate) =>
+    api.post<PublicRequestResponse>("/public/requests/project", data),
 }
 
 export default api
