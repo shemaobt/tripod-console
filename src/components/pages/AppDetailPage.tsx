@@ -33,6 +33,7 @@ import { InfoTooltip } from "@/components/common/InfoTooltip"
 import { ImageUpload } from "@/components/common/ImageUpload"
 import { PlatformMultiSelect } from "@/components/common/PlatformMultiSelect"
 import { ConfirmDialog } from "@/components/common/ConfirmDialog"
+import { platformLabel } from "@/constants/platforms"
 import { Switch } from "@/components/ui/switch"
 
 import { formatDate } from "@/utils/format"
@@ -74,7 +75,9 @@ function AppInfoCard({
       )}
 
       <div className="flex flex-wrap gap-3 mb-4">
-        <Badge variant="default">{app.platforms[0] ?? "web"}</Badge>
+        {app.platforms.map((platform) => (
+          <Badge key={platform} variant="default">{platformLabel(platform)}</Badge>
+        ))}
         <Badge variant={app.is_active ? "active" : "inactive"}>
           {app.is_active ? "Active" : "Inactive"}
         </Badge>
