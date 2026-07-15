@@ -9,6 +9,7 @@ interface PhasesStore {
   lastFetched: number | null
   fetch: () => Promise<void>
   invalidate: () => void
+  reset: () => void
 }
 
 const CACHE_TTL = 2 * 60 * 1000 // 2 minutes
@@ -45,5 +46,9 @@ export const usePhasesStore = create<PhasesStore>((set, get) => ({
 
   invalidate: () => {
     set({ lastFetched: null })
+  },
+
+  reset: () => {
+    set({ phases: [], dependencies: new Map(), loading: false, lastFetched: null })
   },
 }))
