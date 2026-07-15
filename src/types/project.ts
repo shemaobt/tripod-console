@@ -6,6 +6,7 @@ export interface ProjectResponse {
   latitude: number | null
   longitude: number | null
   location_display_name: string | null
+  team_size: number
   created_at: string
   updated_at: string
 }
