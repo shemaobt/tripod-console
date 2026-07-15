@@ -1,6 +1,5 @@
 import { X } from "lucide-react"
 import type { PhaseResponse } from "@/types"
-import { card } from "@/styles"
 import { Button } from "@/components/ui/button"
 import {
   Select,
@@ -31,9 +30,9 @@ export function DependencyPanel({
   )
 
   return (
-    <div className={card.padded}>
-      <h4 className="text-sm font-semibold text-preto mb-3">
-        Dependencies for &ldquo;{selectedPhase.name}&rdquo;
+    <div>
+      <h4 className="text-xs font-semibold text-verde/70 uppercase tracking-wide mb-2">
+        Dependencies
       </h4>
 
       {depPhases.length > 0 ? (
