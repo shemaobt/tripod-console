@@ -8,8 +8,18 @@ import {
   ArrowRight,
   Bell,
 } from "lucide-react"
-import { usersAPI, projectsAPI, orgsAPI, accessRequestsAPI } from "@/services/api"
-import type { UserListResponse, AccessRequestResponse } from "@/types"
+import {
+  usersAPI,
+  projectsAPI,
+  orgsAPI,
+  accessRequestsAPI,
+  changeRequestsAPI,
+} from "@/services/api"
+import type {
+  UserListResponse,
+  AccessRequestResponse,
+  ChangeRequestResponse,
+} from "@/types"
 import { Badge } from "@/components/ui/badge"
 import { StatCard } from "@/components/common/StatCard"
 import { InfoTooltip } from "@/components/common/InfoTooltip"
@@ -22,6 +32,7 @@ interface AdminData {
   projectsWithLocation: number
   orgCount: number
   pendingRequests: AccessRequestResponse[]
+  pendingChangeRequests: ChangeRequestResponse[]
 }
 
 export function AdminDashboard() {
@@ -31,11 +42,16 @@ export function AdminDashboard() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const [usersRes, projectsRes, orgsRes, requestsRes] = await Promise.all([
+        const [usersRes, projectsRes, orgsRes, accessRes, changeRes] = await Promise.all([
           usersAPI.list(),
           projectsAPI.list(),
           orgsAPI.list(),
-          accessRequestsAPI.list({ status: "pending" }),
+          accessRequestsAPI
+            .list({ status: "pending" })
+            .catch(() => ({ data: [] as AccessRequestResponse[] })),
+          changeRequestsAPI
+            .list({ status: "pending" })
+            .catch(() => ({ data: [] as ChangeRequestResponse[] })),
         ])
         setData({
           users: usersRes.data,
@@ -44,7 +60,8 @@ export function AdminDashboard() {
             (p) => p.latitude != null && p.longitude != null,
           ).length,
           orgCount: orgsRes.data.length,
-          pendingRequests: requestsRes.data,
+          pendingRequests: accessRes.data,
+          pendingChangeRequests: changeRes.data,
         })
       } catch {
         // Stats are non-critical
@@ -59,6 +76,7 @@ export function AdminDashboard() {
 
   const activeUsers = data.users.filter((u) => u.is_active).length
   const userMap = new Map(data.users.map((u) => [u.id, u]))
+  const totalPending = data.pendingRequests.length + data.pendingChangeRequests.length
 
   return (
     <div className="space-y-8">
@@ -108,11 +126,11 @@ export function AdminDashboard() {
         <StatCard
           icon={Clock}
           label="Pending Requests"
-          value={data.pendingRequests.length}
+          value={totalPending}
           iconBg="bg-telha/10"
           iconColor="text-telha"
           accent="from-telha/5 to-transparent"
-          highlight={data.pendingRequests.length > 0}
+          highlight={totalPending > 0}
         />
       </div>
 
