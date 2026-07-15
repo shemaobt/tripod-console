@@ -16,6 +16,7 @@ import type {
   AppRoleResponse,
   LanguageResponse,
   LanguageCreate,
+  LanguageUpdate,
   OrganizationResponse,
   OrganizationCreate,
   OrganizationUpdate,
@@ -170,6 +171,8 @@ export const languagesAPI = {
   list: () => api.get<LanguageResponse[]>("/languages"),
   create: (data: LanguageCreate) =>
     api.post<LanguageResponse>("/languages", data),
+  update: (languageId: string, data: LanguageUpdate) =>
+    api.put<LanguageResponse>(`/languages/${languageId}`, data),
   get: (languageId: string) =>
     api.get<LanguageResponse>(`/languages/${languageId}`),
   getByCode: (code: string) =>
