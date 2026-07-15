@@ -84,7 +84,7 @@ export function AppCard({ app }: { app: UserAppResponse }) {
           {!app.is_platform_admin && app.roles.length === 0 && (
             <Badge variant="inactive">No role</Badge>
           )}
-          <Badge variant="success">{platformLabel(app.platform)}</Badge>
+          <Badge variant="success">{platformLabel(app.platforms[0] ?? null)}</Badge>
         </div>
 
         <div className="flex flex-wrap items-center gap-2 mt-auto pt-3 border-t border-areia/10">

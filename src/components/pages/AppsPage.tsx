@@ -33,6 +33,20 @@ import { ConfirmDialog } from "@/components/common/ConfirmDialog"
 import { ImageUpload } from "@/components/common/ImageUpload"
 import { Switch } from "@/components/ui/switch"
 
+function legacyToPlatforms(value: string): string[] {
+  if (value === "both") return ["web", "android", "ios"]
+  if (value === "mobile") return ["android", "ios"]
+  return ["web"]
+}
+
+function platformsToLegacy(platforms: string[]): string {
+  const hasWeb = platforms.includes("web")
+  const hasMobile = platforms.includes("android") || platforms.includes("ios")
+  if (hasWeb && hasMobile) return "both"
+  if (hasMobile) return "mobile"
+  return "web"
+}
+
 interface AppFormState {
   app_key: string
   name: string
@@ -62,7 +76,7 @@ function formFromApp(app: AppResponse): AppFormState {
     app_key: app.app_key,
     name: app.name,
     description: app.description ?? "",
-    platform: app.platform ?? "web",
+    platform: platformsToLegacy(app.platforms),
     icon_url: app.icon_url ?? "",
     app_url: app.app_url ?? "",
     ios_url: app.ios_url ?? "",
@@ -117,7 +131,7 @@ export default function AppsPage() {
         await appsAPI.update(editingApp.id, {
           name: form.name.trim(),
           description: form.description.trim() || null,
-          platform: form.platform,
+          platforms: legacyToPlatforms(form.platform),
           icon_url: form.icon_url.trim() || null,
           app_url: form.app_url.trim() || null,
           ios_url: form.ios_url.trim() || null,
@@ -130,7 +144,7 @@ export default function AppsPage() {
           app_key: form.app_key.trim(),
           name: form.name.trim(),
           description: form.description.trim() || null,
-          platform: form.platform,
+          platforms: legacyToPlatforms(form.platform),
           icon_url: form.icon_url.trim() || null,
           app_url: form.app_url.trim() || null,
           ios_url: form.ios_url.trim() || null,
@@ -235,7 +249,7 @@ export default function AppsPage() {
                   <p className="text-xs text-verde/60 line-clamp-2 mb-3">{app.description}</p>
                 )}
                 <div className="flex items-center gap-2">
-                  <Badge variant="default">{app.platform ?? "web"}</Badge>
+                  <Badge variant="default">{app.platforms[0] ?? "web"}</Badge>
                   <Badge variant={app.is_active ? "active" : "inactive"}>
                     {app.is_active ? "Active" : "Inactive"}
                   </Badge>
