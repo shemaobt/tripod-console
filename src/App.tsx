@@ -6,8 +6,6 @@ import AppShell from "@/components/layout/AppShell"
 import LoginPage from "@/components/pages/LoginPage"
 import DashboardPage from "@/components/pages/DashboardPage"
 import LanguagesPage from "@/components/pages/LanguagesPage"
-import OrganizationsPage from "@/components/pages/OrganizationsPage"
-import OrganizationDetailPage from "@/components/pages/OrganizationDetailPage"
 import ProjectsPage from "@/components/pages/ProjectsPage"
 import ProjectDetailPage from "@/components/pages/ProjectDetailPage"
 import UsersPage from "@/components/pages/UsersPage"
@@ -39,8 +37,6 @@ function App() {
               <Route index element={<Navigate to="/app/dashboard" replace />} />
               <Route path="dashboard" element={<DashboardPage />} />
               <Route path="languages" element={<LanguagesPage />} />
-              <Route path="organizations" element={<OrganizationsPage />} />
-              <Route path="organizations/:orgId" element={<OrganizationDetailPage />} />
               <Route path="projects" element={<ProjectsPage />} />
               <Route path="projects/:projectId" element={<ProjectDetailPage />} />
               <Route path="users" element={<AdminRoute><UsersPage /></AdminRoute>} />

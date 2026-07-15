@@ -2,11 +2,12 @@ import { useState } from "react"
 import { Navigate, Outlet } from "react-router-dom"
 import { useAuth } from "@/contexts/AuthContext"
 import { LoadingSpinner } from "@/components/common/LoadingSpinner"
+import AccessDeniedPage from "@/components/pages/AccessDeniedPage"
 import AppHeader from "./AppHeader"
 import Sidebar from "./Sidebar"
 
 export default function AppShell() {
-  const { user, isLoading } = useAuth()
+  const { user, isLoading, isPlatformAdmin, isManager } = useAuth()
   const [mobileOpen, setMobileOpen] = useState(false)
 
   if (isLoading) {
@@ -15,6 +16,14 @@ export default function AppShell() {
 
   if (!user) {
     return <Navigate to="/login" replace />
+  }
+
+  if (!isPlatformAdmin && !isManager) {
+    return (
+      <div className="min-h-screen bg-branco flex">
+        <AccessDeniedPage variant="logout" />
+      </div>
+    )
   }
 
   return (
