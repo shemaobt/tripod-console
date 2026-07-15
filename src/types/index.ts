@@ -62,6 +62,13 @@ export type {
 } from "./accessRequest"
 
 export type {
+  ChangeRequestKind,
+  ChangeRequestResponse,
+  ChangeRequestCreate,
+  ChangeRequestReview,
+} from "./changeRequest"
+
+export type {
   PhaseResponse,
   PhaseCreate,
   PhaseUpdate,
