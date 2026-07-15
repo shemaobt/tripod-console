@@ -67,4 +67,7 @@ export type {
   PhaseUpdate,
   PhaseDependencyResponse,
   ProjectPhaseResponse,
+  PhaseStatus,
 } from "./phase"
+
+export { PHASE_STATUSES } from "./phase"

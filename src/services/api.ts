@@ -43,6 +43,7 @@ import type {
   PhaseUpdate,
   PhaseDependencyResponse,
   ProjectPhaseResponse,
+  PhaseStatus,
 } from "@/types"
 
 const api = axios.create({
@@ -235,11 +236,7 @@ export const projectsAPI = {
     api.delete(`/projects/${projectId}/access/organizations/${orgId}`),
   listPhases: (projectId: string) =>
     api.get<ProjectPhaseResponse[]>(`/projects/${projectId}/phases`),
-  attachPhase: (projectId: string, phaseId: string) =>
-    api.post(`/projects/${projectId}/phases`, { phase_id: phaseId }),
-  detachPhase: (projectId: string, phaseId: string) =>
-    api.delete(`/projects/${projectId}/phases/${phaseId}`),
-  updatePhaseStatus: (projectId: string, phaseId: string, status: string) =>
+  updatePhaseStatus: (projectId: string, phaseId: string, status: PhaseStatus) =>
     api.patch<ProjectPhaseResponse>(`/projects/${projectId}/phases/${phaseId}`, { status }),
   listPhasesWithDeps: (projectId: string) =>
     api.get<{ phases: ProjectPhaseResponse[]; dependencies: Record<string, string[]> }>(`/projects/${projectId}/phases-with-deps`),
