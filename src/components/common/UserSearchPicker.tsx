@@ -3,7 +3,6 @@ import { Search, User as UserIcon } from "lucide-react"
 import { usersAPI } from "@/services/api"
 import type { UserListResponse } from "@/types"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { LoadingSpinner } from "@/components/common/LoadingSpinner"
 import { InfoTooltip } from "@/components/common/InfoTooltip"
@@ -40,7 +39,6 @@ export function UserSearchPicker({
       const { data } = await usersAPI.search(q)
       setResults(data)
     } catch {
-      // silent
     } finally {
       setSearching(false)
     }
@@ -87,18 +85,18 @@ export function UserSearchPicker({
         </Label>
       )}
       {selectedUser ? (
-        <div className="flex items-center gap-3 rounded-lg border border-areia/30 bg-surface-alt/30 px-3 py-2.5">
+        <div className="flex items-center gap-3 rounded-2xl bg-muted px-3 py-2.5">
           <div className="flex items-center justify-center h-8 w-8 rounded-full bg-azul/20 overflow-hidden shrink-0">
             {selectedUser.avatar_url ? (
               <img src={selectedUser.avatar_url} alt="" className="h-full w-full object-cover rounded-full" />
             ) : (
-              <UserIcon className="h-4 w-4 text-verde/30" />
+              <UserIcon className="h-4 w-4 text-fg-subtle" />
             )}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-preto truncate">{selectedUser.email}</p>
+            <p className="text-sm font-semibold text-fg-strong truncate">{selectedUser.email}</p>
             {selectedUser.display_name && (
-              <p className="text-xs text-verde/60 truncate">{selectedUser.display_name}</p>
+              <p className="text-xs text-fg-subtle truncate">{selectedUser.display_name}</p>
             )}
           </div>
           <Button
@@ -110,29 +108,31 @@ export function UserSearchPicker({
               setQuery("")
               setResults([])
             }}
-            className="text-xs text-verde/50"
+            className="text-xs text-fg-muted"
           >
             Change
           </Button>
         </div>
       ) : (
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-verde/40" />
-          <Input
-            value={query}
-            onChange={(e) => handleInputChange(e.target.value)}
-            onFocus={() => query.trim() && setShowResults(true)}
-            placeholder={placeholder || "Search users by email or name..."}
-            className="pl-9"
-          />
+          <div className="flex items-center gap-2 bg-muted rounded-full px-4 py-2.5">
+            <Search className="h-4 w-4 text-fg-subtle shrink-0" />
+            <input
+              value={query}
+              onChange={(e) => handleInputChange(e.target.value)}
+              onFocus={() => query.trim() && setShowResults(true)}
+              placeholder={placeholder || "Search users by email or name..."}
+              className="flex-1 bg-transparent border-0 outline-none text-sm text-fg-strong placeholder:text-fg-subtle"
+            />
+          </div>
           {showResults && (query.trim().length > 0) && (
-            <div className="absolute top-full left-0 right-0 mt-1 z-50 bg-surface border border-areia/30 rounded-lg shadow-lg max-h-52 overflow-y-auto">
+            <div className="absolute top-full left-0 right-0 mt-1.5 z-50 bg-elevated rounded-xl shadow-[var(--shadow-lg)] p-1.5 max-h-52 overflow-y-auto">
               {searching ? (
                 <div className="flex items-center justify-center py-4">
                   <LoadingSpinner size="sm" />
                 </div>
               ) : filtered.length === 0 ? (
-                <p className="text-sm text-verde/50 text-center py-4">
+                <p className="text-sm text-fg-subtle text-center py-4">
                   {results.length > 0
                     ? "All matching users are already added or unavailable"
                     : "No users found"}
@@ -147,19 +147,19 @@ export function UserSearchPicker({
                       setShowResults(false)
                       setQuery("")
                     }}
-                    className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-surface-alt/50 transition-colors text-left"
+                    className="w-full flex items-center gap-3 px-2.5 py-2 rounded-lg hover:bg-muted transition-colors text-left"
                   >
                     <div className="flex items-center justify-center h-8 w-8 rounded-full bg-azul/20 overflow-hidden shrink-0">
                       {user.avatar_url ? (
                         <img src={user.avatar_url} alt="" className="h-full w-full object-cover rounded-full" />
                       ) : (
-                        <UserIcon className="h-4 w-4 text-verde/30" />
+                        <UserIcon className="h-4 w-4 text-fg-subtle" />
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm text-preto truncate">{user.email}</p>
+                      <p className="text-sm text-fg-strong truncate">{user.email}</p>
                       {user.display_name && (
-                        <p className="text-xs text-verde/60 truncate">{user.display_name}</p>
+                        <p className="text-xs text-fg-subtle truncate">{user.display_name}</p>
                       )}
                     </div>
                   </button>

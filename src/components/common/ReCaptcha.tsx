@@ -84,7 +84,7 @@ export function ReCaptcha({ onChange }: ReCaptchaProps) {
 
   if (failed) {
     return (
-      <p className="text-xs text-red-600 dark:text-red-400">
+      <p className="text-xs text-st-warn">
         Failed to load the reCAPTCHA verification. Check your connection and reload the page.
       </p>
     )

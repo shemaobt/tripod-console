@@ -22,11 +22,11 @@ export function EmptyState({
 }: EmptyStateProps) {
   return (
     <div className={cn(states.empty, className)}>
-      <div className="rounded-2xl bg-surface-alt/60 p-5 mb-5">
-        <Icon className="h-10 w-10 text-areia" />
+      <div className="rounded-[16px] bg-muted p-5 mb-5">
+        <Icon className="h-9 w-9 text-fg-subtle" strokeWidth={1.75} />
       </div>
-      <h3 className="text-lg font-semibold text-preto mb-2">{title}</h3>
-      <p className="text-sm text-verde/70 max-w-sm mb-6 text-center leading-relaxed">{description}</p>
+      <h3 className="text-[17px] font-semibold text-fg-strong mb-2">{title}</h3>
+      <p className="text-sm text-fg-muted max-w-sm mb-6 text-center leading-relaxed">{description}</p>
       {actionLabel && onAction && (
         <Button onClick={onAction}>{actionLabel}</Button>
       )}

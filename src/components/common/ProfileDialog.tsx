@@ -82,7 +82,7 @@ export function ProfileDialog({ open, onOpenChange }: ProfileDialogProps) {
               folder="avatars"
               shape="circle"
               size="lg"
-              placeholder={<UserIcon className="h-8 w-8 text-verde/30" />}
+              placeholder={<UserIcon className="h-8 w-8 text-fg-subtle" />}
             />
           </div>
 
@@ -100,13 +100,13 @@ export function ProfileDialog({ open, onOpenChange }: ProfileDialogProps) {
           <div className="space-y-1.5">
             <Label>Email</Label>
             <Input value={user?.email || ""} disabled />
-            <p className="text-xs text-verde/50 mt-1.5">
+            <p className="text-xs text-fg-subtle mt-1.5">
               Email cannot be changed
             </p>
           </div>
         </div>
 
-        <DialogFooter className="border-t border-areia/10 pt-4 mt-2">
+        <DialogFooter className="border-t border-line pt-4 mt-2">
           <Button
             variant="outline"
             onClick={() => onOpenChange(false)}

@@ -66,15 +66,15 @@ export function ImageUpload({
     <div className={cn("flex items-center gap-4", className)}>
       <div
         className={cn(
-          "relative overflow-hidden border-2 border-dashed border-areia/40 flex items-center justify-center bg-surface-alt/50 cursor-pointer transition-colors hover:border-telha/40 group",
+          "relative overflow-hidden border-2 border-dashed border-line flex items-center justify-center bg-muted cursor-pointer transition-colors hover:border-accent group",
           shape === "circle" ? "rounded-full" : "rounded-xl",
           sizeClasses[size],
-          value && "border-solid border-areia/20",
+          value && "border-solid border-line",
         )}
         onClick={() => !uploading && fileInputRef.current?.click()}
       >
         {uploading ? (
-          <Loader2 className="h-6 w-6 text-verde/40 animate-spin" />
+          <Loader2 className="h-6 w-6 text-fg-subtle animate-spin" />
         ) : value ? (
           <img
             src={value}
@@ -85,12 +85,12 @@ export function ImageUpload({
             )}
           />
         ) : (
-          placeholder || <Upload className="h-6 w-6 text-verde/30 group-hover:text-verde/50 transition-colors" />
+          placeholder || <Upload className="h-6 w-6 text-fg-subtle group-hover:text-fg-muted transition-colors" />
         )}
         {value && !uploading && (
           <div
             className={cn(
-              "absolute inset-0 flex items-center justify-center gap-2 bg-preto/50 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity",
+              "absolute inset-0 flex items-center justify-center gap-2 bg-black/50 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity",
               shape === "circle" ? "rounded-full" : "rounded-xl",
             )}
           >
@@ -98,7 +98,7 @@ export function ImageUpload({
               type="button"
               onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click() }}
               aria-label="Change image"
-              className="flex items-center justify-center h-7 w-7 rounded-full bg-surface/90 text-preto hover:bg-surface transition-colors"
+              className="flex items-center justify-center h-7 w-7 rounded-full bg-elevated/90 text-fg-strong hover:bg-elevated transition-colors"
             >
               <Camera className="h-3.5 w-3.5" />
             </button>
@@ -106,7 +106,7 @@ export function ImageUpload({
               type="button"
               onClick={(e) => { e.stopPropagation(); onChange(null) }}
               aria-label="Remove image"
-              className="flex items-center justify-center h-7 w-7 rounded-full bg-surface/90 text-red-600 hover:bg-surface transition-colors"
+              className="flex items-center justify-center h-7 w-7 rounded-full bg-elevated/90 text-st-warn hover:bg-elevated transition-colors"
             >
               <X className="h-3.5 w-3.5" />
             </button>
@@ -138,7 +138,7 @@ export function ImageUpload({
             size="sm"
             onClick={() => onChange(null)}
             disabled={uploading}
-            className="text-xs text-red-500 hover:text-red-600 gap-1"
+            className="text-xs text-st-warn gap-1"
           >
             <X className="h-3 w-3" />
             Remove

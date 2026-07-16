@@ -17,40 +17,31 @@ export function StatCard({
   label,
   value,
   subtitle,
-  iconBg = "bg-azul/15",
-  iconColor = "text-azul",
-  accent = "from-azul/5 to-transparent",
+  iconColor = "text-fg-subtle",
   highlight,
 }: StatCardProps) {
   return (
     <div
       className={cn(
-        "relative overflow-hidden rounded-2xl border bg-surface transition-all duration-200 hover:shadow-md",
-        highlight
-          ? "border-telha/40 ring-1 ring-telha/15 shadow-sm"
-          : "border-areia/20 shadow-sm",
+        "bg-elevated rounded-[18px] shadow-[var(--shadow-card)] p-5 flex flex-col gap-1 transition-all duration-200 hover:shadow-[var(--shadow-md)]",
+        highlight && "ring-1 ring-accent/25",
       )}
     >
-      <div className={cn("absolute inset-0 bg-gradient-to-br opacity-50", accent)} />
-      <div className="relative p-6 flex items-start justify-between gap-4">
-        <div className="space-y-1.5">
-          <p className="text-sm font-medium text-verde/70">{label}</p>
-          <p
-            className={cn(
-              "text-4xl font-bold tracking-tight tabular-nums",
-              highlight ? "text-telha" : "text-preto",
-            )}
-          >
-            {value.toLocaleString()}
-          </p>
-          {subtitle && (
-            <p className="text-xs text-verde/50 mt-1">{subtitle}</p>
-          )}
-        </div>
-        <div className={cn("rounded-2xl p-3 shrink-0", iconBg)}>
-          <Icon className={cn("h-5 w-5", iconColor)} />
-        </div>
+      <div className="flex items-center justify-between gap-3">
+        <span className="text-[11px] font-semibold tracking-[0.1em] uppercase text-fg-subtle">
+          {label}
+        </span>
+        <Icon className={cn("h-4 w-4 shrink-0", highlight ? "text-accent" : iconColor)} strokeWidth={1.75} />
       </div>
+      <span
+        className={cn(
+          "text-[30px] font-bold leading-tight tabular-nums",
+          highlight ? "text-accent" : "text-fg-strong",
+        )}
+      >
+        {value.toLocaleString()}
+      </span>
+      {subtitle && <span className="text-xs text-fg-muted">{subtitle}</span>}
     </div>
   )
 }
