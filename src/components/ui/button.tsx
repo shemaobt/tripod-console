@@ -4,21 +4,23 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/utils/cn"
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-medium transition-all duration-200 active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-telha focus-visible:ring-offset-1 disabled:pointer-events-none disabled:opacity-50",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full text-sm font-semibold transition-all duration-200 active:scale-[0.985] disabled:pointer-events-none disabled:opacity-50",
   {
     variants: {
       variant: {
-        default: "bg-telha text-white hover:bg-telha/90",
-        secondary: "bg-areia/20 text-verde hover:bg-areia/30",
-        destructive: "bg-red-600 text-white hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-600",
-        outline: "border border-areia bg-surface text-preto hover:bg-branco",
-        "outline-destructive": "border border-red-200 bg-surface text-red-600 hover:bg-red-50 hover:text-red-700 dark:border-red-800/40 dark:text-red-400 dark:hover:bg-red-950/30",
-        ghost: "text-verde hover:bg-areia/10",
-        link: "text-telha underline-offset-4 hover:underline",
+        default: "bg-accent text-white hover:bg-accent-hover",
+        secondary:
+          "bg-transparent text-fg shadow-[inset_0_0_0_1.5px_var(--color-fg)] hover:bg-inverse hover:text-on-dark",
+        destructive: "bg-accent text-white hover:bg-accent-hover",
+        outline:
+          "bg-elevated text-fg-strong shadow-[inset_0_0_0_1px_var(--color-line-strong)] hover:bg-muted",
+        "outline-destructive": "text-on-accent-soft hover:bg-accent-soft",
+        ghost: "text-fg-muted hover:bg-muted hover:text-fg-strong",
+        link: "text-accent underline-offset-4 hover:underline rounded-none",
       },
       size: {
-        default: "h-10 px-4 py-2",
-        sm: "h-8 px-3 text-xs",
+        default: "h-11 px-5 py-2",
+        sm: "h-9 px-4 text-[13px]",
         lg: "h-12 px-6 text-base",
         icon: "h-10 w-10",
       },
