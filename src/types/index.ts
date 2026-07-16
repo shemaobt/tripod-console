@@ -87,7 +87,11 @@ export type {
   PublicLanguageOption,
   PublicLanguageRequestCreate,
   PublicProjectRequestCreate,
+  PublicRequestAdminResponse,
+  PublicRequestKind,
   PublicRequestResponse,
+  PublicRequestReview,
+  PublicRequestStatus,
 } from "./publicRequest"
 
 export { PHASE_STATUSES } from "./phase"

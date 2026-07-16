@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from "react"
 import { Inbox, Loader2 } from "lucide-react"
 import { toast } from "sonner"
-import { changeRequestsAPI } from "@/services/api"
-import type { ChangeRequestKind, ChangeRequestResponse } from "@/types"
+import { changeRequestsAPI, publicRequestsAPI } from "@/services/api"
+import type { ChangeRequestKind, PublicRequestStatus } from "@/types"
 import { useLanguagesStore } from "@/stores/languagesStore"
 import { cn } from "@/utils/cn"
 import { Button } from "@/components/ui/button"
@@ -20,6 +20,12 @@ import {
 import { LoadingSpinner } from "@/components/common/LoadingSpinner"
 import { EmptyState } from "@/components/common/EmptyState"
 import { ChangeRequestCard } from "@/components/pages/changeRequests/ChangeRequestCard"
+import {
+  byNewestFirst,
+  fromChangeRequest,
+  fromPublicRequest,
+  type ReviewableRequest,
+} from "@/components/pages/changeRequests/reviewableRequest"
 
 const statusChips = [
   { value: "pending", label: "Pending" },
@@ -37,10 +43,10 @@ interface ChangeRequestsSectionProps {
 export function ChangeRequestsSection({ kinds, emptyLabel, onReviewed }: ChangeRequestsSectionProps) {
   const kindKey = kinds.join(",")
   const fetchLanguages = useLanguagesStore((s) => s.fetch)
-  const [requests, setRequests] = useState<ChangeRequestResponse[]>([])
+  const [requests, setRequests] = useState<ReviewableRequest[]>([])
   const [loading, setLoading] = useState(true)
   const [filterStatus, setFilterStatus] = useState("pending")
-  const [reviewTarget, setReviewTarget] = useState<ChangeRequestResponse | null>(null)
+  const [reviewTarget, setReviewTarget] = useState<ReviewableRequest | null>(null)
   const [reviewAction, setReviewAction] = useState<"approved" | "rejected">("approved")
   const [reason, setReason] = useState("")
   const [grantManager, setGrantManager] = useState(false)
@@ -48,11 +54,23 @@ export function ChangeRequestsSection({ kinds, emptyLabel, onReviewed }: ChangeR
 
   const fetchRequests = useCallback(async () => {
     setLoading(true)
+    const allowed = new Set(kindKey.split(","))
+    const status = filterStatus === "all" ? undefined : filterStatus
     try {
-      const params = filterStatus === "all" ? {} : { status: filterStatus }
-      const { data } = await changeRequestsAPI.list(params)
-      const allowed = new Set(kindKey.split(","))
-      setRequests(data.filter((r) => allowed.has(r.kind)))
+      const [changeRes, publicRes] = await Promise.all([
+        changeRequestsAPI.list(status ? { status } : {}),
+        publicRequestsAPI
+          .list(status ? { status: status as PublicRequestStatus } : undefined)
+          .catch(() => null),
+      ])
+      if (!publicRes) toast.error("Failed to load public requests")
+      const merged = [
+        ...changeRes.data.filter((r) => allowed.has(r.kind)).map(fromChangeRequest),
+        ...(publicRes?.data ?? [])
+          .filter((r) => allowed.has(r.kind))
+          .map(fromPublicRequest),
+      ].sort(byNewestFirst)
+      setRequests(merged)
     } catch {
       toast.error("Failed to load requests")
     } finally {
@@ -65,7 +83,7 @@ export function ChangeRequestsSection({ kinds, emptyLabel, onReviewed }: ChangeR
     fetchRequests()
   }, [fetchLanguages, fetchRequests])
 
-  function openReview(req: ChangeRequestResponse, action: "approved" | "rejected") {
+  function openReview(req: ReviewableRequest, action: "approved" | "rejected") {
     setReviewTarget(req)
     setReviewAction(action)
     setReason("")
@@ -76,22 +94,39 @@ export function ChangeRequestsSection({ kinds, emptyLabel, onReviewed }: ChangeR
     if (!reviewTarget) return
     setSubmitting(true)
     try {
-      await changeRequestsAPI.review(reviewTarget.id, {
-        status: reviewAction,
-        reason: reason || undefined,
-        grant_manager_access:
-          reviewTarget.kind === "create_project" ? grantManager : undefined,
-      })
+      if (reviewTarget.origin === "public") {
+        await publicRequestsAPI.review(reviewTarget.id, {
+          status: reviewAction,
+          reason: reason || undefined,
+        })
+      } else {
+        await changeRequestsAPI.review(reviewTarget.id, {
+          status: reviewAction,
+          reason: reason || undefined,
+          grant_manager_access:
+            reviewTarget.kind === "create_project" ? grantManager : undefined,
+        })
+      }
       toast.success(reviewAction === "approved" ? "Request approved" : "Request rejected")
-      if (reviewAction === "approved" && reviewTarget.new_language_name) {
+      if (
+        reviewAction === "approved" &&
+        (reviewTarget.newLanguageName || reviewTarget.kind === "create_language")
+      ) {
         useLanguagesStore.getState().invalidate()
         await useLanguagesStore.getState().fetch()
       }
       setReviewTarget(null)
       await fetchRequests()
       onReviewed?.()
-    } catch {
-      toast.error("Failed to review request")
+    } catch (err: unknown) {
+      const status = (err as { response?: { status?: number } })?.response?.status
+      if (status === 409) {
+        toast.error("This request has already been reviewed")
+        setReviewTarget(null)
+        await fetchRequests()
+      } else {
+        toast.error("Failed to review request")
+      }
     } finally {
       setSubmitting(false)
     }
@@ -99,6 +134,7 @@ export function ChangeRequestsSection({ kinds, emptyLabel, onReviewed }: ChangeR
 
   const isApprove = reviewAction === "approved"
   const isProjectReview = reviewTarget?.kind === "create_project"
+  const canGrantManager = isProjectReview && reviewTarget?.origin === "change"
 
   return (
     <div className="space-y-4">
@@ -156,23 +192,23 @@ export function ChangeRequestsSection({ kinds, emptyLabel, onReviewed }: ChangeR
             <DialogDescription>
               {isApprove ? "Accept" : "Reject"} the request from{" "}
               <span className="font-semibold text-fg-strong">
-                {reviewTarget?.requester_display_name || reviewTarget?.requester_email}
+                {reviewTarget?.requesterName || reviewTarget?.requesterEmail}
               </span>
-              .
+              {reviewTarget?.origin === "public" ? " (public request, no account)" : ""}.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 pt-2">
-            {isApprove && isProjectReview && reviewTarget?.new_language_name && (
+            {isApprove && isProjectReview && reviewTarget?.newLanguageName && (
               <p className="text-xs text-fg-muted rounded-[10px] bg-muted p-2.5">
                 Accepting will also create the new language{" "}
                 <span className="font-semibold text-fg-strong">
-                  {reviewTarget.new_language_name}
-                  {reviewTarget.new_language_code ? ` (${reviewTarget.new_language_code})` : ""}
+                  {reviewTarget.newLanguageName}
+                  {reviewTarget.newLanguageCode ? ` (${reviewTarget.newLanguageCode})` : ""}
                 </span>
                 .
               </p>
             )}
-            {isApprove && isProjectReview && (
+            {isApprove && canGrantManager && (
               <div className="flex items-start justify-between gap-4 rounded-[10px] bg-muted p-3">
                 <div>
                   <Label htmlFor="grant-manager" className="text-sm text-fg-strong">

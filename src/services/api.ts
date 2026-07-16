@@ -54,7 +54,11 @@ import type {
   PublicLanguageOption,
   PublicLanguageRequestCreate,
   PublicProjectRequestCreate,
+  PublicRequestAdminResponse,
+  PublicRequestKind,
   PublicRequestResponse,
+  PublicRequestReview,
+  PublicRequestStatus,
 } from "@/types"
 
 const api = axios.create({
@@ -195,7 +199,8 @@ export const appsAPI = {
 }
 
 export const languagesAPI = {
-  list: () => api.get<LanguageResponse[]>("/languages"),
+  list: (params?: { include_inactive?: boolean }) =>
+    api.get<LanguageResponse[]>("/languages", { params }),
   create: (data: LanguageCreate) =>
     api.post<LanguageResponse>("/languages", data),
   update: (languageId: string, data: LanguageUpdate) =>
@@ -353,6 +358,13 @@ export const publicAPI = {
     api.post<PublicRequestResponse>("/public/requests/language", data),
   requestProject: (data: PublicProjectRequestCreate) =>
     api.post<PublicRequestResponse>("/public/requests/project", data),
+}
+
+export const publicRequestsAPI = {
+  list: (params?: { kind?: PublicRequestKind; status?: PublicRequestStatus }) =>
+    api.get<PublicRequestAdminResponse[]>("/public-requests", { params }),
+  review: (requestId: string, data: PublicRequestReview) =>
+    api.patch<PublicRequestAdminResponse>(`/public-requests/${requestId}/review`, data),
 }
 
 export default api

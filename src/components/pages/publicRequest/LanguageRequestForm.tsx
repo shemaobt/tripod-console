@@ -5,6 +5,7 @@ import type { PublicLanguageOption } from "@/types"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
 import { ReCaptcha, RECAPTCHA_ENABLED } from "@/components/common/ReCaptcha"
 import { Loader2 } from "lucide-react"
 
@@ -25,6 +26,7 @@ export function LanguageRequestForm({
 }: LanguageRequestFormProps) {
   const [name, setName] = useState("")
   const [code, setCode] = useState("")
+  const [description, setDescription] = useState("")
   const [captchaToken, setCaptchaToken] = useState<string | null>(null)
   const [captchaEpoch, setCaptchaEpoch] = useState(0)
   const [submitting, setSubmitting] = useState(false)
@@ -57,6 +59,7 @@ export function LanguageRequestForm({
         requester_email: requesterEmail.trim(),
         name: name.trim(),
         code: normalizedCode,
+        description: description.trim() || undefined,
         recaptcha_token: captchaToken ?? undefined,
       })
       onSuccess()
@@ -116,6 +119,18 @@ export function LanguageRequestForm({
             <p className="text-xs text-fg-subtle mt-1">Must be exactly 3 characters (ISO 639-3)</p>
           )}
         </div>
+      </div>
+      <div className="flex flex-col">
+        <Label htmlFor="request-lang-description">
+          Description <span className="font-normal text-fg-subtle">(optional)</span>
+        </Label>
+        <Textarea
+          id="request-lang-description"
+          placeholder="Where it is spoken, communities, dialects…"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          rows={2}
+        />
       </div>
       <ReCaptcha key={captchaEpoch} onChange={setCaptchaToken} />
       <div className="flex items-center justify-between gap-3.5 border-t border-line pt-5">

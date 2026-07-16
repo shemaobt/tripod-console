@@ -8,6 +8,7 @@ import { cn } from "@/utils/cn"
 import { LoadingSpinner } from "@/components/common/LoadingSpinner"
 import { EmptyState } from "@/components/common/EmptyState"
 import { ChangeRequestCard } from "@/components/pages/changeRequests/ChangeRequestCard"
+import { fromChangeRequest } from "@/components/pages/changeRequests/reviewableRequest"
 
 const statusChips = [
   { value: "all", label: "All" },
@@ -86,7 +87,7 @@ export function MyChangeRequestsSection({ kinds, emptyLabel }: MyChangeRequestsS
       ) : (
         <div className="bg-elevated rounded-[18px] shadow-[var(--shadow-card)] overflow-hidden">
           {visible.map((req) => (
-            <ChangeRequestCard key={req.id} req={req} />
+            <ChangeRequestCard key={req.id} req={fromChangeRequest(req)} />
           ))}
         </div>
       )}

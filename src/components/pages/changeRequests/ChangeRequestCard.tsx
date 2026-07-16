@@ -1,9 +1,10 @@
-import { Sparkles } from "lucide-react"
-import type { ChangeRequestKind, ChangeRequestResponse } from "@/types"
+import { Globe, Sparkles } from "lucide-react"
+import type { ChangeRequestKind } from "@/types"
 import { useLanguagesStore } from "@/stores/languagesStore"
 import { cn } from "@/utils/cn"
 import { Badge } from "@/components/ui/badge"
 import { UserAvatar } from "@/components/pages/UsersPage/UserAvatar"
+import type { ReviewableRequest } from "@/components/pages/changeRequests/reviewableRequest"
 import { formatDate, timeAgo } from "@/utils/format"
 
 const kindLabel: Record<ChangeRequestKind, string> = {
@@ -19,7 +20,7 @@ const statusMeta: Record<string, { dot: string; label: string }> = {
 }
 
 interface ChangeRequestCardProps {
-  req: ChangeRequestResponse
+  req: ReviewableRequest
   onApprove?: () => void
   onReject?: () => void
 }
@@ -29,15 +30,16 @@ export function ChangeRequestCard({ req, onApprove, onReject }: ChangeRequestCar
   const isPending = req.status === "pending"
   const canReview = isPending && (onApprove || onReject)
   const status = statusMeta[req.status] ?? statusMeta.pending
+  const isPublic = req.origin === "public"
 
-  const newLanguage = req.new_language_name
-    ? `${req.new_language_name}${req.new_language_code ? ` (${req.new_language_code})` : ""}`
+  const newLanguage = req.newLanguageName
+    ? `${req.newLanguageName}${req.newLanguageCode ? ` (${req.newLanguageCode})` : ""}`
     : null
-  const existingLang = req.language_id ? languages.find((l) => l.id === req.language_id) : null
-  const existingLanguage = req.language_id
+  const existingLang = req.languageId ? languages.find((l) => l.id === req.languageId) : null
+  const existingLanguage = req.languageId
     ? existingLang
       ? `${existingLang.name} (${existingLang.code})`
-      : req.language_id
+      : req.languageId
     : null
 
   let title = kindLabel[req.kind]
@@ -53,21 +55,32 @@ export function ChangeRequestCard({ req, onApprove, onReject }: ChangeRequestCar
 
   const projectLanguage = req.kind === "create_project" ? newLanguage ?? existingLanguage : null
   const managerGranted =
-    req.grant_manager_access && req.status === "approved" && req.kind === "create_project"
+    req.grantManagerAccess && req.status === "approved" && req.kind === "create_project"
 
   return (
     <div className="flex items-start gap-3.5 px-5 py-4 border-b border-line last:border-b-0">
       <UserAvatar
-        name={req.requester_display_name}
-        email={req.requester_email}
+        name={req.requesterName}
+        email={req.requesterEmail}
         avatarUrl={null}
         size="sm"
       />
 
       <div className="flex-1 min-w-0 flex flex-col gap-1">
-        <p className="text-sm font-semibold text-fg-strong">{title}</p>
+        <p className="text-sm font-semibold text-fg-strong flex items-center flex-wrap gap-1.5">
+          {title}
+          {isPublic && (
+            <Badge variant="default">
+              <Globe className="h-3 w-3" />
+              Public
+            </Badge>
+          )}
+        </p>
         <p className="text-xs text-fg-subtle">
-          {req.requester_display_name || req.requester_email} · {timeAgo(req.requested_at)}
+          {isPublic
+            ? `${req.requesterName} · ${req.requesterEmail}`
+            : req.requesterName || req.requesterEmail}{" "}
+          · {timeAgo(req.requestedAt)}
         </p>
         {projectLanguage && (
           <p className="text-xs text-fg-muted flex items-center flex-wrap gap-1.5">
@@ -85,14 +98,14 @@ export function ChangeRequestCard({ req, onApprove, onReject }: ChangeRequestCar
           <p className="text-xs text-fg-muted leading-relaxed">{req.description}</p>
         )}
         {managerGranted && <p className="text-xs text-st-ok">Manager access granted</p>}
-        {req.review_reason && (
+        {req.reviewReason && (
           <p className="font-serif italic text-[12.5px] text-fg-muted leading-relaxed">
-            &ldquo;{req.review_reason}&rdquo;
+            &ldquo;{req.reviewReason}&rdquo;
           </p>
         )}
-        {req.status !== "pending" && req.reviewed_at && (
+        {req.status !== "pending" && req.reviewedAt && (
           <p className="text-xs text-fg-subtle tabular-nums">
-            Reviewed on {formatDate(req.reviewed_at)}
+            Reviewed on {formatDate(req.reviewedAt)}
           </p>
         )}
       </div>
