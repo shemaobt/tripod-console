@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom"
 import { Toaster } from "sonner"
-import { ThemeProvider } from "@/contexts/ThemeContext"
+import { ThemeProvider, useTheme } from "@/contexts/ThemeContext"
 import { AuthProvider, useAuth } from "@/contexts/AuthContext"
 import AppShell from "@/components/layout/AppShell"
 import LoginPage from "@/components/pages/LoginPage"
@@ -10,7 +10,7 @@ import LanguagesPage from "@/components/pages/LanguagesPage"
 import ProjectsPage from "@/components/pages/ProjectsPage"
 import ProjectDetailPage from "@/components/pages/ProjectDetailPage"
 import UsersPage from "@/components/pages/UsersPage"
-import UserDetailPage from "@/components/pages/UserDetailPage"
+import UserDetailPage from "@/components/pages/userDetail"
 import AppsPage from "@/components/pages/AppsPage"
 import AppDetailPage from "@/components/pages/AppDetailPage"
 import PhasesPage from "@/components/pages/PhasesPage"
@@ -18,6 +18,11 @@ import MapPage from "@/components/pages/MapPage"
 import NotFoundPage from "@/components/pages/NotFoundPage"
 import AccessDeniedPage from "@/components/pages/AccessDeniedPage"
 import { LoadingSpinner } from "@/components/common/LoadingSpinner"
+
+function ThemedToaster() {
+  const { resolvedTheme } = useTheme()
+  return <Toaster position="top-right" richColors theme={resolvedTheme} />
+}
 
 function AdminRoute({ children }: { children: React.ReactNode }) {
   const { isPlatformAdmin, isLoading } = useAuth()
@@ -53,7 +58,7 @@ function App() {
 
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
-          <Toaster position="top-right" richColors />
+          <ThemedToaster />
         </AuthProvider>
       </BrowserRouter>
     </ThemeProvider>

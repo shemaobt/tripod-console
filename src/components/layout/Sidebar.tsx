@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { NavLink, useLocation } from "react-router-dom"
+import { NavLink } from "react-router-dom"
 import {
   LayoutGrid,
   Languages,
@@ -11,16 +11,12 @@ import {
   LogOut,
   Sun,
   Moon,
+  X,
 } from "lucide-react"
+import type { LucideIcon } from "lucide-react"
 import { cn } from "@/utils/cn"
 import { useAuth } from "@/contexts/AuthContext"
 import { useTheme } from "@/contexts/ThemeContext"
-import {
-  Tooltip,
-  TooltipTrigger,
-  TooltipContent,
-  TooltipProvider,
-} from "@/components/ui/tooltip"
 import { ProfileDialog } from "@/components/common/ProfileDialog"
 
 interface SidebarProps {
@@ -28,326 +24,223 @@ interface SidebarProps {
   onMobileClose: () => void
 }
 
-const mainNavItems = [
-  { to: "/app/dashboard", label: "My Apps", icon: LayoutGrid },
-]
-
-const contentNavItems = [
-  { to: "/app/languages", label: "Languages", icon: Languages },
-  { to: "/app/projects", label: "Projects", icon: FolderOpen },
-  { to: "/app/map", label: "Map", icon: Globe },
-]
-
-const adminNavItems = [
-  { to: "/app/phases", label: "Phases", icon: GitBranch },
-  { to: "/app/users", label: "Users", icon: Users },
-  { to: "/app/apps", label: "Manage Apps", icon: AppWindow },
-]
-
-function SidebarIcon({
-  to,
-  label,
-  icon: Icon,
-}: {
+interface NavItemDef {
   to: string
   label: string
-  icon: React.ComponentType<{ className?: string }>
-}) {
-  const location = useLocation()
-  const isActive =
-    location.pathname === to || location.pathname.startsWith(to + "/")
-
-  return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <NavLink
-          to={to}
-          className={cn(
-            "flex items-center justify-center w-11 h-11 rounded-xl transition-all duration-200",
-            isActive
-              ? "bg-preto text-branco shadow-sm dark:bg-branco dark:text-preto"
-              : "text-verde/50 hover:bg-surface-alt hover:text-verde"
-          )}
-        >
-          <Icon className="w-[22px] h-[22px]" />
-        </NavLink>
-      </TooltipTrigger>
-      <TooltipContent side="right" sideOffset={12}>
-        {label}
-      </TooltipContent>
-    </Tooltip>
-  )
+  icon: LucideIcon
 }
 
-function MobileNavItem({
-  to,
-  label,
-  icon: Icon,
-  onClose,
-}: {
-  to: string
+interface NavSectionDef {
   label: string
-  icon: React.ComponentType<{ className?: string }>
-  onClose: () => void
-}) {
-  const location = useLocation()
-  const isActive =
-    location.pathname === to || location.pathname.startsWith(to + "/")
+  items: NavItemDef[]
+}
 
+function NavItem({ item, onNavigate }: { item: NavItemDef; onNavigate?: () => void }) {
+  const { icon: Icon, to, label } = item
   return (
     <NavLink
       to={to}
-      onClick={onClose}
-      className={cn(
-        "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200",
-        isActive
-          ? "bg-preto text-branco dark:bg-branco dark:text-preto"
-          : "text-verde/70 hover:bg-surface-alt hover:text-verde"
-      )}
+      onClick={onNavigate}
+      className={({ isActive }) =>
+        cn(
+          "flex items-center gap-[11px] w-full px-2.5 py-2.5 rounded-[10px] text-sm font-medium transition-colors",
+          isActive
+            ? "bg-[var(--shell-active)] text-shell-fg"
+            : "text-[var(--shell-dim)] hover:bg-[var(--shell-active)] hover:text-shell-fg",
+        )
+      }
     >
-      <Icon className="w-5 h-5 shrink-0" />
-      <span>{label}</span>
+      <Icon className="w-[17px] h-[17px] shrink-0" strokeWidth={1.75} />
+      <span className="flex-1">{label}</span>
     </NavLink>
+  )
+}
+
+function ThemeToggle() {
+  const { resolvedTheme, setTheme } = useTheme()
+  return (
+    <div className="inline-flex bg-[rgba(246,245,235,0.07)] rounded-full p-[3px] shrink-0">
+      <button
+        onClick={() => setTheme("light")}
+        title="Light theme"
+        aria-label="Light theme"
+        className={cn(
+          "w-[30px] h-[26px] rounded-full grid place-items-center transition-colors",
+          resolvedTheme === "light"
+            ? "bg-[rgba(246,245,235,0.16)] text-shell-fg"
+            : "text-[var(--shell-dim)] hover:text-shell-fg",
+        )}
+      >
+        <Sun className="w-3.5 h-3.5" strokeWidth={2} />
+      </button>
+      <button
+        onClick={() => setTheme("dark")}
+        title="Dark theme"
+        aria-label="Dark theme"
+        className={cn(
+          "w-[30px] h-[26px] rounded-full grid place-items-center transition-colors",
+          resolvedTheme === "dark"
+            ? "bg-[rgba(246,245,235,0.16)] text-shell-fg"
+            : "text-[var(--shell-dim)] hover:text-shell-fg",
+        )}
+      >
+        <Moon className="w-3.5 h-3.5" strokeWidth={2} />
+      </button>
+    </div>
+  )
+}
+
+function SidebarContent({
+  sections,
+  onNavigate,
+  onProfile,
+  onLogout,
+  userName,
+  userRole,
+  userInitial,
+  avatarUrl,
+}: {
+  sections: NavSectionDef[]
+  onNavigate?: () => void
+  onProfile: () => void
+  onLogout: () => void
+  userName: string
+  userRole: string
+  userInitial: string
+  avatarUrl?: string | null
+}) {
+  return (
+    <div className="flex flex-col h-full">
+      <div className="flex items-center justify-between gap-2.5 px-2.5 pb-1">
+        <img src="/assets/logo-branco.svg" alt="Shemá" className="h-[22px] w-auto" />
+        <ThemeToggle />
+      </div>
+
+      <nav className="flex-1 overflow-y-auto">
+        {sections.map((section) => (
+          <div key={section.label} className="mt-[22px] flex flex-col gap-0.5">
+            <span className="px-2.5 pb-1.5 text-[10.5px] font-semibold tracking-[0.14em] uppercase text-[var(--shell-dim)]">
+              {section.label}
+            </span>
+            {section.items.map((item) => (
+              <NavItem key={item.to} item={item} onNavigate={onNavigate} />
+            ))}
+          </div>
+        ))}
+      </nav>
+
+      <div className="mt-auto pt-[18px]">
+        <div className="border-t border-[var(--shell-line)] pt-3.5 flex items-center gap-2.5">
+          <button
+            onClick={onProfile}
+            className="flex items-center gap-2.5 flex-1 min-w-0 rounded-[10px] p-1 hover:bg-[var(--shell-active)] transition-colors"
+          >
+            <span className="w-[34px] h-[34px] rounded-full bg-[rgba(246,245,235,0.14)] text-shell-fg grid place-items-center text-xs font-bold shrink-0 overflow-hidden">
+              {avatarUrl ? (
+                <img src={avatarUrl} alt="" className="h-full w-full object-cover" />
+              ) : (
+                userInitial
+              )}
+            </span>
+            <span className="flex flex-col min-w-0 text-left">
+              <span className="text-[13.5px] font-semibold text-shell-fg truncate">{userName}</span>
+              <span className="text-[11px] text-[var(--shell-dim)]">{userRole}</span>
+            </span>
+          </button>
+          <button
+            onClick={onLogout}
+            title="Sign out"
+            aria-label="Sign out"
+            className="w-8 h-8 rounded-[9px] grid place-items-center text-[var(--shell-dim)] hover:bg-[var(--shell-active)] hover:text-shell-fg transition-colors shrink-0"
+          >
+            <LogOut className="w-4 h-4" strokeWidth={1.75} />
+          </button>
+        </div>
+      </div>
+    </div>
   )
 }
 
 export default function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
   const { isPlatformAdmin, isManager, logout, user } = useAuth()
-  const { resolvedTheme, setTheme } = useTheme()
   const [profileOpen, setProfileOpen] = useState(false)
 
-  const userInitial = user?.email?.charAt(0).toUpperCase() || "?"
+  const userInitial =
+    user?.display_name?.charAt(0).toUpperCase() ||
+    user?.email?.charAt(0).toUpperCase() ||
+    "?"
+  const userName = user?.display_name || user?.email || "Account"
+  const userRole = isPlatformAdmin ? "Platform admin" : isManager ? "Manager" : "Member"
+
+  const sections: NavSectionDef[] = [
+    {
+      label: "Main",
+      items: [{ to: "/app/dashboard", label: "My Apps", icon: LayoutGrid }],
+    },
+  ]
+
+  if (isPlatformAdmin || isManager) {
+    sections.push({
+      label: "Content",
+      items: [
+        { to: "/app/languages", label: "Languages", icon: Languages },
+        { to: "/app/projects", label: "Projects", icon: FolderOpen },
+        { to: "/app/map", label: "Map", icon: Globe },
+      ],
+    })
+  }
+
+  if (isPlatformAdmin) {
+    sections.push({
+      label: "Administration",
+      items: [
+        { to: "/app/phases", label: "Phases", icon: GitBranch },
+        { to: "/app/users", label: "Users", icon: Users },
+        { to: "/app/apps", label: "Manage Apps", icon: AppWindow },
+      ],
+    })
+  }
+
+  const openProfile = () => {
+    setProfileOpen(true)
+    onMobileClose()
+  }
 
   return (
     <>
-      {/* Desktop sidebar — icon only */}
-      <aside className="hidden lg:flex h-screen sticky top-0 shrink-0">
-        <TooltipProvider delayDuration={0}>
-          <div className="w-[72px] bg-surface border-r border-areia/15 h-full flex flex-col items-center py-5 gap-4">
-            {/* Brand logo */}
-            <NavLink
-              to="/app/dashboard"
-              className="flex items-center justify-center w-11 h-11 rounded-full bg-telha shadow-sm hover:bg-telha/90 transition-colors"
-            >
-              <img
-                src="/assets/icon-dark.svg"
-                alt="Shema"
-                className="w-5 h-5 brightness-0 invert"
-              />
-            </NavLink>
-
-            {/* Theme toggle */}
-            <div className="flex flex-col items-center gap-0.5">
-              <button
-                onClick={() => setTheme("light")}
-                className={cn(
-                  "flex items-center justify-center w-9 h-9 rounded-lg transition-all duration-200",
-                  resolvedTheme === "light"
-                    ? "bg-surface-alt text-preto shadow-inner"
-                    : "text-verde/35 hover:text-verde/60"
-                )}
-                aria-label="Light mode"
-              >
-                <Sun className="w-[18px] h-[18px]" />
-              </button>
-              <button
-                onClick={() => setTheme("dark")}
-                className={cn(
-                  "flex items-center justify-center w-9 h-9 rounded-lg transition-all duration-200",
-                  resolvedTheme === "dark"
-                    ? "bg-surface-alt text-preto shadow-inner"
-                    : "text-verde/35 hover:text-verde/60"
-                )}
-                aria-label="Dark mode"
-              >
-                <Moon className="w-[18px] h-[18px]" />
-              </button>
-            </div>
-
-            {/* Separator */}
-            <div className="w-8 border-t border-areia/20" />
-
-            {/* Nav icons */}
-            <nav className="flex-1 flex flex-col items-center gap-1.5">
-              {mainNavItems.map((item) => (
-                <SidebarIcon key={item.to} {...item} />
-              ))}
-
-              {(isPlatformAdmin || isManager) && (
-                <>
-                  <div className="w-6 border-t border-areia/15 my-1.5" />
-                  {contentNavItems.map((item) => (
-                    <SidebarIcon key={item.to} {...item} />
-                  ))}
-                </>
-              )}
-
-              {isPlatformAdmin && (
-                <>
-                  <div className="w-6 border-t border-areia/15 my-1.5" />
-                  {adminNavItems.map((item) => (
-                    <SidebarIcon key={item.to} {...item} />
-                  ))}
-                </>
-              )}
-            </nav>
-
-            {/* Bottom: user + logout */}
-            <div className="flex flex-col items-center gap-2 pt-3 border-t border-areia/15">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <button
-                    onClick={() => setProfileOpen(true)}
-                    className="flex items-center justify-center w-10 h-10 rounded-full bg-azul/20 text-verde text-xs font-bold cursor-pointer select-none overflow-hidden hover:ring-2 hover:ring-telha/30 transition-all"
-                  >
-                    {user?.avatar_url ? (
-                      <img src={user.avatar_url} alt="" className="h-full w-full object-cover" />
-                    ) : (
-                      userInitial
-                    )}
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent side="right" sideOffset={12}>
-                  Edit profile
-                </TooltipContent>
-              </Tooltip>
-
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <button
-                    onClick={logout}
-                    className="flex items-center justify-center w-9 h-9 rounded-lg text-verde/40 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-all duration-200"
-                    aria-label="Log out"
-                  >
-                    <LogOut className="w-[18px] h-[18px]" />
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent side="right" sideOffset={12}>
-                  Log out
-                </TooltipContent>
-              </Tooltip>
-            </div>
-          </div>
-        </TooltipProvider>
+      <aside className="hidden lg:flex w-[258px] shrink-0 h-screen sticky top-0 bg-shell text-shell-fg flex-col px-3.5 pt-[22px] pb-4">
+        <SidebarContent
+          sections={sections}
+          onProfile={() => setProfileOpen(true)}
+          onLogout={logout}
+          userName={userName}
+          userRole={userRole}
+          userInitial={userInitial}
+          avatarUrl={user?.avatar_url}
+        />
       </aside>
 
-      {/* Mobile overlay */}
       {mobileOpen && (
         <div className="fixed inset-0 z-40 lg:hidden">
-          <div
-            className="absolute inset-0 bg-preto/50 backdrop-blur-sm"
-            onClick={onMobileClose}
-          />
-          <aside className="relative z-50 h-full w-[min(18rem,calc(100vw-3.5rem))] bg-surface shadow-2xl">
-            <div className="h-full flex flex-col">
-              {/* Mobile header */}
-              <div className="flex items-center gap-3 h-14 px-4 border-b border-areia/15">
-                <div className="flex items-center justify-center w-9 h-9 rounded-full bg-telha">
-                  <img
-                    src="/assets/icon-dark.svg"
-                    alt="Shema"
-                    className="w-4 h-4 brightness-0 invert"
-                  />
-                </div>
-                <span className="text-sm font-semibold text-preto tracking-tight">
-                  Tripod Console
-                </span>
-              </div>
-
-              {/* Mobile nav */}
-              <nav className="flex-1 overflow-y-auto p-3 space-y-1">
-                {mainNavItems.map((item) => (
-                  <MobileNavItem
-                    key={item.to}
-                    {...item}
-                    onClose={onMobileClose}
-                  />
-                ))}
-
-                {(isPlatformAdmin || isManager) && (
-                  <>
-                    <div className="my-2 border-t border-areia/15" />
-                    {contentNavItems.map((item) => (
-                      <MobileNavItem
-                        key={item.to}
-                        {...item}
-                        onClose={onMobileClose}
-                      />
-                    ))}
-                  </>
-                )}
-
-                {isPlatformAdmin && (
-                  <>
-                    <div className="my-2 border-t border-areia/15" />
-                    {adminNavItems.map((item) => (
-                      <MobileNavItem
-                        key={item.to}
-                        {...item}
-                        onClose={onMobileClose}
-                      />
-                    ))}
-                  </>
-                )}
-              </nav>
-
-              {/* Mobile footer */}
-              <div className="p-3 border-t border-areia/15 space-y-2">
-                {user && (
-                  <button
-                    onClick={() => { setProfileOpen(true); onMobileClose() }}
-                    className="flex items-center gap-3 px-3 py-2 rounded-xl w-full hover:bg-surface-alt transition-colors"
-                  >
-                    <div className="flex items-center justify-center w-8 h-8 rounded-full bg-azul/20 text-verde text-xs font-bold overflow-hidden shrink-0">
-                      {user.avatar_url ? (
-                        <img src={user.avatar_url} alt="" className="h-full w-full object-cover" />
-                      ) : (
-                        userInitial
-                      )}
-                    </div>
-                    <div className="text-left min-w-0">
-                      <p className="text-xs text-verde truncate">{user.display_name || user.email}</p>
-                      <p className="text-[10px] text-verde/50">Edit profile</p>
-                    </div>
-                  </button>
-                )}
-
-                <div className="flex items-center gap-1 px-3">
-                  <button
-                    onClick={() => setTheme("light")}
-                    className={cn(
-                      "flex items-center justify-center w-8 h-8 rounded-lg transition-all",
-                      resolvedTheme === "light"
-                        ? "bg-surface-alt text-preto"
-                        : "text-verde/35"
-                    )}
-                    aria-label="Light mode"
-                  >
-                    <Sun className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => setTheme("dark")}
-                    className={cn(
-                      "flex items-center justify-center w-8 h-8 rounded-lg transition-all",
-                      resolvedTheme === "dark"
-                        ? "bg-surface-alt text-preto"
-                        : "text-verde/35"
-                    )}
-                    aria-label="Dark mode"
-                  >
-                    <Moon className="w-4 h-4" />
-                  </button>
-                </div>
-
-                <button
-                  onClick={logout}
-                  className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-verde/70 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/30 dark:hover:text-red-400 transition-all w-full"
-                >
-                  <LogOut className="w-5 h-5 shrink-0" />
-                  <span>Log out</span>
-                </button>
-              </div>
-            </div>
+          <div className="absolute inset-0 bg-preto/50 animate-fade-in" onClick={onMobileClose} />
+          <aside className="relative z-50 h-full w-[min(258px,calc(100vw-3rem))] bg-shell text-shell-fg flex flex-col px-3.5 pt-[22px] pb-4">
+            <button
+              onClick={onMobileClose}
+              aria-label="Close menu"
+              className="absolute right-3 top-3 w-8 h-8 rounded-[9px] grid place-items-center text-[var(--shell-dim)] hover:bg-[var(--shell-active)] hover:text-shell-fg transition-colors"
+            >
+              <X className="w-4 h-4" strokeWidth={2} />
+            </button>
+            <SidebarContent
+              sections={sections}
+              onNavigate={onMobileClose}
+              onProfile={openProfile}
+              onLogout={logout}
+              userName={userName}
+              userRole={userRole}
+              userInitial={userInitial}
+              avatarUrl={user?.avatar_url}
+            />
           </aside>
         </div>
       )}

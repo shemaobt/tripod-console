@@ -20,14 +20,14 @@ export default function AppShell() {
 
   if (!isPlatformAdmin && !isManager) {
     return (
-      <div className="min-h-screen bg-branco flex">
+      <div className="min-h-screen bg-canvas flex">
         <AccessDeniedPage variant="logout" />
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-branco flex">
+    <div className="min-h-screen bg-canvas flex">
       <Sidebar
         mobileOpen={mobileOpen}
         onMobileClose={() => setMobileOpen(false)}
