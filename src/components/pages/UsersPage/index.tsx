@@ -1,15 +1,21 @@
 import { useEffect, useState, useMemo } from "react"
-import { Users, Inbox } from "lucide-react"
+import { Users } from "lucide-react"
 import { toast } from "sonner"
 import { usersAPI, appsAPI } from "@/services/api"
 import type { UserListResponse, UserRoleResponse, AppResponse } from "@/types"
+import { cn } from "@/utils/cn"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { LoadingSpinner } from "@/components/common/LoadingSpinner"
 import { EmptyState } from "@/components/common/EmptyState"
 import { FilterBar } from "@/components/common/FilterBar"
-import { InfoTooltip } from "@/components/common/InfoTooltip"
 import { AccessRequestsSection } from "@/components/pages/AccessRequestsSection"
 import { UserCard } from "./UserCard"
+
+const roleLegend = [
+  { label: "Platform admin", dot: "bg-inverse" },
+  { label: "Manager", dot: "bg-accent" },
+  { label: "Member", dot: "bg-st-ok" },
+]
 
 export default function UsersPage() {
   const [users, setUsers] = useState<UserListResponse[]>([])
@@ -65,36 +71,43 @@ export default function UsersPage() {
   }
 
   return (
-    <div className="p-6 md:p-8 lg:p-10 space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold text-preto tracking-tight flex items-center">
-          Users
-          <InfoTooltip content="View and manage all registered users in the platform." />
-        </h1>
-        <p className="text-sm text-verde/60 mt-1">
-          {users.length} registered user{users.length !== 1 ? "s" : ""}
-        </p>
-      </div>
-
+    <div className="max-w-[1240px] mx-auto px-6 sm:px-10 pt-8 pb-14">
       <Tabs defaultValue="users">
-        <TabsList>
-          <TabsTrigger value="users">
-            <Users className="h-4 w-4 mr-1.5" />
-            Users
-          </TabsTrigger>
-          <TabsTrigger value="requests">
-            <Inbox className="h-4 w-4 mr-1.5" />
-            Access Requests
-          </TabsTrigger>
-        </TabsList>
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between mb-5">
+          <div className="flex flex-col gap-1">
+            <span className="text-[13px] font-semibold tracking-[0.14em] uppercase text-fg-muted">
+              Administration
+            </span>
+            <h3 className="text-[25px] font-bold text-fg-strong tracking-tight">Users</h3>
+            <span className="text-[12.5px] text-fg-subtle">
+              Global roles are derived from data — manager means managing at least one project.
+            </span>
+            <div className="flex flex-wrap items-center gap-x-3.5 gap-y-1.5 mt-[3px]">
+              {roleLegend.map((r) => (
+                <span
+                  key={r.label}
+                  className="inline-flex items-center gap-1.5 text-[11.5px] text-fg-muted"
+                >
+                  <span className={cn("w-2 h-2 rounded-full shrink-0", r.dot)} />
+                  {r.label}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          <TabsList className="self-start sm:self-auto">
+            <TabsTrigger value="users">Users</TabsTrigger>
+            <TabsTrigger value="requests">Access requests</TabsTrigger>
+          </TabsList>
+        </div>
 
         <TabsContent value="users">
-          <div className="space-y-5">
+          <div className="space-y-4">
             <FilterBar
               search={{
                 value: search,
                 onChange: setSearch,
-                placeholder: "Search by email or name...",
+                placeholder: "Search name or email…",
               }}
               filters={[
                 {
@@ -122,7 +135,7 @@ export default function UsersPage() {
                 }
               />
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3.5">
                 {filteredUsers.map((user) => (
                   <UserCard
                     key={user.id}

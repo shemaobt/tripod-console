@@ -15,32 +15,37 @@ import {
 
 const STATUS_CONFIG: Record<PhaseStatus, {
   label: string
-  nodeClasses: string
-  badgeClasses: string
+  pill: string
+  dot: string
+  ring: string
   icon: typeof Circle
 }> = {
   not_started: {
     label: "Not Started",
-    nodeClasses: "border-areia/60 bg-areia/10 dark:bg-areia/5",
-    badgeClasses: "bg-areia/20 text-verde border-areia/30",
+    pill: "bg-muted text-st-idle",
+    dot: "bg-st-idle",
+    ring: "ring-line",
     icon: Circle,
   },
   in_progress: {
     label: "In Progress",
-    nodeClasses: "border-azul/60 bg-azul/10 dark:bg-azul/10",
-    badgeClasses: "bg-azul/20 text-azul border-azul/30",
+    pill: "bg-st-info/15 text-st-info",
+    dot: "bg-st-info",
+    ring: "ring-st-info/40",
     icon: Loader2,
   },
   completed: {
     label: "Completed",
-    nodeClasses: "border-verde-claro/60 bg-verde-claro/10 dark:bg-verde-claro/10",
-    badgeClasses: "bg-verde-claro/20 text-verde-claro border-verde-claro/30",
+    pill: "bg-st-ok/15 text-st-ok",
+    dot: "bg-st-ok",
+    ring: "ring-st-ok/40",
     icon: Check,
   },
   blocked: {
     label: "Blocked",
-    nodeClasses: "border-red-300 bg-red-50 dark:bg-red-950/30 dark:border-red-800",
-    badgeClasses: "bg-red-100 text-red-700 border-red-200 dark:bg-red-950/30 dark:text-red-400 dark:border-red-800",
+    pill: "bg-accent-soft text-on-accent-soft",
+    dot: "bg-st-warn",
+    ring: "ring-st-warn/40",
     icon: AlertTriangle,
   },
 }
@@ -172,32 +177,27 @@ function PhaseNode({
   onStatusClick: (node: LayoutNode) => void
 }) {
   const config = STATUS_CONFIG[node.status]
-  const StatusIcon = config.icon
 
   return (
     <g>
       <foreignObject x={node.x} y={node.y} width={NODE_WIDTH} height={NODE_HEIGHT}>
         <div
           className={cn(
-            "h-full rounded-lg border-2 px-3 py-2 flex flex-col justify-center cursor-pointer transition-all duration-200 hover:shadow-md",
-            config.nodeClasses,
+            "h-full rounded-[13px] border-[1.5px] border-input-border bg-elevated shadow-[var(--shadow-card)] ring-1 px-3 py-2 flex flex-col justify-center gap-1.5 cursor-pointer transition-all duration-200 hover:shadow-[var(--shadow-md)] hover:border-line-strong",
+            config.ring,
           )}
           onClick={() => onStatusClick(node)}
         >
-          <p className="text-sm font-medium text-preto truncate">{node.name}</p>
-          <div className="flex items-center gap-1.5 mt-1">
-            <StatusIcon className={cn(
-              "h-3 w-3 shrink-0",
-              node.status === "in_progress" && "animate-spin",
-              node.status === "completed" && "text-verde-claro",
-              node.status === "blocked" && "text-red-600 dark:text-red-400",
-              node.status === "not_started" && "text-verde/40",
-              node.status === "in_progress" && "text-azul",
-            )} />
-            <span className={cn("text-xs font-medium", config.badgeClasses, "bg-transparent border-0 p-0")}>
-              {config.label}
-            </span>
-          </div>
+          <p className="text-[13px] font-semibold text-fg-strong truncate">{node.name}</p>
+          <span
+            className={cn(
+              "inline-flex items-center gap-1.5 self-start rounded-full px-2 py-0.5 text-[11px] font-semibold",
+              config.pill,
+            )}
+          >
+            <span className={cn("w-[7px] h-[7px] rounded-full shrink-0", config.dot)} />
+            {config.label}
+          </span>
         </div>
       </foreignObject>
     </g>
@@ -210,9 +210,8 @@ function PhaseEdge({ edge }: { edge: LayoutEdge }) {
     <path
       d={`M ${edge.fromX} ${edge.fromY} C ${midX} ${edge.fromY}, ${midX} ${edge.toY}, ${edge.toX} ${edge.toY}`}
       fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      className="text-areia/60"
+      stroke="var(--edge)"
+      strokeWidth={1.5}
       markerEnd="url(#arrowhead)"
     />
   )
@@ -239,7 +238,9 @@ function StatusPopover({
         <div ref={anchorRef} className="absolute" style={{ left: node.x, top: node.y, width: NODE_WIDTH, height: NODE_HEIGHT, pointerEvents: "none" }} />
       </PopoverTrigger>
       <PopoverContent side="right" className="w-48 p-2">
-        <p className="text-xs font-medium text-verde mb-2 px-2">Update Status</p>
+        <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-fg-subtle mb-2 px-2">
+          Update Status
+        </p>
         <div className="space-y-0.5">
           {PHASE_STATUSES.map((status) => {
             const config = STATUS_CONFIG[status]
@@ -251,15 +252,15 @@ function StatusPopover({
                 type="button"
                 onClick={() => onSelect(node.phaseId, status)}
                 className={cn(
-                  "w-full flex items-center gap-2 px-2 py-1.5 rounded text-sm transition-colors text-left",
+                  "w-full flex items-center gap-2 px-2 py-1.5 rounded-[10px] text-sm transition-colors text-left",
                   isActive
-                    ? "bg-telha/10 text-telha font-medium"
-                    : "hover:bg-surface-alt text-preto",
+                    ? "bg-accent-soft text-on-accent-soft font-semibold"
+                    : "hover:bg-muted text-fg",
                 )}
               >
                 <StatusIcon className={cn("h-3.5 w-3.5 shrink-0", status === "in_progress" && "animate-spin")} />
                 {config.label}
-                {isActive && <Check className="h-3.5 w-3.5 ml-auto text-telha" />}
+                {isActive && <Check className="h-3.5 w-3.5 ml-auto text-accent" />}
               </button>
             )
           })}
@@ -314,13 +315,11 @@ export function ProjectPhasesTab({ projectId }: { projectId: string }) {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h3 className="text-base font-semibold text-preto tracking-tight flex items-center">
-          Phases
-          <InfoTooltip content="Every phase defined by a platform admin applies to all projects. Set each phase's status to track this project's progress." />
-        </h3>
-      </div>
+    <div className="space-y-4">
+      <h3 className="flex items-center text-[15.5px] font-semibold text-fg-strong">
+        Phases
+        <InfoTooltip content="Every phase defined by a platform admin applies to all projects. Set each phase's status to track this project's progress." />
+      </h3>
 
       {phases.length === 0 ? (
         <EmptyState
@@ -329,8 +328,8 @@ export function ProjectPhasesTab({ projectId }: { projectId: string }) {
           description="Phases and their dependencies are defined by a platform admin and apply to every project. Once created, they appear here and you can track this project's progress by setting each phase's status."
         />
       ) : (
-        <div className={cn(card.base, "overflow-hidden")}>
-          <div className="overflow-x-auto relative">
+        <div className="space-y-2.5">
+          <div className={cn(card.base, "relative overflow-x-auto p-2.5")}>
             <svg
               width={Math.max(layout.width, 400)}
               height={Math.max(layout.height, 120)}
@@ -345,10 +344,7 @@ export function ProjectPhasesTab({ projectId }: { projectId: string }) {
                   refY="3"
                   orient="auto"
                 >
-                  <polygon
-                    points="0 0, 8 3, 0 6"
-                    className="fill-areia/60"
-                  />
+                  <polygon points="0 0, 8 3, 0 6" fill="var(--edge)" />
                 </marker>
               </defs>
               {layout.edges.map((edge, i) => (
@@ -370,9 +366,9 @@ export function ProjectPhasesTab({ projectId }: { projectId: string }) {
               anchorRef={statusAnchorRef}
             />
           </div>
-          <div className="px-4 py-2.5 border-t border-areia/10 bg-surface-alt/30">
-            <p className="text-xs text-verde/50">Click a phase to update its status.</p>
-          </div>
+          <p className="px-0.5 text-[11.5px] text-fg-subtle">
+            Click a phase to update its status.
+          </p>
         </div>
       )}
     </div>

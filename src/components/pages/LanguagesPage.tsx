@@ -1,14 +1,15 @@
 import { useEffect, useState } from "react"
-import { Languages, Plus, Pencil, Trash2, Inbox, ClipboardList } from "lucide-react"
+import { Languages, Plus, Pencil, Trash2 } from "lucide-react"
 import { toast } from "sonner"
 import { languagesAPI, changeRequestsAPI } from "@/services/api"
 import type { LanguageResponse, LanguageStatsResponse } from "@/types"
 import { useLanguagesStore } from "@/stores/languagesStore"
 import { useAuth } from "@/contexts/AuthContext"
+import { cn } from "@/utils/cn"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
+import { Switch } from "@/components/ui/switch"
 import {
   Dialog,
   DialogContent,
@@ -29,10 +30,9 @@ export default function LanguagesPage() {
   const { user, isPlatformAdmin, isManager } = useAuth()
   const canRequestEdit = isManager && !isPlatformAdmin
   const { languages, loading: storeLoading, lastFetched, fetch: fetchLanguages } = useLanguagesStore()
-  // Full-page spinner only on the initial load; background refreshes (e.g. after
-  // reviewing a request) keep the page and the active tab mounted.
   const loading = (storeLoading || !lastFetched) && languages.length === 0
   const [activeTab, setActiveTab] = useState("languages")
+  const [showInactive, setShowInactive] = useState(false)
   const [dialogOpen, setDialogOpen] = useState(false)
   const [saving, setSaving] = useState(false)
   const [editingLang, setEditingLang] = useState<LanguageResponse | null>(null)
@@ -157,106 +157,147 @@ export default function LanguagesPage() {
     return <LoadingSpinner />
   }
 
+  const displayLanguages = showInactive ? languages : languages.filter((lang) => lang.is_active)
+  const thClass =
+    "text-left px-5 py-3 text-[11px] font-semibold tracking-[0.08em] uppercase text-fg-subtle border-b border-line"
+  const tdClass = "px-5 py-3 border-b border-line"
+  const segClass = "rounded-full px-4 py-1.5 text-[13px] font-semibold transition-colors"
+  const segActive = "bg-elevated text-fg-strong shadow-[var(--shadow-sm)]"
+  const iconBtn = "w-[30px] h-[30px] rounded-[9px] inline-grid place-items-center transition-colors"
+
   const languagesView =
     languages.length === 0 ? (
       <EmptyState
         icon={Languages}
         title="No languages yet"
         description="Languages define the translation targets for your projects. Create one to get started."
-        actionLabel="Create Language"
+        actionLabel={isPlatformAdmin ? "Create Language" : "Request Language"}
         onAction={openCreateDialog}
       />
     ) : (
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-        {languages.map((lang) => (
-          <div
-            key={lang.id}
-            className="group relative rounded-2xl border border-areia/20 bg-surface p-5 shadow-sm hover:shadow-md hover:border-telha/30 transition-all duration-200 cursor-default"
-          >
-            <div className="absolute top-2 right-2 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-              {(isPlatformAdmin || canRequestEdit) && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-8 w-8 p-0"
-                  onClick={() => openEditDialog(lang)}
-                  aria-label={`Edit ${lang.name}`}
-                >
-                  <Pencil className="h-3.5 w-3.5" />
-                </Button>
-              )}
-              {canDeactivate(lang) && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/30"
-                  onClick={() => openDeleteDialog(lang)}
-                  aria-label={`Deactivate ${lang.name}`}
-                >
-                  <Trash2 className="h-3.5 w-3.5" />
-                </Button>
-              )}
-            </div>
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-azul/15 to-azul/5 flex items-center justify-center mx-auto">
-              <span className="text-2xl font-mono font-bold text-azul">{lang.code}</span>
-            </div>
-            <p className="text-sm font-medium text-preto text-center mt-3">{lang.name}</p>
-            <p className="text-xs text-verde/50 text-center mt-1">{formatDate(lang.created_at)}</p>
-          </div>
-        ))}
+      <div className="bg-elevated rounded-[18px] shadow-[var(--shadow-card)] overflow-hidden">
+        <table className="w-full border-collapse text-sm">
+          <thead>
+            <tr>
+              <th className={thClass}>Language</th>
+              <th className={thClass}>Code</th>
+              <th className={thClass}>Projects</th>
+              <th className={thClass}>Status</th>
+              <th className={thClass}>Created</th>
+              <th className={cn(thClass, "text-right")} aria-label="Actions" />
+            </tr>
+          </thead>
+          <tbody>
+            {displayLanguages.map((lang) => (
+              <tr key={lang.id} className="hover:bg-muted">
+                <td className={cn(tdClass, "font-semibold text-fg-strong")}>{lang.name}</td>
+                <td className={tdClass}>
+                  <span className="font-mono text-xs bg-muted rounded-md px-2 py-0.5 text-fg-muted">
+                    {lang.code}
+                  </span>
+                </td>
+                <td className={cn(tdClass, "text-fg-subtle")}>—</td>
+                <td className={tdClass}>
+                  <span className="inline-flex items-center gap-2 text-[13px] text-fg-muted">
+                    <span className={cn("w-2 h-2 rounded-full", lang.is_active ? "bg-st-ok" : "bg-st-idle")} />
+                    {lang.is_active ? "Active" : "Inactive"}
+                  </span>
+                </td>
+                <td className={cn(tdClass, "text-fg-subtle text-[12.5px]")}>
+                  {formatDate(lang.created_at)}
+                  {lang.created_by === user?.id ? " · You" : ""}
+                </td>
+                <td className={cn(tdClass, "text-right whitespace-nowrap")}>
+                  {(isPlatformAdmin || canRequestEdit) && (
+                    <button
+                      type="button"
+                      onClick={() => openEditDialog(lang)}
+                      title="Edit"
+                      aria-label={`Edit ${lang.name}`}
+                      className={cn(iconBtn, "text-fg-subtle hover:bg-muted hover:text-fg-strong")}
+                    >
+                      <Pencil className="w-[15px] h-[15px]" strokeWidth={1.75} />
+                    </button>
+                  )}
+                  {canDeactivate(lang) && (
+                    <button
+                      type="button"
+                      onClick={() => openDeleteDialog(lang)}
+                      title="Deactivate"
+                      aria-label={`Deactivate ${lang.name}`}
+                      className={cn(iconBtn, "text-fg-subtle hover:bg-accent-soft hover:text-on-accent-soft")}
+                    >
+                      <Trash2 className="w-[15px] h-[15px]" strokeWidth={1.75} />
+                    </button>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     )
 
   return (
-    <div className="p-6 md:p-8 lg:p-10 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold text-preto tracking-tight flex items-center">
-            Languages
-            <InfoTooltip content="Manage the translation target languages for your projects." />
-          </h1>
-          <p className="text-sm text-verde/60 mt-1">
-            {languages.length} language{languages.length !== 1 ? "s" : ""} registered
-          </p>
+    <div className="max-w-[1240px] mx-auto px-6 sm:px-10 pt-8 pb-14">
+      <div className="flex items-end justify-between gap-4 mb-5">
+        <div className="flex flex-col gap-1">
+          <span className="text-[13px] font-semibold tracking-[0.14em] uppercase text-fg-muted">Content</span>
+          <h3 className="text-[25px] font-bold text-fg-strong tracking-tight">Languages</h3>
+          <span className="text-[12.5px] text-fg-subtle">
+            {languages.length} language{languages.length !== 1 ? "s" : ""}
+          </span>
         </div>
-        <Button onClick={openCreateDialog} className="rounded-xl">
-          <Plus className="h-4 w-4" />
-          {isPlatformAdmin ? "New Language" : "Request Language"}
-        </Button>
+        <div className="flex items-center gap-[18px]">
+          <div className="flex items-center gap-[9px]">
+            <Switch checked={showInactive} onCheckedChange={setShowInactive} aria-label="Include inactive" />
+            <span
+              className="text-[13px] text-fg-muted cursor-pointer select-none"
+              onClick={() => setShowInactive((v) => !v)}
+            >
+              Include inactive
+            </span>
+          </div>
+          <Button onClick={openCreateDialog}>
+            <Plus className="w-4 h-4" />
+            {isPlatformAdmin ? "New language" : "Request language"}
+          </Button>
+        </div>
       </div>
 
       {isPlatformAdmin || canRequestEdit ? (
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList>
-            <TabsTrigger value="languages">
-              <Languages className="h-4 w-4 mr-1.5" />
-              Languages
-            </TabsTrigger>
-            <TabsTrigger value="requests">
-              {isPlatformAdmin ? (
-                <Inbox className="h-4 w-4 mr-1.5" />
-              ) : (
-                <ClipboardList className="h-4 w-4 mr-1.5" />
-              )}
-              {isPlatformAdmin ? "Requests" : "My Requests"}
-            </TabsTrigger>
-          </TabsList>
-          <TabsContent value="languages">{languagesView}</TabsContent>
-          <TabsContent value="requests">
-            {isPlatformAdmin ? (
-              <ChangeRequestsSection
-                kinds={["create_language", "edit_language"]}
-                emptyLabel="Managers' requests to create or edit a language appear here. Accept to apply the change or reject."
-                onReviewed={refreshLanguages}
-              />
-            ) : (
-              <MyChangeRequestsSection
-                kinds={["create_language", "edit_language"]}
-                emptyLabel="When you request a new language or an edit, it appears here with its status. Once a platform admin reviews it, their notes show up too."
-              />
-            )}
-          </TabsContent>
-        </Tabs>
+        <>
+          <div className="inline-flex bg-muted rounded-full p-[3px] mb-[18px]">
+            <button
+              type="button"
+              onClick={() => setActiveTab("languages")}
+              className={cn(segClass, activeTab === "languages" ? segActive : "text-fg-muted")}
+            >
+              All languages
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab("requests")}
+              className={cn(segClass, activeTab === "requests" ? segActive : "text-fg-muted")}
+            >
+              Change requests
+            </button>
+          </div>
+          {activeTab === "languages" ? (
+            languagesView
+          ) : isPlatformAdmin ? (
+            <ChangeRequestsSection
+              kinds={["create_language", "edit_language"]}
+              emptyLabel="Managers' requests to create or edit a language appear here. Accept to apply the change or reject."
+              onReviewed={refreshLanguages}
+            />
+          ) : (
+            <MyChangeRequestsSection
+              kinds={["create_language", "edit_language"]}
+              emptyLabel="When you request a new language or an edit, it appears here with its status. Once a platform admin reviews it, their notes show up too."
+            />
+          )}
+        </>
       ) : (
         languagesView
       )}
@@ -284,12 +325,7 @@ export default function LanguagesPage() {
           <div className="space-y-5 pt-1">
             <div className="space-y-1.5">
               <Label htmlFor="lang-name">Name</Label>
-              <Input
-                id="lang-name"
-                placeholder="e.g. English"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-              />
+              <Input id="lang-name" placeholder="e.g. English" value={name} onChange={(e) => setName(e.target.value)} />
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="lang-code">
@@ -298,19 +334,13 @@ export default function LanguagesPage() {
                   <InfoTooltip content="Exactly 3 characters, ISO 639-3." />
                 </span>
               </Label>
-              <Input
-                id="lang-code"
-                placeholder="e.g. eng"
-                maxLength={3}
-                value={code}
-                onChange={(e) => setCode(e.target.value)}
-              />
-              <p className="text-xs text-verde/50 mt-1.5">
+              <Input id="lang-code" placeholder="e.g. eng" maxLength={3} value={code} onChange={(e) => setCode(e.target.value)} />
+              <p className="text-xs text-fg-subtle mt-1.5">
                 Must be exactly 3 characters (ISO 639-3)
               </p>
             </div>
           </div>
-          <DialogFooter className="border-t border-areia/10 pt-4 mt-2">
+          <DialogFooter className="border-t border-line pt-4 mt-2">
             <Button variant="outline" onClick={() => setDialogOpen(false)} disabled={saving}>
               Cancel
             </Button>
@@ -346,15 +376,15 @@ export default function LanguagesPage() {
             </DialogDescription>
           </DialogHeader>
           {blockedByProjects && deleteStats && (
-            <ul className="mt-1 max-h-40 overflow-y-auto rounded-lg border border-areia/30 bg-surface-alt/50 divide-y divide-areia/20">
+            <ul className="mt-1 max-h-40 overflow-y-auto rounded-[10px] border border-line bg-muted divide-y divide-line">
               {deleteStats.projects.map((project) => (
-                <li key={project.id} className="px-3 py-2 text-sm text-preto">
+                <li key={project.id} className="px-3 py-2 text-sm text-fg">
                   {project.name}
                 </li>
               ))}
             </ul>
           )}
-          <DialogFooter className="border-t border-areia/10 pt-4 mt-2">
+          <DialogFooter className="border-t border-line pt-4 mt-2">
             <Button variant="outline" onClick={() => setDeleteTarget(null)} disabled={deleting}>
               {blockedByProjects ? "Close" : "Cancel"}
             </Button>

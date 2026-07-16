@@ -1,32 +1,19 @@
 import { useEffect, useState } from "react"
 import { useParams, useNavigate } from "react-router"
-import {
-  ArrowLeft,
-  FolderOpen,
-  Pencil,
-  MapPin,
-  Save,
-  Shield,
-  GitBranch,
-} from "lucide-react"
+import { MapContainer, TileLayer, Marker } from "react-leaflet"
+import L from "leaflet"
+import "leaflet/dist/leaflet.css"
+import { ArrowLeft, MapPin } from "lucide-react"
 import { toast } from "sonner"
 import { projectsAPI } from "@/services/api"
-import type { ProjectResponse } from "@/types"
+import type { ProjectResponse, LanguageResponse } from "@/types"
 import { useLanguagesStore } from "@/stores/languagesStore"
 import { card } from "@/styles"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { LocationSearchInput } from "@/components/common/LocationSearchInput"
 import { Textarea } from "@/components/ui/textarea"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
+import { LocationSearchInput } from "@/components/common/LocationSearchInput"
 import {
   Select,
   SelectContent,
@@ -45,56 +32,110 @@ import { InfoTooltip } from "@/components/common/InfoTooltip"
 import { ProjectAccessTab } from "./ProjectAccessTab"
 import { ProjectPhasesTab } from "./ProjectPhasesTab"
 
-import { formatDate } from "@/utils/format"
+const locationMarkerSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="42" viewBox="0 0 32 42" fill="none">
+  <path d="M16 2C9.373 2 4 7.373 4 14c0 8.5 12 24 12 24s12-15.5 12-24c0-6.627-5.373-12-12-12z" fill="#BE4A01"/>
+  <circle cx="16" cy="14" r="5" fill="white"/>
+</svg>`
 
-function ProjectInfoCard({
+const locationIcon = L.divIcon({
+  html: locationMarkerSvg,
+  className: "",
+  iconSize: [32, 42],
+  iconAnchor: [16, 42],
+})
+
+function projectInitials(name: string) {
+  return name
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((s) => s[0]?.toUpperCase() ?? "")
+    .join("")
+}
+
+function ProjectInfoForm({
   project,
-  languageName,
-  onEdit,
+  languages,
+  languagesLoading,
+  onSaved,
 }: {
   project: ProjectResponse
-  languageName: string
-  onEdit: () => void
+  languages: LanguageResponse[]
+  languagesLoading: boolean
+  onSaved: (project: ProjectResponse) => void
 }) {
+  const [name, setName] = useState(project.name)
+  const [description, setDescription] = useState(project.description ?? "")
+  const [languageId, setLanguageId] = useState(project.language_id)
+  const [saving, setSaving] = useState(false)
+
+  async function handleSave() {
+    if (!name.trim() || !languageId) return
+    setSaving(true)
+    try {
+      const { data } = await projectsAPI.update(project.id, {
+        name: name.trim(),
+        description: description.trim() || null,
+        language_id: languageId,
+      })
+      onSaved(data)
+      toast.success("Project updated")
+    } catch {
+      toast.error("Failed to update project")
+    } finally {
+      setSaving(false)
+    }
+  }
+
   return (
-    <div className={`${card.base} p-4 sm:p-6`}>
-      <div className="flex items-start justify-between">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="h-10 w-10 rounded-lg bg-azul/20 flex items-center justify-center">
-            <FolderOpen className="h-5 w-5 text-azul" />
-          </div>
-          <div>
-            <h2 className="text-lg font-semibold text-preto">
-              {project.name}
-            </h2>
-            {project.description && (
-              <p className="text-sm text-verde mt-0.5">
-                {project.description}
-              </p>
-            )}
-          </div>
-        </div>
-        <Button variant="ghost" size="sm" onClick={onEdit}>
-          <Pencil className="h-4 w-4" />
-        </Button>
+    <div className={`${card.base} p-5 sm:p-6 flex flex-col gap-5`}>
+      <h4 className="text-[15.5px] font-semibold text-fg-strong">
+        Project information
+      </h4>
+      <div className="space-y-1.5">
+        <Label htmlFor="pj-name">Name</Label>
+        <Input
+          id="pj-name"
+          placeholder="Project name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-        <div>
-          <span className="text-verde">Language</span>
-          <p className="text-preto font-medium">{languageName}</p>
-        </div>
-        <div>
-          <span className="text-verde">Created</span>
-          <p className="text-preto font-medium">
-            {formatDate(project.created_at)}
-          </p>
-        </div>
-        <div>
-          <span className="text-verde">Updated</span>
-          <p className="text-preto font-medium">
-            {formatDate(project.updated_at)}
-          </p>
-        </div>
+      <div className="space-y-1.5">
+        <Label htmlFor="pj-description">Description</Label>
+        <Textarea
+          id="pj-description"
+          placeholder="Brief description"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          rows={3}
+        />
+      </div>
+      <div className="space-y-1.5">
+        <Label>Language</Label>
+        {languagesLoading ? (
+          <p className="text-sm text-fg-muted">Loading languages...</p>
+        ) : (
+          <Select value={languageId} onValueChange={setLanguageId}>
+            <SelectTrigger>
+              <SelectValue placeholder="Select a language" />
+            </SelectTrigger>
+            <SelectContent>
+              {languages.map((lang) => (
+                <SelectItem key={lang.id} value={lang.id}>
+                  {lang.name} ({lang.code})
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
+      </div>
+      <div className="flex justify-end">
+        <Button
+          onClick={handleSave}
+          disabled={saving || !name.trim() || !languageId}
+        >
+          {saving ? "Saving..." : "Save changes"}
+        </Button>
       </div>
     </div>
   )
@@ -125,7 +166,6 @@ function LocationSection({
       : null,
   )
   const [saving, setSaving] = useState(false)
-  const [showManual, setShowManual] = useState(false)
   const [manualLat, setManualLat] = useState(
     project.latitude != null ? String(project.latitude) : "",
   )
@@ -139,29 +179,17 @@ function LocationSection({
   async function handleSave() {
     setSaving(true)
     try {
-      if (showManual) {
-        const lat = manualLat.trim() ? parseFloat(manualLat) : null
-        const lng = manualLng.trim() ? parseFloat(manualLng) : null
-        if (manualLat.trim() && isNaN(lat!)) {
-          toast.error("Latitude must be a valid number")
-          setSaving(false)
-          return
-        }
-        if (manualLng.trim() && isNaN(lng!)) {
-          toast.error("Longitude must be a valid number")
-          setSaving(false)
-          return
-        }
-        await onSave(lat, lng, manualName.trim() || null)
-      } else if (location) {
-        await onSave(
-          location.latitude,
-          location.longitude,
-          location.displayName || null,
-        )
-      } else {
-        await onSave(null, null, null)
+      const lat = manualLat.trim() ? parseFloat(manualLat) : null
+      const lng = manualLng.trim() ? parseFloat(manualLng) : null
+      if (manualLat.trim() && isNaN(lat!)) {
+        toast.error("Latitude must be a valid number")
+        return
       }
+      if (manualLng.trim() && isNaN(lng!)) {
+        toast.error("Longitude must be a valid number")
+        return
+      }
+      await onSave(lat, lng, manualName.trim() || null)
     } finally {
       setSaving(false)
     }
@@ -185,84 +213,91 @@ function LocationSection({
     setManualName("")
   }
 
+  const hasValue = Boolean(location || manualLat || manualLng)
+
   return (
-    <div className="space-y-4">
-      <h3 className="text-lg font-semibold text-preto tracking-tight flex items-center">
-        <MapPin className="h-5 w-5 mr-2 text-azul" />
-        Location
-        <InfoTooltip content="Set the geographic location for this project. Search for a place or enter coordinates manually." />
-      </h3>
-
-      <LocationSearchInput value={location} onChange={handleLocationChange} />
-
-      <div>
-        <button
-          type="button"
-          onClick={() => setShowManual(!showManual)}
-          className="text-xs text-verde/60 hover:text-preto transition-colors"
-        >
-          {showManual
-            ? "Hide manual coordinates"
-            : "Enter coordinates manually"}
-        </button>
-
-        {showManual && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-3">
-            <div className="space-y-2">
-              <Label htmlFor="latitude">
-                <span className="inline-flex items-center">
-                  Latitude
-                  <InfoTooltip content="Decimal degrees, e.g. -3.1190" />
-                </span>
-              </Label>
-              <Input
-                id="latitude"
-                placeholder="e.g. -3.1190"
-                value={manualLat}
-                onChange={(e) => setManualLat(e.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="longitude">
-                <span className="inline-flex items-center">
-                  Longitude
-                  <InfoTooltip content="Decimal degrees, e.g. -59.9750" />
-                </span>
-              </Label>
-              <Input
-                id="longitude"
-                placeholder="e.g. -59.9750"
-                value={manualLng}
-                onChange={(e) => setManualLng(e.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="display-name">Location Name</Label>
-              <Input
-                id="display-name"
-                placeholder="e.g. Manaus, Brazil"
-                value={manualName}
-                onChange={(e) => setManualName(e.target.value)}
-              />
-            </div>
-          </div>
+    <div className={`${card.base} p-5 sm:p-6 flex flex-col gap-4`}>
+      <div className="flex items-center justify-between">
+        <h4 className="flex items-center text-[15.5px] font-semibold text-fg-strong">
+          Location
+          <InfoTooltip content="Set the geographic location for this project. Search for a place or enter coordinates manually." />
+        </h4>
+        {hasValue && (
+          <button
+            type="button"
+            onClick={handleClearLocation}
+            className="text-[12.5px] font-semibold text-accent hover:underline"
+          >
+            Clear location
+          </button>
         )}
       </div>
 
-      <div className="flex items-center gap-3">
-        <Button onClick={handleSave} disabled={saving} size="sm">
-          <Save className="h-4 w-4" />
-          {saving ? "Saving..." : "Save Location"}
+      {location ? (
+        <div className="flex flex-col gap-2.5">
+          <div className="flex items-center gap-2">
+            <MapPin className="w-4 h-4 text-accent flex-none" strokeWidth={1.75} />
+            {location.displayName && (
+              <span className="text-sm font-semibold text-fg-strong truncate">
+                {location.displayName}
+              </span>
+            )}
+            <span className="font-mono text-[11.5px] text-fg-subtle">
+              {location.latitude.toFixed(4)}, {location.longitude.toFixed(4)}
+            </span>
+          </div>
+          <div className="h-[180px] rounded-[12px] overflow-hidden relative">
+            <MapContainer
+              key={`${location.latitude},${location.longitude}`}
+              center={[location.latitude, location.longitude]}
+              zoom={8}
+              className="h-full w-full"
+              style={{ position: "absolute", inset: 0 }}
+              zoomControl={false}
+              scrollWheelZoom={false}
+              dragging={false}
+              attributionControl={false}
+            >
+              <TileLayer url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png" maxZoom={20} />
+              <Marker position={[location.latitude, location.longitude]} icon={locationIcon} />
+            </MapContainer>
+          </div>
+        </div>
+      ) : (
+        <p className="text-[13px] text-fg-subtle">
+          No location set. Search a place or enter coordinates manually.
+        </p>
+      )}
+
+      <div className="space-y-1.5">
+        <Label>Search a place</Label>
+        <LocationSearchInput value={location} onChange={handleLocationChange} />
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-[1fr_1fr_auto] gap-3.5 sm:items-end">
+        <div className="space-y-1.5">
+          <Label htmlFor="pj-lat">Latitude</Label>
+          <Input
+            id="pj-lat"
+            className="font-mono"
+            placeholder="-4.2523"
+            value={manualLat}
+            onChange={(e) => setManualLat(e.target.value)}
+          />
+        </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="pj-lng">Longitude</Label>
+          <Input
+            id="pj-lng"
+            className="font-mono"
+            placeholder="-69.9381"
+            value={manualLng}
+            onChange={(e) => setManualLng(e.target.value)}
+          />
+        </div>
+        <Button variant="secondary" onClick={handleSave} disabled={saving}>
+          {saving ? "Applying..." : "Apply"}
         </Button>
-        {(location || manualLat || manualLng) && (
-          <Button
-            variant="outline-destructive"
-            size="sm"
-            onClick={handleClearLocation}
-          >
-            Clear Location
-          </Button>
-        )}
       </div>
     </div>
   )
@@ -275,13 +310,11 @@ export default function ProjectDetailPage() {
   const [project, setProject] = useState<ProjectResponse | null>(null)
   const [loading, setLoading] = useState(true)
 
-  const { languages, loading: languagesLoading, fetch: fetchLanguages, getLanguageName } = useLanguagesStore()
-
-  const [editDialogOpen, setEditDialogOpen] = useState(false)
-  const [saving, setSaving] = useState(false)
-  const [editName, setEditName] = useState("")
-  const [editDescription, setEditDescription] = useState("")
-  const [editLanguageId, setEditLanguageId] = useState("")
+  const {
+    languages,
+    loading: languagesLoading,
+    fetch: fetchLanguages,
+  } = useLanguagesStore()
 
   async function fetchProject() {
     if (!projectId) return
@@ -300,33 +333,6 @@ export default function ProjectDetailPage() {
     fetchLanguages()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectId])
-
-  function openEditDialog() {
-    if (!project) return
-    setEditName(project.name)
-    setEditDescription(project.description ?? "")
-    setEditLanguageId(project.language_id)
-    setEditDialogOpen(true)
-  }
-
-  async function handleEditSave() {
-    if (!projectId || !editName.trim() || !editLanguageId) return
-    setSaving(true)
-    try {
-      const { data } = await projectsAPI.update(projectId, {
-        name: editName.trim(),
-        description: editDescription.trim() || null,
-        language_id: editLanguageId,
-      })
-      setProject(data)
-      toast.success("Project updated")
-      setEditDialogOpen(false)
-    } catch {
-      toast.error("Failed to update project")
-    } finally {
-      setSaving(false)
-    }
-  }
 
   async function handleLocationSave(
     lat: number | null,
@@ -353,131 +359,97 @@ export default function ProjectDetailPage() {
 
   if (!project) {
     return (
-      <div className="p-6 md:p-8">
-        <p className="text-verde">Project not found.</p>
+      <div className="max-w-[1240px] mx-auto px-6 sm:px-10 pt-8 pb-14">
+        <p className="text-fg-muted">Project not found.</p>
       </div>
     )
   }
 
-  return (
-    <div className="p-6 md:p-8 lg:p-10 space-y-6">
-      <div>
-        <button
-          onClick={() => navigate("/app/projects")}
-          className="inline-flex items-center gap-1 text-sm text-verde/60 hover:text-preto transition-colors mb-4"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back to Projects
-        </button>
-        <h1 className="text-2xl font-semibold text-preto tracking-tight flex items-center">
-          {project.name}
-          <InfoTooltip content="View and manage this project's details, location, and access permissions." />
-        </h1>
-      </div>
+  const language = languages.find((l) => l.id === project.language_id)
+  const locationLine =
+    project.location_display_name ||
+    (project.latitude != null && project.longitude != null
+      ? `${project.latitude}, ${project.longitude}`
+      : null)
 
-      <ProjectInfoCard
-        project={project}
-        languageName={getLanguageName(project.language_id)}
-        onEdit={openEditDialog}
-      />
+  return (
+    <div className="max-w-[1240px] mx-auto px-6 sm:px-10 pt-8 pb-14">
+      <button
+        onClick={() => navigate("/app/projects")}
+        className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-fg-muted hover:text-fg-strong transition-colors mb-4"
+      >
+        <ArrowLeft className="w-[15px] h-[15px]" strokeWidth={1.75} />
+        Projects
+      </button>
 
       <Tabs defaultValue="info">
-        <TabsList>
-          <TabsTrigger value="info">Info</TabsTrigger>
-          <TabsTrigger value="phases">
-            <GitBranch className="h-4 w-4 mr-1" />
-            Phases
-          </TabsTrigger>
-          <TabsTrigger value="access">
-            <Shield className="h-4 w-4 mr-1" />
-            Access
-          </TabsTrigger>
-        </TabsList>
+        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-[18px]">
+          <div className="flex items-center gap-4 min-w-0">
+            <div className="w-[54px] h-[54px] rounded-[14px] bg-azul/20 text-azul grid place-items-center text-[15px] font-bold flex-none">
+              {projectInitials(project.name)}
+            </div>
+            <div className="flex flex-col gap-1.5 min-w-0">
+              <h3 className="flex items-center text-[25px] font-bold text-fg-strong tracking-tight">
+                {project.name}
+                <InfoTooltip content="View and manage this project's details, location, and access permissions." />
+              </h3>
+              <div className="flex items-center flex-wrap gap-x-3 gap-y-1">
+                {language && (
+                  <span className="font-mono text-[11.5px] bg-muted rounded-md px-2 py-0.5 text-fg-muted">
+                    {language.code}
+                  </span>
+                )}
+                <span className="text-[13px] text-fg-muted">
+                  {language?.name ?? "Unknown language"}
+                </span>
+                {locationLine && (
+                  <>
+                    <span className="text-[13px] text-fg-subtle">·</span>
+                    <span className="text-[13px] text-fg-muted">
+                      {locationLine}
+                    </span>
+                  </>
+                )}
+                <span className="text-[13px] text-fg-subtle">·</span>
+                <span className="text-[13px] text-fg-muted">
+                  {project.team_size}{" "}
+                  {project.team_size === 1 ? "person" : "people"}
+                </span>
+              </div>
+            </div>
+          </div>
 
-        <TabsContent value="info" className="mt-4 space-y-6">
-          <LocationSection
-            project={project}
-            onSave={handleLocationSave}
-          />
+          <TabsList className="self-start sm:self-auto">
+            <TabsTrigger value="info">Info</TabsTrigger>
+            <TabsTrigger value="phases">Phases</TabsTrigger>
+            <TabsTrigger value="access">Access</TabsTrigger>
+          </TabsList>
+        </div>
+
+        <TabsContent value="info">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-[18px] items-start">
+            <ProjectInfoForm
+              project={project}
+              languages={languages}
+              languagesLoading={languagesLoading}
+              onSaved={setProject}
+            />
+            <LocationSection
+              key={`${project.latitude},${project.longitude},${project.location_display_name}`}
+              project={project}
+              onSave={handleLocationSave}
+            />
+          </div>
         </TabsContent>
 
-        <TabsContent value="phases" className="mt-4">
+        <TabsContent value="phases">
           <ProjectPhasesTab projectId={projectId!} />
         </TabsContent>
 
-        <TabsContent value="access" className="mt-4">
+        <TabsContent value="access">
           <ProjectAccessTab projectId={projectId!} />
         </TabsContent>
       </Tabs>
-
-      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Edit Project</DialogTitle>
-            <DialogDescription>
-              Update this project's details and language assignment.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-5 pt-1">
-            <div className="space-y-1.5">
-              <Label htmlFor="edit-name">Name</Label>
-              <Input
-                id="edit-name"
-                placeholder="Project name"
-                value={editName}
-                onChange={(e) => setEditName(e.target.value)}
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="edit-description">Description</Label>
-              <Textarea
-                id="edit-description"
-                placeholder="Brief description"
-                value={editDescription}
-                onChange={(e) => setEditDescription(e.target.value)}
-                rows={3}
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label>Language</Label>
-              {languagesLoading ? (
-                <p className="text-sm text-verde">Loading languages...</p>
-              ) : (
-                <Select
-                  value={editLanguageId}
-                  onValueChange={setEditLanguageId}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a language" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {languages.map((lang) => (
-                      <SelectItem key={lang.id} value={lang.id}>
-                        {lang.name} ({lang.code})
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-            </div>
-          </div>
-          <DialogFooter className="border-t border-areia/10 pt-4 mt-2">
-            <Button
-              variant="outline"
-              onClick={() => setEditDialogOpen(false)}
-              disabled={saving}
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleEditSave}
-              disabled={saving || !editName.trim() || !editLanguageId}
-            >
-              {saving ? "Saving..." : "Save"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   )
 }

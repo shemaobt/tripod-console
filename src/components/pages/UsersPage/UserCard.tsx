@@ -1,17 +1,8 @@
 import { useNavigate } from "react-router"
-import {
-  Calendar,
-  Shield,
-  ChevronRight,
-  UserCog,
-  User as UserIcon,
-  type LucideIcon,
-} from "lucide-react"
 import type { UserListResponse, UserRoleResponse, AppResponse, UserRole } from "@/types"
 import { cn } from "@/utils/cn"
 import { Badge } from "@/components/ui/badge"
 import { card } from "@/styles"
-import { formatDate } from "@/utils/format"
 import { UserAvatar } from "./UserAvatar"
 
 interface UserCardProps {
@@ -20,87 +11,57 @@ interface UserCardProps {
   apps: AppResponse[]
 }
 
-const roleBadge: Record<
-  UserRole,
-  { variant: "admin" | "manager" | "member"; icon: LucideIcon; label: string }
-> = {
-  platform_admin: { variant: "admin", icon: Shield, label: "Admin" },
-  manager: { variant: "manager", icon: UserCog, label: "Manager" },
-  member: { variant: "member", icon: UserIcon, label: "Member" },
+const roleMeta: Record<UserRole, { variant: "admin" | "manager" | "member"; label: string }> = {
+  platform_admin: { variant: "admin", label: "Admin" },
+  manager: { variant: "manager", label: "Manager" },
+  member: { variant: "member", label: "Member" },
 }
 
-function getUniqueApps(roles: UserRoleResponse[], apps: AppResponse[]) {
+function getAppsLine(roles: UserRoleResponse[], apps: AppResponse[]) {
   const appKeys = [...new Set(roles.map((r) => r.app_key))]
-  return appKeys.map((key) => {
-    const app = apps.find((a) => a.app_key === key)
-    return { key, name: app?.name ?? key }
-  })
+  if (appKeys.length === 0) return "No app access"
+  if (appKeys.length <= 2) {
+    return appKeys.map((key) => apps.find((a) => a.app_key === key)?.name ?? key).join(", ")
+  }
+  return `${appKeys.length} apps`
 }
 
 export function UserCard({ user, roles, apps }: UserCardProps) {
   const navigate = useNavigate()
-  const userApps = getUniqueApps(roles, apps)
   const role = user.role ?? (user.is_platform_admin ? "platform_admin" : "member")
-  const { variant, icon: RoleIcon, label } = roleBadge[role]
+  const { variant, label } = roleMeta[role]
+  const appsLine = getAppsLine(roles, apps)
 
   return (
     <div
-      className={cn(card.interactive, "p-5 group")}
+      className={cn(card.interactive, "p-4 flex items-center gap-3")}
       onClick={() => navigate(`/app/users/${user.id}`)}
     >
-      <div className="flex items-start gap-4">
-        <UserAvatar
-          name={user.display_name}
-          email={user.email}
-          avatarUrl={user.avatar_url}
-          size="lg"
-        />
+      <UserAvatar
+        name={user.display_name}
+        email={user.email}
+        avatarUrl={user.avatar_url}
+        size="md"
+      />
 
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-0.5">
-            <h3 className="text-sm font-semibold text-preto truncate">
-              {user.display_name || user.email}
-            </h3>
-            <ChevronRight className="h-3.5 w-3.5 text-verde/30 opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
-          </div>
+      <div className="flex flex-col gap-0.5 min-w-0 flex-1">
+        <span className="text-sm font-semibold text-fg-strong truncate">
+          {user.display_name || user.email}
+        </span>
+        {user.display_name && (
+          <span className="text-[11.5px] text-fg-subtle truncate">{user.email}</span>
+        )}
 
-          {user.display_name && (
-            <p className="text-xs text-verde/50 truncate">{user.email}</p>
+        <div className="flex items-center gap-2 mt-1 min-w-0">
+          <Badge variant={variant}>{label}</Badge>
+          <span className="text-[11px] text-fg-subtle truncate">{appsLine}</span>
+          {!user.is_active && (
+            <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-st-warn shrink-0">
+              <span className="w-[7px] h-[7px] rounded-full bg-st-warn" />
+              Inactive
+            </span>
           )}
-
-          <div className="flex items-center gap-2 mt-2.5">
-            <Badge variant={user.is_active ? "active" : "inactive"}>
-              {user.is_active ? "Active" : "Inactive"}
-            </Badge>
-            <Badge variant={variant}>
-              <RoleIcon className="h-3 w-3 mr-1" />
-              {label}
-            </Badge>
-          </div>
         </div>
-      </div>
-
-      {userApps.length > 0 && (
-        <div className="mt-4 pt-3.5 border-t border-areia/15">
-          <p className="text-[10px] uppercase tracking-widest text-verde/40 font-medium mb-2">
-            App Access
-          </p>
-          <div className="flex flex-wrap gap-1.5">
-            {userApps.map((app) => (
-              <span
-                key={app.key}
-                className="inline-flex items-center rounded-md bg-azul/10 px-2 py-0.5 text-[11px] font-medium text-azul dark:bg-azul/20 dark:text-azul"
-              >
-                {app.name}
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
-
-      <div className="flex items-center gap-1.5 mt-3 text-[11px] text-verde/40">
-        <Calendar className="h-3 w-3" />
-        Joined {formatDate(user.created_at)}
       </div>
     </div>
   )

@@ -109,9 +109,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (refreshToken) {
         await authAPI.logout(refreshToken)
       }
-    } catch {
-      // Ignore logout API errors — clear local state regardless
-    }
+    } catch {}
     clearTokens()
     setSession(null)
     useLanguagesStore.getState().reset()

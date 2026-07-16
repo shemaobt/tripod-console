@@ -10,24 +10,26 @@ export default function AccessDeniedPage({ variant = "default" }: AccessDeniedPa
   const { logout } = useAuth()
 
   return (
-    <div className="flex-1 flex flex-col items-center justify-center p-8">
-      <ShieldX className="h-12 w-12 text-areia mb-4" />
-      <h1 className="text-2xl font-bold text-preto mb-2">Access Denied</h1>
-      <p className="text-verde mb-6">You do not have permission to access this page.</p>
+    <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
+      <div className="rounded-[16px] bg-muted p-5 mb-5">
+        <ShieldX className="h-9 w-9 text-fg-subtle" strokeWidth={1.75} />
+      </div>
+      <h1 className="text-2xl font-bold text-fg-strong mb-2">Access denied</h1>
+      <p className="text-fg-muted mb-7">You do not have permission to access this page.</p>
       {variant === "logout" ? (
         <button
           type="button"
           onClick={() => logout()}
-          className="text-telha hover:underline font-medium"
+          className="text-[13.5px] font-semibold text-accent hover:underline"
         >
-          Sign out
+          Sign out →
         </button>
       ) : (
         <Link
           to="/app/dashboard"
-          className="text-telha hover:underline font-medium"
+          className="text-[13.5px] font-semibold text-accent hover:underline"
         >
-          Go to Dashboard
+          Go to dashboard →
         </Link>
       )}
     </div>

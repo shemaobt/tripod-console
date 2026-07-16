@@ -4,10 +4,17 @@ import { toast } from "sonner"
 import { changeRequestsAPI } from "@/services/api"
 import type { ChangeRequestKind, ChangeRequestResponse } from "@/types"
 import { useLanguagesStore } from "@/stores/languagesStore"
+import { cn } from "@/utils/cn"
 import { LoadingSpinner } from "@/components/common/LoadingSpinner"
 import { EmptyState } from "@/components/common/EmptyState"
-import { FilterBar } from "@/components/common/FilterBar"
 import { ChangeRequestCard } from "@/components/pages/changeRequests/ChangeRequestCard"
+
+const statusChips = [
+  { value: "all", label: "All" },
+  { value: "pending", label: "Pending" },
+  { value: "approved", label: "Approved" },
+  { value: "rejected", label: "Rejected" },
+]
 
 interface MyChangeRequestsSectionProps {
   kinds?: ChangeRequestKind[]
@@ -44,24 +51,26 @@ export function MyChangeRequestsSection({ kinds, emptyLabel }: MyChangeRequestsS
 
   return (
     <div className="space-y-4">
-      <FilterBar
-        filters={[
-          {
-            key: "status",
-            label: "All Statuses",
-            value: filterStatus,
-            onChange: setFilterStatus,
-            className: "w-full sm:w-44",
-            options: [
-              { value: "all", label: "All Statuses" },
-              { value: "pending", label: "Pending" },
-              { value: "approved", label: "Approved" },
-              { value: "rejected", label: "Rejected" },
-            ],
-          },
-        ]}
-        resultLabel={loading ? "..." : `${visible.length} request${visible.length !== 1 ? "s" : ""}`}
-      />
+      <div className="flex flex-wrap items-center gap-2">
+        {statusChips.map((chip) => (
+          <button
+            key={chip.value}
+            type="button"
+            onClick={() => setFilterStatus(chip.value)}
+            className={cn(
+              "rounded-full px-3.5 py-1.5 text-[12.5px] font-semibold transition-colors",
+              filterStatus === chip.value
+                ? "bg-inverse text-on-dark"
+                : "bg-muted text-fg-muted hover:text-fg-strong",
+            )}
+          >
+            {chip.label}
+          </button>
+        ))}
+        <span className="text-xs text-fg-subtle tabular-nums ml-auto">
+          {loading ? "..." : `${visible.length} request${visible.length !== 1 ? "s" : ""}`}
+        </span>
+      </div>
 
       {loading ? (
         <LoadingSpinner />
@@ -75,9 +84,9 @@ export function MyChangeRequestsSection({ kinds, emptyLabel }: MyChangeRequestsS
           }
         />
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="bg-elevated rounded-[18px] shadow-[var(--shadow-card)] overflow-hidden">
           {visible.map((req) => (
-            <ChangeRequestCard key={req.id} req={req} showStatus />
+            <ChangeRequestCard key={req.id} req={req} />
           ))}
         </div>
       )}

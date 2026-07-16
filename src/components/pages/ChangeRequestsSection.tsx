@@ -4,6 +4,7 @@ import { toast } from "sonner"
 import { changeRequestsAPI } from "@/services/api"
 import type { ChangeRequestKind, ChangeRequestResponse } from "@/types"
 import { useLanguagesStore } from "@/stores/languagesStore"
+import { cn } from "@/utils/cn"
 import { Button } from "@/components/ui/button"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
@@ -18,8 +19,14 @@ import {
 } from "@/components/ui/dialog"
 import { LoadingSpinner } from "@/components/common/LoadingSpinner"
 import { EmptyState } from "@/components/common/EmptyState"
-import { FilterBar } from "@/components/common/FilterBar"
 import { ChangeRequestCard } from "@/components/pages/changeRequests/ChangeRequestCard"
+
+const statusChips = [
+  { value: "pending", label: "Pending" },
+  { value: "approved", label: "Approved" },
+  { value: "rejected", label: "Rejected" },
+  { value: "all", label: "All" },
+]
 
 interface ChangeRequestsSectionProps {
   kinds: ChangeRequestKind[]
@@ -77,8 +84,6 @@ export function ChangeRequestsSection({ kinds, emptyLabel, onReviewed }: ChangeR
       })
       toast.success(reviewAction === "approved" ? "Request approved" : "Request rejected")
       if (reviewAction === "approved" && reviewTarget.new_language_name) {
-        // Approval also created a new language — refresh the store so
-        // project cards resolve its name instead of showing the raw id.
         useLanguagesStore.getState().invalidate()
         await useLanguagesStore.getState().fetch()
       }
@@ -97,24 +102,26 @@ export function ChangeRequestsSection({ kinds, emptyLabel, onReviewed }: ChangeR
 
   return (
     <div className="space-y-4">
-      <FilterBar
-        filters={[
-          {
-            key: "status",
-            label: "All Statuses",
-            value: filterStatus,
-            onChange: setFilterStatus,
-            className: "w-full sm:w-44",
-            options: [
-              { value: "pending", label: "Pending" },
-              { value: "approved", label: "Approved" },
-              { value: "rejected", label: "Rejected" },
-              { value: "all", label: "All Statuses" },
-            ],
-          },
-        ]}
-        resultLabel={loading ? "..." : `${requests.length} request${requests.length !== 1 ? "s" : ""}`}
-      />
+      <div className="flex flex-wrap items-center gap-2">
+        {statusChips.map((chip) => (
+          <button
+            key={chip.value}
+            type="button"
+            onClick={() => setFilterStatus(chip.value)}
+            className={cn(
+              "rounded-full px-3.5 py-1.5 text-[12.5px] font-semibold transition-colors",
+              filterStatus === chip.value
+                ? "bg-inverse text-on-dark"
+                : "bg-muted text-fg-muted hover:text-fg-strong",
+            )}
+          >
+            {chip.label}
+          </button>
+        ))}
+        <span className="text-xs text-fg-subtle tabular-nums ml-auto">
+          {loading ? "..." : `${requests.length} request${requests.length !== 1 ? "s" : ""}`}
+        </span>
+      </div>
 
       {loading ? (
         <LoadingSpinner />
@@ -125,12 +132,11 @@ export function ChangeRequestsSection({ kinds, emptyLabel, onReviewed }: ChangeR
           description={emptyLabel}
         />
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="bg-elevated rounded-[18px] shadow-[var(--shadow-card)] overflow-hidden">
           {requests.map((req) => (
             <ChangeRequestCard
               key={req.id}
               req={req}
-              showStatus={req.status !== "pending"}
               onApprove={() => openReview(req, "approved")}
               onReject={() => openReview(req, "rejected")}
             />
@@ -149,7 +155,7 @@ export function ChangeRequestsSection({ kinds, emptyLabel, onReviewed }: ChangeR
             <DialogTitle>{isApprove ? "Accept Request" : "Reject Request"}</DialogTitle>
             <DialogDescription>
               {isApprove ? "Accept" : "Reject"} the request from{" "}
-              <span className="font-medium text-preto">
+              <span className="font-semibold text-fg-strong">
                 {reviewTarget?.requester_display_name || reviewTarget?.requester_email}
               </span>
               .
@@ -157,9 +163,9 @@ export function ChangeRequestsSection({ kinds, emptyLabel, onReviewed }: ChangeR
           </DialogHeader>
           <div className="space-y-4 pt-2">
             {isApprove && isProjectReview && reviewTarget?.new_language_name && (
-              <p className="text-xs text-verde/60 rounded-lg bg-surface-alt/50 p-2.5">
+              <p className="text-xs text-fg-muted rounded-[10px] bg-muted p-2.5">
                 Accepting will also create the new language{" "}
-                <span className="font-medium text-preto">
+                <span className="font-semibold text-fg-strong">
                   {reviewTarget.new_language_name}
                   {reviewTarget.new_language_code ? ` (${reviewTarget.new_language_code})` : ""}
                 </span>
@@ -167,12 +173,12 @@ export function ChangeRequestsSection({ kinds, emptyLabel, onReviewed }: ChangeR
               </p>
             )}
             {isApprove && isProjectReview && (
-              <div className="flex items-start justify-between gap-4 rounded-lg border border-areia/20 bg-surface-alt/40 p-3">
+              <div className="flex items-start justify-between gap-4 rounded-[10px] bg-muted p-3">
                 <div>
-                  <Label htmlFor="grant-manager" className="text-sm text-preto">
+                  <Label htmlFor="grant-manager" className="text-sm text-fg-strong">
                     Grant manager access
                   </Label>
-                  <p className="text-xs text-verde/50 mt-0.5">
+                  <p className="text-xs text-fg-muted mt-0.5">
                     The requester becomes a manager of the new project and can view and edit it.
                   </p>
                 </div>
@@ -196,12 +202,12 @@ export function ChangeRequestsSection({ kinds, emptyLabel, onReviewed }: ChangeR
                 onChange={(e) => setReason(e.target.value)}
                 rows={3}
               />
-              <p className="text-xs text-verde/50">
+              <p className="text-xs text-fg-subtle">
                 Shared with the requester in their requests view.
               </p>
             </div>
           </div>
-          <DialogFooter className="border-t border-areia/10 pt-4 mt-2">
+          <DialogFooter className="border-t border-line pt-4 mt-2">
             <Button variant="outline" onClick={() => setReviewTarget(null)} disabled={submitting}>
               Cancel
             </Button>

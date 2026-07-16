@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react"
-import { Plus, Trash2, Users, Building2 } from "lucide-react"
 import { toast } from "sonner"
 import { projectsAPI, orgsAPI } from "@/services/api"
 import type {
@@ -8,244 +7,13 @@ import type {
   OrganizationResponse,
   UserListResponse,
 } from "@/types"
-import { card } from "@/styles"
-import { Button } from "@/components/ui/button"
-import { Label } from "@/components/ui/label"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import { LoadingSpinner } from "@/components/common/LoadingSpinner"
-import { EmptyState } from "@/components/common/EmptyState"
-import { InfoTooltip } from "@/components/common/InfoTooltip"
 import { ConfirmDialog } from "@/components/common/ConfirmDialog"
 import { FeatureSpotlight } from "@/components/common/FeatureSpotlight"
-import { UserSearchPicker } from "@/components/common/UserSearchPicker"
 import { useAuth } from "@/contexts/AuthContext"
-
-import { formatDate } from "@/utils/format"
-
-function UserAccessSection({
-  users,
-  loading,
-  isPlatformAdmin,
-  isProjectManager,
-  onGrant,
-  onRevoke,
-  onRoleChange,
-}: {
-  users: ProjectUserAccessDetailResponse[]
-  loading: boolean
-  isPlatformAdmin: boolean
-  isProjectManager: boolean
-  onGrant: () => void
-  onRevoke: (user: ProjectUserAccessDetailResponse) => void
-  onRoleChange: (userId: string, newRole: string) => void
-}) {
-  if (loading) {
-    return <LoadingSpinner size="sm" />
-  }
-
-  const canGrant = isPlatformAdmin || isProjectManager
-  const canManageUser = (role: string) =>
-    isPlatformAdmin || (isProjectManager && role === "member")
-
-  return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h3 className="text-base font-semibold text-preto tracking-tight flex items-center">
-          Users with Access
-          <InfoTooltip content="Individual users who have been granted direct access to this project." />
-        </h3>
-        {canGrant && (
-          <Button size="sm" onClick={onGrant}>
-            <Plus className="h-4 w-4" />
-            Grant User
-          </Button>
-        )}
-      </div>
-
-      {users.length === 0 ? (
-        <EmptyState
-          icon={Users}
-          title="No users with direct access"
-          description="Grant individual users access to this project. Users can also gain access through their organization membership."
-          actionLabel={canGrant ? "Grant User Access" : undefined}
-          onAction={canGrant ? onGrant : undefined}
-        />
-      ) : (
-        <div className={`${card.base} overflow-hidden`}>
-          <table className="w-full">
-            <thead>
-              <tr className="bg-surface-alt/40">
-                <th className="px-3 sm:px-6 py-3 sm:py-4 text-left text-verde/70 text-xs font-medium tracking-wider uppercase">
-                  Email
-                </th>
-                <th className="px-3 sm:px-6 py-3 sm:py-4 text-left text-verde/70 text-xs font-medium tracking-wider uppercase hidden sm:table-cell">
-                  Display Name
-                </th>
-                <th className="px-3 sm:px-6 py-3 sm:py-4 text-left text-verde/70 text-xs font-medium tracking-wider uppercase">
-                  Role
-                </th>
-                <th className="px-3 sm:px-6 py-3 sm:py-4 text-left text-verde/70 text-xs font-medium tracking-wider uppercase hidden md:table-cell">
-                  Granted
-                </th>
-                <th className="px-3 sm:px-6 py-3 sm:py-4 text-right text-verde/70 text-xs font-medium tracking-wider uppercase">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {users.map((user) => (
-                <tr
-                  key={user.id}
-                  className="border-t border-areia/10 hover:bg-surface-alt/30"
-                >
-                  <td className="px-3 sm:px-6 py-3 sm:py-4 text-sm text-preto">
-                    {user.email}
-                  </td>
-                  <td className="px-3 sm:px-6 py-3 sm:py-4 text-sm text-preto hidden sm:table-cell">
-                    {user.display_name || "\u2014"}
-                  </td>
-                  <td className="px-3 sm:px-6 py-3 sm:py-4 text-sm">
-                    {canManageUser(user.role) ? (
-                      <Select
-                        value={user.role}
-                        onValueChange={(value) => onRoleChange(user.user_id, value)}
-                      >
-                        <SelectTrigger className="w-[120px] h-8 text-xs">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="member">Member</SelectItem>
-                          <SelectItem value="manager">Manager</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    ) : (
-                      <span className="text-preto capitalize">{user.role}</span>
-                    )}
-                  </td>
-                  <td className="px-3 sm:px-6 py-3 sm:py-4 text-sm text-verde hidden md:table-cell">
-                    {formatDate(user.granted_at)}
-                  </td>
-                  <td className="px-3 sm:px-6 py-3 sm:py-4 text-right">
-                    {canManageUser(user.role) && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => onRevoke(user)}
-                      >
-                        <Trash2 className="h-4 w-4 text-red-600 dark:text-red-400" />
-                      </Button>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-    </div>
-  )
-}
-
-function OrgAccessSection({
-  orgs,
-  loading,
-  onGrant,
-  onRevoke,
-}: {
-  orgs: ProjectOrganizationAccessDetailResponse[]
-  loading: boolean
-  onGrant: () => void
-  onRevoke: (org: ProjectOrganizationAccessDetailResponse) => void
-}) {
-  if (loading) {
-    return <LoadingSpinner size="sm" />
-  }
-
-  return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h3 className="text-base font-semibold text-preto tracking-tight flex items-center">
-          Organizations with Access
-          <InfoTooltip content="Organizations whose members all have access to this project." />
-        </h3>
-        <Button size="sm" onClick={onGrant}>
-          <Plus className="h-4 w-4" />
-          Grant Organization
-        </Button>
-      </div>
-
-      {orgs.length === 0 ? (
-        <EmptyState
-          icon={Building2}
-          title="No organizations with access"
-          description="Grant an organization access to this project. All members of the organization will then be able to access this project."
-          actionLabel="Grant Organization Access"
-          onAction={onGrant}
-        />
-      ) : (
-        <div className={`${card.base} overflow-hidden`}>
-          <table className="w-full">
-            <thead>
-              <tr className="bg-surface-alt/40">
-                <th className="px-3 sm:px-6 py-3 sm:py-4 text-left text-verde/70 text-xs font-medium tracking-wider uppercase">
-                  Name
-                </th>
-                <th className="px-3 sm:px-6 py-3 sm:py-4 text-left text-verde/70 text-xs font-medium tracking-wider uppercase hidden sm:table-cell">
-                  Slug
-                </th>
-                <th className="px-3 sm:px-6 py-3 sm:py-4 text-left text-verde/70 text-xs font-medium tracking-wider uppercase hidden md:table-cell">
-                  Granted
-                </th>
-                <th className="px-3 sm:px-6 py-3 sm:py-4 text-right text-verde/70 text-xs font-medium tracking-wider uppercase">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {orgs.map((org) => (
-                <tr
-                  key={org.id}
-                  className="border-t border-areia/10 hover:bg-surface-alt/30"
-                >
-                  <td className="px-3 sm:px-6 py-3 sm:py-4 text-sm text-preto">{org.name}</td>
-                  <td className="px-3 sm:px-6 py-3 sm:py-4 text-sm text-verde font-mono hidden sm:table-cell">
-                    {org.slug}
-                  </td>
-                  <td className="px-3 sm:px-6 py-3 sm:py-4 text-sm text-verde hidden md:table-cell">
-                    {formatDate(org.granted_at)}
-                  </td>
-                  <td className="px-3 sm:px-6 py-3 sm:py-4 text-right">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => onRevoke(org)}
-                    >
-                      <Trash2 className="h-4 w-4 text-red-600 dark:text-red-400" />
-                    </Button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-    </div>
-  )
-}
+import { UserAccessSection } from "./projectAccess/UserAccessSection"
+import { OrgAccessSection } from "./projectAccess/OrgAccessSection"
+import { GrantUserDialog } from "./projectAccess/GrantUserDialog"
+import { GrantOrgDialog } from "./projectAccess/GrantOrgDialog"
 
 export function ProjectAccessTab({ projectId }: { projectId: string }) {
   const { user, isPlatformAdmin } = useAuth()
@@ -415,7 +183,7 @@ export function ProjectAccessTab({ projectId }: { projectId: string }) {
       title="Project Access Management"
       description="Control who can access this project by granting access to individual users or entire organizations."
     >
-      <div className="space-y-8">
+      <div className="space-y-[18px]">
         <UserAccessSection
           users={userAccess}
           loading={usersLoading}
@@ -433,112 +201,28 @@ export function ProjectAccessTab({ projectId }: { projectId: string }) {
           onRevoke={setRevokingOrg}
         />
 
-        <Dialog open={grantUserOpen} onOpenChange={setGrantUserOpen}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Grant User Access</DialogTitle>
-              <DialogDescription>
-                Give a specific user direct access to this project.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-5 pt-1">
-              <UserSearchPicker
-                selectedUser={selectedUser}
-                onSelect={setSelectedUser}
-                excludeIds={userAccess.map((u) => u.user_id)}
-                excludePlatformAdmins
-                label="User"
-                placeholder="Search users by email or name..."
-              />
-              <div className="space-y-1.5">
-                <Label>
-                  <span className="inline-flex items-center">
-                    Role
-                    <InfoTooltip content="The role this user will have within the project." />
-                  </span>
-                </Label>
-                <Select value={grantRole} onValueChange={setGrantRole}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="member">Member</SelectItem>
-                    <SelectItem value="manager">Manager</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <DialogFooter className="border-t border-areia/10 pt-4 mt-2">
-              <Button
-                variant="outline"
-                onClick={() => setGrantUserOpen(false)}
-                disabled={grantingUser}
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={handleGrantUser}
-                disabled={grantingUser || !selectedUser}
-              >
-                {grantingUser ? "Granting..." : "Grant Access"}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+        <GrantUserDialog
+          open={grantUserOpen}
+          onOpenChange={setGrantUserOpen}
+          selectedUser={selectedUser}
+          onSelectUser={setSelectedUser}
+          excludeIds={userAccess.map((u) => u.user_id)}
+          grantRole={grantRole}
+          onGrantRoleChange={setGrantRole}
+          granting={grantingUser}
+          onGrant={handleGrantUser}
+        />
 
-        <Dialog open={grantOrgOpen} onOpenChange={setGrantOrgOpen}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Grant Organization Access</DialogTitle>
-              <DialogDescription>
-                All members of the selected organization will gain access to this project.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-5 pt-1">
-              <div className="space-y-1.5">
-                <Label>
-                  <span className="inline-flex items-center">
-                    Organization
-                    <InfoTooltip content="Select the organization to grant project access." />
-                  </span>
-                </Label>
-                {orgsListLoading ? (
-                  <p className="text-sm text-verde">
-                    Loading organizations...
-                  </p>
-                ) : (
-                  <Select value={grantOrgId} onValueChange={setGrantOrgId}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select an organization" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {availableOrgs.map((org) => (
-                        <SelectItem key={org.id} value={org.id}>
-                          {org.name} ({org.slug})
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
-              </div>
-            </div>
-            <DialogFooter className="border-t border-areia/10 pt-4 mt-2">
-              <Button
-                variant="outline"
-                onClick={() => setGrantOrgOpen(false)}
-                disabled={grantingOrg}
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={handleGrantOrg}
-                disabled={grantingOrg || !grantOrgId}
-              >
-                {grantingOrg ? "Granting..." : "Grant Access"}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+        <GrantOrgDialog
+          open={grantOrgOpen}
+          onOpenChange={setGrantOrgOpen}
+          orgs={availableOrgs}
+          orgsLoading={orgsListLoading}
+          orgId={grantOrgId}
+          onOrgIdChange={setGrantOrgId}
+          granting={grantingOrg}
+          onGrant={handleGrantOrg}
+        />
 
         <ConfirmDialog
           open={revokingUser !== null}

@@ -29,8 +29,8 @@ export function UserAvatar({ name, email, avatarUrl, size = "md", className }: U
   return (
     <div
       className={cn(
-        "rounded-full shrink-0 overflow-hidden ring-2 ring-areia/15 ring-offset-1 ring-offset-branco dark:ring-offset-surface",
-        !showImage && "bg-gradient-to-br from-azul/30 to-azul/10 flex items-center justify-center",
+        "rounded-full shrink-0 overflow-hidden grid place-items-center font-bold",
+        !showImage && "bg-muted text-fg-strong",
         sizeClasses[size],
         className,
       )}
@@ -43,7 +43,7 @@ export function UserAvatar({ name, email, avatarUrl, size = "md", className }: U
           onError={() => setImgError(true)}
         />
       ) : (
-        <span className="font-semibold text-azul">{initials}</span>
+        <span>{initials}</span>
       )}
     </div>
   )

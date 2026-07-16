@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react"
-import { Check, ChevronsUpDown, Plus } from "lucide-react"
+import { ChevronDown } from "lucide-react"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Input } from "@/components/ui/input"
 import { cn } from "@/utils/cn"
@@ -26,12 +26,7 @@ export function LanguageCombobox({ languages, value, onChange }: LanguageCombobo
   }, [languages, query])
 
   const selected = languages.find((lang) => lang.id === value)
-  const triggerLabel =
-    value === NEW_LANGUAGE
-      ? "+ Create a new language"
-      : selected
-        ? `${selected.name} (${selected.code})`
-        : "Select or search a language"
+  const triggerLabel = selected ? `${selected.name} (${selected.code})` : "Select a language"
 
   function select(next: string) {
     onChange(next)
@@ -46,58 +41,38 @@ export function LanguageCombobox({ languages, value, onChange }: LanguageCombobo
           type="button"
           role="combobox"
           aria-expanded={open}
-          className="flex h-10 w-full items-center justify-between rounded-lg border border-areia bg-surface px-3 py-2 text-sm text-preto focus:ring-2 focus:ring-telha focus:border-telha"
+          className="flex w-full items-center justify-between gap-2.5 border-b-[1.5px] border-input-border py-[9px] text-[15px] text-fg-strong"
         >
-          <span className={cn("truncate", !selected && value !== NEW_LANGUAGE && "text-areia")}>
-            {triggerLabel}
-          </span>
-          <ChevronsUpDown className="h-4 w-4 shrink-0 opacity-50" />
+          <span className={cn("truncate", !selected && "text-fg-subtle")}>{triggerLabel}</span>
+          <ChevronDown className="h-4 w-4 shrink-0 text-fg-subtle" />
         </button>
       </PopoverTrigger>
       <PopoverContent
         align="start"
-        className="p-2"
+        className="p-1.5"
         style={{ width: "var(--radix-popover-trigger-width)" }}
       >
         <Input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search by name or code..."
-          className="h-9 mb-2"
+          className="mb-2 text-sm"
           autoFocus
         />
-        <div className="max-h-56 overflow-y-auto space-y-0.5">
-          <button
-            type="button"
-            onClick={() => select(NEW_LANGUAGE)}
-            className={cn(
-              "flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm text-telha hover:bg-areia/10",
-              value === NEW_LANGUAGE && "bg-areia/10",
-            )}
-          >
-            <Plus className="h-4 w-4 shrink-0" />
-            Create a new language
-          </button>
+        <div className="max-h-[230px] overflow-y-auto">
           {filtered.map((lang) => (
             <button
               key={lang.id}
               type="button"
               onClick={() => select(lang.id)}
-              className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm text-preto hover:bg-areia/10"
+              className="flex w-full items-center justify-between gap-2.5 rounded-lg px-2.5 py-[9px] text-left text-[14px] text-fg hover:bg-muted"
             >
-              <Check
-                className={cn(
-                  "h-4 w-4 shrink-0 text-telha",
-                  value === lang.id ? "opacity-100" : "opacity-0",
-                )}
-              />
-              <span className="truncate">
-                {lang.name} ({lang.code})
-              </span>
+              <span className="truncate">{lang.name}</span>
+              <span className="font-mono text-[11.5px] text-fg-subtle">{lang.code}</span>
             </button>
           ))}
           {filtered.length === 0 && (
-            <p className="px-2 py-1.5 text-sm text-verde/50">No language matches "{query}"</p>
+            <p className="px-2.5 py-[9px] text-sm text-fg-subtle">No language matches "{query}"</p>
           )}
         </div>
       </PopoverContent>

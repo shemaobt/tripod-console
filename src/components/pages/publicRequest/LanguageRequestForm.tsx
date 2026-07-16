@@ -5,7 +5,6 @@ import type { PublicLanguageOption } from "@/types"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { InfoTooltip } from "@/components/common/InfoTooltip"
 import { ReCaptcha, RECAPTCHA_ENABLED } from "@/components/common/ReCaptcha"
 import { Loader2 } from "lucide-react"
 
@@ -83,48 +82,49 @@ export function LanguageRequestForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5">
-      <div className="space-y-2">
-        <Label htmlFor="request-lang-name">Language name</Label>
-        <Input
-          id="request-lang-name"
-          placeholder="e.g. Arara"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        />
-        {nameExists && (
-          <p className="text-xs text-red-600 dark:text-red-400">
-            This language name is already registered in the system.
-          </p>
-        )}
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="request-lang-code">
-          <span className="inline-flex items-center">
-            Code
-            <InfoTooltip content="Exactly 3 characters, ISO 639-3." />
-          </span>
-        </Label>
-        <Input
-          id="request-lang-code"
-          placeholder="e.g. ara"
-          maxLength={3}
-          value={code}
-          onChange={(e) => setCode(e.target.value)}
-        />
-        {codeExists ? (
-          <p className="text-xs text-red-600 dark:text-red-400">
-            This language is already registered in the system.
-          </p>
-        ) : (
-          <p className="text-xs text-verde/50">Must be exactly 3 characters (ISO 639-3)</p>
-        )}
+    <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-[1.4fr_1fr] gap-5">
+        <div className="flex flex-col">
+          <Label htmlFor="request-lang-name">Language name</Label>
+          <Input
+            id="request-lang-name"
+            placeholder="e.g. Apurinã"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
+          {nameExists && (
+            <p className="text-xs text-st-warn mt-1">
+              This language name is already registered in the system.
+            </p>
+          )}
+        </div>
+        <div className="flex flex-col">
+          <Label htmlFor="request-lang-code">Code</Label>
+          <Input
+            id="request-lang-code"
+            className="font-mono"
+            placeholder="3 letters"
+            maxLength={3}
+            value={code}
+            onChange={(e) => setCode(e.target.value)}
+          />
+          {codeExists ? (
+            <p className="text-xs text-st-warn mt-1">
+              This language is already registered in the system.
+            </p>
+          ) : (
+            <p className="text-xs text-fg-subtle mt-1">Must be exactly 3 characters (ISO 639-3)</p>
+          )}
+        </div>
       </div>
       <ReCaptcha key={captchaEpoch} onChange={setCaptchaToken} />
-      <Button type="submit" className="w-full h-11 rounded-xl" disabled={!canSubmit}>
-        {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
-        {submitting ? "Submitting..." : "Submit language request"}
-      </Button>
+      <div className="flex items-center justify-between gap-3.5 border-t border-line pt-5">
+        <span className="text-[11.5px] text-fg-subtle">Rate limited — 5 submissions per minute.</span>
+        <Button type="submit" disabled={!canSubmit}>
+          {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
+          {submitting ? "Submitting..." : "Submit request"}
+        </Button>
+      </div>
     </form>
   )
 }

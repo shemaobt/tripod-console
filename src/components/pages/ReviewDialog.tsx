@@ -44,7 +44,6 @@ export function ReviewDialog({
       setReason("")
       onOpenChange(false)
     } catch {
-      // Error is handled by the parent's onSubmit via toast
     } finally {
       setSubmitting(false)
     }
@@ -57,18 +56,18 @@ export function ReviewDialog({
           <div className="flex items-center gap-3 mb-1">
             <div className={cn(
               "rounded-full p-2",
-              isApprove ? "bg-verde-claro/15" : "bg-red-100 dark:bg-red-950/30",
+              isApprove ? "bg-st-ok/15" : "bg-accent-soft",
             )}>
               {isApprove ? (
-                <CheckCircle2 className="h-5 w-5 text-verde-claro" />
+                <CheckCircle2 className="h-5 w-5 text-st-ok" />
               ) : (
-                <XCircle className="h-5 w-5 text-red-600 dark:text-red-400" />
+                <XCircle className="h-5 w-5 text-on-accent-soft" />
               )}
             </div>
             <div>
-              <DialogTitle>{isApprove ? "Approve Request" : "Reject Request"}</DialogTitle>
+              <DialogTitle>{isApprove ? "Approve request" : "Reject request"}</DialogTitle>
               <DialogDescription>
-                {isApprove ? "Grant" : "Deny"} access for <span className="font-medium text-preto">{userEmail ?? "user"}</span> to <span className="font-medium text-preto">{request?.app_key ?? "app"}</span>
+                {isApprove ? "Grant" : "Deny"} access for <span className="font-semibold text-fg-strong">{userEmail ?? "user"}</span> to <span className="font-semibold text-fg-strong">{request?.app_key ?? "app"}</span>
               </DialogDescription>
             </div>
           </div>
@@ -83,7 +82,7 @@ export function ReviewDialog({
             rows={3}
           />
         </div>
-        <DialogFooter className="border-t border-areia/10 pt-4 mt-2">
+        <DialogFooter className="border-t border-line pt-4 mt-2">
           <Button variant="outline" onClick={() => { onOpenChange(false); setReason("") }} disabled={submitting}>
             Cancel
           </Button>

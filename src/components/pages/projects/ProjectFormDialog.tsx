@@ -98,8 +98,6 @@ export function ProjectFormDialog({
             code: newLangCode.trim().toLowerCase(),
           })
           projectLanguageId = lang.id
-          // Point the form at the created language so a retry after a project
-          // failure doesn't re-create it and hit a 409.
           setLanguageId(lang.id)
           invalidate()
           await fetchLanguages()
@@ -202,7 +200,7 @@ export function ProjectFormDialog({
               </span>
             </Label>
             {languagesLoading && languages.length === 0 ? (
-              <p className="text-sm text-verde">Loading languages...</p>
+              <p className="text-sm text-fg-muted">Loading languages...</p>
             ) : (
               <Select value={languageId} onValueChange={setLanguageId}>
                 <SelectTrigger>
@@ -222,7 +220,7 @@ export function ProjectFormDialog({
             )}
           </div>
           {wantsNewLanguage && !isEditing && (
-            <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-3 rounded-lg border border-areia/20 bg-surface-alt/40 p-3">
+            <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-3 rounded-[14px] border border-line bg-muted p-3">
               <div className="space-y-1.5">
                 <Label htmlFor="new-lang-name">New language name</Label>
                 <Input
@@ -251,7 +249,7 @@ export function ProjectFormDialog({
             </div>
           )}
         </div>
-        <DialogFooter className="border-t border-areia/10 pt-4 mt-2">
+        <DialogFooter className="border-t border-line pt-4 mt-2">
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={saving}>
             Cancel
           </Button>

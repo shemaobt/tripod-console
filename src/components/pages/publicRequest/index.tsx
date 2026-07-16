@@ -1,12 +1,11 @@
 import { useCallback, useEffect, useState } from "react"
 import { Link } from "react-router-dom"
 import { toast } from "sonner"
-import { CheckCircle2 } from "lucide-react"
+import { Check } from "lucide-react"
 import { publicAPI } from "@/services/api"
 import type { PublicLanguageOption } from "@/types"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { LanguageRequestForm } from "./LanguageRequestForm"
 import { ProjectRequestForm } from "./ProjectRequestForm"
@@ -51,150 +50,131 @@ export default function PublicRequestPage() {
   }
 
   return (
-    <div className="min-h-screen flex">
-      <div className="hidden lg:flex lg:w-[45%] relative overflow-hidden">
-        <img
-          src="/assets/background.pptx.jpg"
-          alt=""
-          className="absolute inset-0 w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-preto/80 via-preto/30 to-preto/5" />
-        <div className="absolute inset-0 bg-gradient-to-r from-transparent to-preto/30" />
-        <div className="relative mt-auto p-12 pb-14 w-full">
-          <div className="flex items-center gap-3.5 mb-5">
-            <div className="h-12 w-12 rounded-2xl bg-telha flex items-center justify-center shadow-lg">
-              <img
-                src="/assets/icon-dark.svg"
-                alt="Shema"
-                className="h-7 w-7 brightness-0 invert"
-              />
-            </div>
-            <div>
-              <p className="text-branco font-semibold text-xl tracking-tight">Tripod Console</p>
-              <p className="text-branco/40 text-xs tracking-wide">by Shema</p>
-            </div>
-          </div>
-          <p className="text-branco/50 text-sm max-w-lg leading-relaxed">
-            Supporting language preservation through technology for Bible Translation.
-          </p>
+    <div className="min-h-screen flex flex-col bg-canvas">
+      <header className="flex items-center justify-between px-6 sm:px-11 py-[18px] border-b border-line">
+        <div className="flex items-center gap-3">
+          <img
+            src="/assets/logo-verde.svg"
+            alt="Shema"
+            className="h-[22px] w-auto dark:hidden"
+          />
+          <img
+            src="/assets/logo-branco.svg"
+            alt="Shema"
+            className="h-[22px] w-auto hidden dark:block"
+          />
+          <span className="text-[10.5px] font-semibold tracking-[0.14em] uppercase text-fg-subtle border border-line-strong rounded-full px-[9px] py-[3px]">
+            Public requests
+          </span>
         </div>
-      </div>
+        <Link
+          to="/login"
+          className="text-[13.5px] font-semibold text-fg-muted hover:text-fg-strong"
+        >
+          Sign in →
+        </Link>
+      </header>
 
-      <div className="flex-1 flex flex-col bg-branco relative overflow-hidden">
-        <div
-          className="absolute -top-32 -right-32 w-[500px] h-[500px] rounded-full opacity-[0.04] pointer-events-none"
-          style={{ background: "radial-gradient(circle, var(--color-telha), transparent 70%)" }}
-        />
-
-        <div className="flex-1 flex items-center justify-center px-8 sm:px-12 lg:px-16 py-12 relative">
-          <div className="w-full max-w-[480px]">
-            <div className="mb-8 space-y-4">
-              <div className="flex items-center gap-3">
-                <div className="h-1.5 w-10 rounded-full bg-telha" />
-                <span className="text-[11px] font-bold tracking-[0.25em] uppercase text-telha/80">
-                  Creation Request
-                </span>
-              </div>
-              <h1 className="text-3xl sm:text-4xl font-bold text-preto tracking-tight">
-                Request a project or language
+      <div className="w-full max-w-[660px] mx-auto px-6 pt-[52px] pb-20">
+        {submittedEmail ? (
+          <div className="bg-elevated rounded-[22px] shadow-[var(--shadow-card)] px-10 py-12 flex flex-col items-center gap-3.5 text-center">
+            <span className="w-14 h-14 rounded-full bg-accent-soft text-on-accent-soft grid place-items-center">
+              <Check className="w-[26px] h-[26px]" strokeWidth={2.4} />
+            </span>
+            <h2 className="text-[24px] font-bold text-fg-strong">Request received</h2>
+            <p className="text-[14.5px] text-fg-muted max-w-[380px] leading-relaxed">
+              A platform admin will review it. We will reply to{" "}
+              <span className="font-semibold text-fg-strong">{submittedEmail}</span>.
+            </p>
+            <button
+              type="button"
+              onClick={handleReset}
+              className="mt-2.5 text-[14px] font-semibold text-accent hover:underline"
+            >
+              Submit another request
+            </button>
+          </div>
+        ) : (
+          <>
+            <div className="flex flex-col gap-2.5 mb-[26px]">
+              <span className="text-[13px] font-semibold tracking-[0.14em] uppercase text-fg-muted">
+                No account needed
+              </span>
+              <h1 className="text-[34px] font-bold text-fg-strong tracking-tight">
+                Request a project or language.
               </h1>
-              <p className="text-base text-verde/50 leading-relaxed">
-                No account needed. Tell us who you are and what you would like created — a
-                platform admin will review your request and get back to you.
+              <p className="font-serif italic text-[15.5px] text-fg-muted">
+                Tell us where the Word still needs to be heard.
               </p>
             </div>
 
-            {submittedEmail ? (
-              <div className="rounded-2xl border border-areia/20 bg-surface p-8 shadow-sm text-center space-y-4">
-                <CheckCircle2 className="h-12 w-12 text-verde-claro mx-auto" />
-                <h2 className="text-lg font-semibold text-preto">Request received</h2>
-                <p className="text-sm text-verde/70 leading-relaxed">
-                  Your request is pending review. We will contact you at{" "}
-                  <span className="font-medium text-preto">{submittedEmail}</span> once it has
-                  been reviewed.
-                </p>
-                <Button variant="outline" className="rounded-xl" onClick={handleReset}>
-                  Submit another request
-                </Button>
-              </div>
-            ) : (
-              <div className="space-y-6">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-2">
+            <div className="bg-elevated rounded-[22px] shadow-[var(--shadow-card)] p-8">
+              <Tabs defaultValue="project" className="flex flex-col gap-6">
+                <TabsList className="self-start">
+                  <TabsTrigger value="project" className="px-[18px] py-2 text-[13.5px]">
+                    New project
+                  </TabsTrigger>
+                  <TabsTrigger value="language" className="px-[18px] py-2 text-[13.5px]">
+                    New language
+                  </TabsTrigger>
+                </TabsList>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                  <div className="flex flex-col">
                     <Label htmlFor="requester-name">Your name</Label>
                     <Input
                       id="requester-name"
-                      placeholder="e.g. Ana Silva"
+                      placeholder="Full name"
                       value={requesterName}
                       onChange={(e) => setRequesterName(e.target.value)}
                       autoFocus
                     />
                   </div>
-                  <div className="space-y-2">
+                  <div className="flex flex-col">
                     <Label htmlFor="requester-email">Your email</Label>
                     <Input
                       id="requester-email"
                       type="email"
-                      placeholder="you@example.com"
+                      placeholder="you@example.org"
                       value={requesterEmail}
                       onChange={(e) => setRequesterEmail(e.target.value)}
                     />
                   </div>
                 </div>
 
-                <Tabs defaultValue="project">
-                  <TabsList className="w-full">
-                    <TabsTrigger value="project" className="flex-1">
-                      Project
-                    </TabsTrigger>
-                    <TabsTrigger value="language" className="flex-1">
-                      Language
-                    </TabsTrigger>
-                  </TabsList>
-                  <TabsContent
-                    value="project"
-                    forceMount
-                    className="data-[state=inactive]:hidden"
-                  >
-                    <ProjectRequestForm
-                      requesterName={requesterName}
-                      requesterEmail={requesterEmail}
-                      requesterValid={requesterValid}
-                      languages={languages}
-                      languagesLoading={languagesLoading}
-                      languagesError={languagesError}
-                      onRetryLanguages={fetchLanguages}
-                      onSuccess={handleSuccess}
-                    />
-                  </TabsContent>
-                  <TabsContent
-                    value="language"
-                    forceMount
-                    className="data-[state=inactive]:hidden"
-                  >
-                    <LanguageRequestForm
-                      requesterName={requesterName}
-                      requesterEmail={requesterEmail}
-                      requesterValid={requesterValid}
-                      languages={languages}
-                      onSuccess={handleSuccess}
-                    />
-                  </TabsContent>
-                </Tabs>
-              </div>
-            )}
-
-            <div className="mt-10 pt-6 border-t border-areia/15 flex items-center justify-between">
-              <p className="text-sm text-verde/40">
-                Already have an account?{" "}
-                <Link to="/login" className="font-medium text-telha hover:underline">
-                  Sign in
-                </Link>
-              </p>
-              <span className="text-xs text-verde/30 font-medium tracking-wide">Shema</span>
+                <TabsContent
+                  value="project"
+                  forceMount
+                  className="mt-0 data-[state=inactive]:hidden"
+                >
+                  <ProjectRequestForm
+                    requesterName={requesterName}
+                    requesterEmail={requesterEmail}
+                    requesterValid={requesterValid}
+                    languages={languages}
+                    languagesLoading={languagesLoading}
+                    languagesError={languagesError}
+                    onRetryLanguages={fetchLanguages}
+                    onSuccess={handleSuccess}
+                  />
+                </TabsContent>
+                <TabsContent
+                  value="language"
+                  forceMount
+                  className="mt-0 data-[state=inactive]:hidden"
+                >
+                  <LanguageRequestForm
+                    requesterName={requesterName}
+                    requesterEmail={requesterEmail}
+                    requesterValid={requesterValid}
+                    languages={languages}
+                    onSuccess={handleSuccess}
+                  />
+                </TabsContent>
+              </Tabs>
             </div>
-          </div>
-        </div>
+          </>
+        )}
       </div>
     </div>
   )

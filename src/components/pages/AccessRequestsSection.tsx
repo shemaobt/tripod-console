@@ -1,11 +1,9 @@
 import { useEffect, useState, useCallback, useMemo } from "react"
-import { Check, X, Inbox, CheckCircle2, XCircle, Clock, MessageSquare, Calendar } from "lucide-react"
+import { Inbox } from "lucide-react"
 import { toast } from "sonner"
 import { accessRequestsAPI } from "@/services/api"
 import type { AccessRequestResponse, UserListResponse, AppResponse } from "@/types"
 import { cn } from "@/utils/cn"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
 import { LoadingSpinner } from "@/components/common/LoadingSpinner"
 import { EmptyState } from "@/components/common/EmptyState"
 import { FilterBar } from "@/components/common/FilterBar"
@@ -13,11 +11,18 @@ import { ReviewDialog } from "@/components/pages/ReviewDialog"
 import { UserAvatar } from "@/components/pages/UsersPage/UserAvatar"
 import { formatDate, timeAgo } from "@/utils/format"
 
-const statusConfig = {
-  pending: { variant: "default" as const, icon: Clock, label: "Pending" },
-  approved: { variant: "success" as const, icon: CheckCircle2, label: "Approved" },
-  rejected: { variant: "error" as const, icon: XCircle, label: "Rejected" },
+const statusMeta: Record<string, { dot: string; label: string }> = {
+  pending: { dot: "bg-st-info", label: "Pending" },
+  approved: { dot: "bg-st-ok", label: "Approved" },
+  rejected: { dot: "bg-st-warn", label: "Rejected" },
 }
+
+const statusChips = [
+  { value: "all", label: "All" },
+  { value: "pending", label: "Pending" },
+  { value: "approved", label: "Approved" },
+  { value: "rejected", label: "Rejected" },
+]
 
 interface AccessRequestsSectionProps {
   users: UserListResponse[]
@@ -72,34 +77,41 @@ export function AccessRequestsSection({ users, apps }: AccessRequestsSectionProp
 
   return (
     <div className="space-y-4">
-      <FilterBar
-        filters={[
-          {
-            key: "app",
-            label: "All Apps",
-            value: filterApp,
-            onChange: setFilterApp,
-            options: [
-              { value: "all", label: "All Apps" },
-              ...apps.map((app) => ({ value: app.app_key, label: app.name })),
-            ],
-          },
-          {
-            key: "status",
-            label: "All Statuses",
-            value: filterStatus,
-            onChange: setFilterStatus,
-            className: "w-full sm:w-40",
-            options: [
-              { value: "all", label: "All Statuses" },
-              { value: "pending", label: "Pending" },
-              { value: "approved", label: "Approved" },
-              { value: "rejected", label: "Rejected" },
-            ],
-          },
-        ]}
-        resultLabel={loading ? "..." : `${requests.length} request${requests.length !== 1 ? "s" : ""}`}
-      />
+      <div className="flex flex-wrap items-center gap-2.5">
+        <FilterBar
+          filters={[
+            {
+              key: "app",
+              label: "All Apps",
+              value: filterApp,
+              onChange: setFilterApp,
+              className: "w-full sm:w-48",
+              options: [
+                { value: "all", label: "All Apps" },
+                ...apps.map((app) => ({ value: app.app_key, label: app.name })),
+              ],
+            },
+          ]}
+        />
+        {statusChips.map((chip) => (
+          <button
+            key={chip.value}
+            type="button"
+            onClick={() => setFilterStatus(chip.value)}
+            className={cn(
+              "rounded-full px-3.5 py-1.5 text-[12.5px] font-semibold transition-colors",
+              filterStatus === chip.value
+                ? "bg-inverse text-on-dark"
+                : "bg-muted text-fg-muted hover:text-fg-strong",
+            )}
+          >
+            {chip.label}
+          </button>
+        ))}
+        <span className="text-xs text-fg-subtle tabular-nums ml-auto">
+          {loading ? "..." : `${requests.length} request${requests.length !== 1 ? "s" : ""}`}
+        </span>
+      </div>
 
       {loading ? (
         <LoadingSpinner />
@@ -110,26 +122,17 @@ export function AccessRequestsSection({ users, apps }: AccessRequestsSectionProp
           description="Access requests from users will appear here. You can filter by app or status."
         />
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {requests.map((req) => {
-            const user = userMap.get(req.user_id)
-            const app = appMap.get(req.app_key)
-            const config = statusConfig[req.status as keyof typeof statusConfig] ?? statusConfig.pending
-            const StatusIcon = config.icon
-
-            return (
-              <RequestCard
-                key={req.id}
-                req={req}
-                user={user}
-                appName={app?.name ?? req.app_key}
-                config={config}
-                StatusIcon={StatusIcon}
-                onApprove={() => openReview(req, "approved")}
-                onReject={() => openReview(req, "rejected")}
-              />
-            )
-          })}
+        <div className="bg-elevated rounded-[18px] shadow-[var(--shadow-card)] overflow-hidden">
+          {requests.map((req) => (
+            <RequestCard
+              key={req.id}
+              req={req}
+              user={userMap.get(req.user_id)}
+              appName={appMap.get(req.app_key)?.name ?? req.app_key}
+              onApprove={() => openReview(req, "approved")}
+              onReject={() => openReview(req, "rejected")}
+            />
+          ))}
         </div>
       )}
 
@@ -149,104 +152,66 @@ interface RequestCardProps {
   req: AccessRequestResponse
   user: UserListResponse | undefined
   appName: string
-  config: { variant: "default" | "success" | "error"; label: string }
-  StatusIcon: React.ComponentType<{ className?: string }>
   onApprove: () => void
   onReject: () => void
 }
 
-function RequestCard({ req, user, appName, config, StatusIcon, onApprove, onReject }: RequestCardProps) {
+function RequestCard({ req, user, appName, onApprove, onReject }: RequestCardProps) {
   const isPending = req.status === "pending"
+  const status = statusMeta[req.status] ?? statusMeta.pending
+  const userName = user?.display_name || user?.email || req.user_id
+  const emailPart = user?.display_name ? user.email : null
 
   return (
-    <div
-      className={cn(
-        "rounded-2xl border bg-surface shadow-sm overflow-hidden transition-all duration-200 hover:shadow-md",
-        isPending ? "border-telha/20" : "border-areia/20",
-      )}
-    >
-      {isPending && (
-        <div className="h-0.5 bg-gradient-to-r from-telha/60 via-telha/30 to-transparent" />
-      )}
+    <div className="flex items-start gap-3.5 px-5 py-4 border-b border-line last:border-b-0">
+      <UserAvatar
+        name={user?.display_name ?? null}
+        email={user?.email ?? req.user_id}
+        avatarUrl={user?.avatar_url ?? null}
+        size="sm"
+      />
 
-      <div className="p-5">
-        <div className="flex items-start gap-3.5">
-          <UserAvatar
-            name={user?.display_name ?? null}
-            email={user?.email ?? req.user_id}
-            avatarUrl={user?.avatar_url ?? null}
-            size="md"
-          />
-
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-preto truncate">
-              {user?.display_name || user?.email || req.user_id}
-            </p>
-            {user?.display_name && (
-              <p className="text-xs text-verde/50 truncate mt-0.5">{user.email}</p>
-            )}
-          </div>
-
-          <Badge variant={config.variant}>
-            <StatusIcon className="h-3 w-3 mr-1" />
-            {config.label}
-          </Badge>
-        </div>
-
-        <div className="mt-4 flex items-center gap-2">
-          <span className="inline-flex items-center rounded-md bg-azul/10 px-2.5 py-1 text-xs font-medium text-azul dark:bg-azul/20">
-            {appName}
-          </span>
-          <span className="text-[11px] text-verde/40 tabular-nums ml-auto flex items-center gap-1">
-            <Calendar className="h-3 w-3" />
-            {timeAgo(req.requested_at)}
-          </span>
-        </div>
-
+      <div className="flex-1 min-w-0 flex flex-col gap-1">
+        <p className="text-sm font-semibold text-fg-strong">
+          {userName} <span className="font-normal text-fg-subtle">→</span> {appName}
+        </p>
+        <p className="text-xs text-fg-subtle">
+          {emailPart ? `${emailPart} · ` : ""}
+          {timeAgo(req.requested_at)}
+        </p>
         {req.note && (
-          <div className="mt-3 flex items-start gap-2 rounded-lg bg-surface-alt/50 p-2.5">
-            <MessageSquare className="h-3.5 w-3.5 text-verde/30 mt-0.5 shrink-0" />
-            <p className="text-xs text-verde/60 italic leading-relaxed">
-              &ldquo;{req.note}&rdquo;
-            </p>
-          </div>
+          <p className="font-serif italic text-[12.5px] text-fg-muted leading-relaxed">
+            &ldquo;{req.note}&rdquo;
+          </p>
         )}
-
-        {req.status !== "pending" && req.review_reason && (
-          <div className="mt-3 flex items-start gap-2 rounded-lg bg-surface-alt/50 p-2.5">
-            <MessageSquare className="h-3.5 w-3.5 text-verde/30 mt-0.5 shrink-0" />
-            <p className="text-xs text-verde/50 italic leading-relaxed">
-              Review: &ldquo;{req.review_reason}&rdquo;
-            </p>
-          </div>
+        {!isPending && req.review_reason && (
+          <p className="text-xs text-fg-subtle">Review note: {req.review_reason}</p>
         )}
-
-        {req.status !== "pending" && req.reviewed_at && (
-          <p className="mt-3 text-[11px] text-verde/40 tabular-nums">
+        {!isPending && req.reviewed_at && (
+          <p className="text-xs text-fg-subtle tabular-nums">
             Reviewed on {formatDate(req.reviewed_at)}
           </p>
         )}
+      </div>
 
+      <div className="flex flex-col items-end gap-2 flex-none pt-0.5">
+        <span className="inline-flex items-center gap-2 text-[13px] text-fg-muted">
+          <span className={cn("w-2 h-2 rounded-full", status.dot)} />
+          {status.label}
+        </span>
         {isPending && (
-          <div className="mt-4 pt-3.5 border-t border-areia/15 flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              className="flex-1 gap-1.5 text-verde-claro border-verde-claro/30 hover:bg-verde-claro/10 hover:border-verde-claro/50"
-              onClick={onApprove}
-            >
-              <Check className="h-3.5 w-3.5" />
+          <div className="flex items-center gap-2.5 text-[13px] font-semibold">
+            <button type="button" onClick={onApprove} className="text-accent hover:underline">
               Approve
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              className="flex-1 gap-1.5 text-red-600 border-red-200 hover:bg-red-50 hover:border-red-300 dark:text-red-400 dark:border-red-800/40 dark:hover:bg-red-950/30 dark:hover:border-red-700/50"
+            </button>
+            <span className="text-fg-subtle">·</span>
+            <button
+              type="button"
               onClick={onReject}
+              className="text-fg-muted hover:text-on-accent-soft"
             >
-              <X className="h-3.5 w-3.5" />
               Reject
-            </Button>
+            </button>
           </div>
         )}
       </div>

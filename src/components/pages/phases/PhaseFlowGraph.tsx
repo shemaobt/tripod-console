@@ -2,7 +2,6 @@ import { useMemo, useCallback, useRef, useState, useEffect } from "react"
 import { ZoomIn, ZoomOut, Maximize2 } from "lucide-react"
 import type { PhaseResponse } from "@/types"
 import { cn } from "@/utils/cn"
-import { Button } from "@/components/ui/button"
 
 const NODE_WIDTH = 180
 const NODE_HEIGHT = 60
@@ -69,7 +68,7 @@ function computeLayout(phases: PhaseResponse[], deps: Map<string, string[]>) {
 }
 
 function truncateText(text: string, maxLen: number) {
-  return text.length > maxLen ? text.slice(0, maxLen - 1) + "\u2026" : text
+  return text.length > maxLen ? text.slice(0, maxLen - 1) + "…" : text
 }
 
 function buildEdgePath(
@@ -106,7 +105,6 @@ export function PhaseFlowGraph({
     [phases, dependencies],
   )
 
-  // Fit to container on mount / phase change
   useEffect(() => {
     if (!containerRef.current || phases.length === 0) return
     const rect = containerRef.current.getBoundingClientRect()
@@ -228,48 +226,39 @@ export function PhaseFlowGraph({
     }
   }
 
+  const zoomBtn =
+    "w-8 h-8 rounded-[10px] bg-elevated shadow-[var(--shadow-md)] grid place-items-center text-fg-strong hover:bg-muted transition-colors"
+
   return (
-    <div className="relative rounded-lg border border-areia/20 bg-surface-alt/20 overflow-hidden" style={{ minHeight }}>
-      {/* Zoom controls */}
-      <div className="absolute top-3 right-3 z-10 flex items-center gap-1 bg-surface/90 backdrop-blur-sm rounded-lg border border-areia/20 shadow-sm p-1">
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-7 w-7 p-0"
+    <div
+      className="relative bg-elevated rounded-[18px] shadow-[var(--shadow-card)] overflow-hidden"
+      style={{ height: minHeight }}
+    >
+      <div className="absolute top-3 right-3 z-10 flex flex-col gap-1.5">
+        <button
+          type="button"
+          className={zoomBtn}
           onClick={() => setZoom((z) => Math.min(MAX_ZOOM, z + ZOOM_STEP))}
           title="Zoom in"
         >
-          <ZoomIn className="h-3.5 w-3.5" />
-        </Button>
-        <span className="text-[10px] font-mono text-verde/60 w-10 text-center select-none">
-          {Math.round(zoom * 100)}%
-        </span>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-7 w-7 p-0"
+          <ZoomIn className="w-[15px] h-[15px]" strokeWidth={2} />
+        </button>
+        <button
+          type="button"
+          className={zoomBtn}
           onClick={() => setZoom((z) => Math.max(MIN_ZOOM, z - ZOOM_STEP))}
           title="Zoom out"
         >
-          <ZoomOut className="h-3.5 w-3.5" />
-        </Button>
-        <div className="w-px h-4 bg-areia/20" />
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-7 w-7 p-0"
-          onClick={handleFitView}
-          title="Fit to view"
-        >
-          <Maximize2 className="h-3.5 w-3.5" />
-        </Button>
+          <ZoomOut className="w-[15px] h-[15px]" strokeWidth={2} />
+        </button>
+        <button type="button" className={zoomBtn} onClick={handleFitView} title="Fit to view">
+          <Maximize2 className="w-[15px] h-[15px]" strokeWidth={2} />
+        </button>
       </div>
 
-      {/* Canvas */}
       <div
         ref={containerRef}
         className={cn("w-full h-full", isPanning ? "cursor-grabbing" : "cursor-grab")}
-        style={{ minHeight }}
         onWheel={handleWheel}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
@@ -280,57 +269,56 @@ export function PhaseFlowGraph({
         <svg
           width="100%"
           height="100%"
-          style={{
-            minHeight,
-            fontFamily: "Montserrat, sans-serif",
-          }}
+          style={{ fontFamily: "var(--font-sans)" }}
         >
           <g transform={`translate(${pan.x}, ${pan.y}) scale(${zoom})`}>
             <defs>
               <marker
                 id="arrowhead"
-                markerWidth="8"
-                markerHeight="6"
+                markerWidth="9"
+                markerHeight="9"
                 refX="8"
-                refY="3"
+                refY="4.5"
                 orient="auto"
               >
-                <polygon points="0 0, 8 3, 0 6" fill="#C5C29F" />
+                <path d="M 0 1 L 8.5 4.5 L 0 8 z" style={{ fill: "var(--edge)" }} />
               </marker>
               <marker
                 id="arrowhead-active"
-                markerWidth="8"
-                markerHeight="6"
+                markerWidth="9"
+                markerHeight="9"
                 refX="8"
-                refY="3"
+                refY="4.5"
                 orient="auto"
               >
-                <polygon points="0 0, 8 3, 0 6" fill="#BE4A01" />
+                <path
+                  d="M 0 1 L 8.5 4.5 L 0 8 z"
+                  style={{ fill: "var(--color-accent)" }}
+                />
               </marker>
               <filter id="nodeShadow" x="-10%" y="-10%" width="120%" height="130%">
                 <feDropShadow dx="0" dy="1" stdDeviation="2" floodColor="#0A0703" floodOpacity="0.08" />
               </filter>
             </defs>
 
-            {/* Edges */}
             {edges.map((edge) => (
               <path
                 key={edge.key}
                 d={edge.path}
                 fill="none"
-                stroke={edge.highlighted ? "#BE4A01" : "#C5C29F"}
                 strokeWidth={edge.highlighted ? 2.5 : 1.5}
-                strokeDasharray={edge.highlighted ? undefined : "6 3"}
                 markerEnd={
                   edge.highlighted
                     ? "url(#arrowhead-active)"
                     : "url(#arrowhead)"
                 }
-                style={{ transition: "stroke 0.2s, stroke-width 0.2s" }}
+                style={{
+                  stroke: edge.highlighted ? "var(--color-accent)" : "var(--edge)",
+                  transition: "stroke 0.2s, stroke-width 0.2s",
+                }}
               />
             ))}
 
-            {/* Nodes */}
             {phases.map((phase) => {
               const pos = positions.get(phase.id)
               if (!pos) return null
@@ -338,11 +326,10 @@ export function PhaseFlowGraph({
               const isDep = selectedDeps.has(phase.id)
               const depCount = dependentCount.get(phase.id) ?? 0
 
-              const strokeColor = isSelected
-                ? "#BE4A01"
-                : isDep
-                  ? "#BE4A0180"
-                  : "#C5C29F80"
+              const strokeVar =
+                isSelected || isDep
+                  ? "var(--color-accent)"
+                  : "var(--color-input-border)"
 
               return (
                 <g
@@ -357,46 +344,34 @@ export function PhaseFlowGraph({
                     y={pos.y}
                     width={NODE_WIDTH}
                     height={NODE_HEIGHT}
-                    rx={10}
-                    ry={10}
-                    fill={isSelected ? "#FFFFFF" : "#F3F2EB"}
-                    stroke={strokeColor}
-                    strokeWidth={isSelected ? 2.5 : 1.2}
+                    rx={13}
+                    ry={13}
+                    strokeWidth={isSelected ? 2.5 : isDep ? 1.75 : 1.25}
                     filter="url(#nodeShadow)"
+                    style={{ fill: "var(--color-elevated)", stroke: strokeVar }}
                   />
-                  {/* Name */}
                   <text
                     x={pos.x + NODE_WIDTH / 2}
                     y={pos.y + 26}
                     textAnchor="middle"
-                    fill="#0A0703"
                     fontSize={13}
                     fontWeight={600}
+                    style={{ fill: "var(--color-fg-strong)" }}
                   >
                     {truncateText(phase.name, 22)}
                   </text>
-                  {/* Subtitle */}
                   <text
                     x={pos.x + NODE_WIDTH / 2}
                     y={pos.y + 44}
                     textAnchor="middle"
-                    fill={depCount > 0 ? "#3F3E2099" : "#C5C29F"}
                     fontSize={10}
                     fontWeight={400}
+                    style={{ fill: "var(--color-fg-subtle)" }}
                   >
                     {depCount > 0
                       ? `${depCount} dependent${depCount !== 1 ? "s" : ""}`
                       : "no dependents"}
                   </text>
-                  {/* Selected indicator dot */}
-                  {isSelected && (
-                    <circle
-                      cx={pos.x + NODE_WIDTH - 12}
-                      cy={pos.y + 12}
-                      r={4}
-                      fill="#BE4A01"
-                    />
-                  )}
                 </g>
               )
             })}
@@ -404,10 +379,9 @@ export function PhaseFlowGraph({
         </svg>
       </div>
 
-      {/* Help hint */}
-      <div className="absolute bottom-2 left-3 text-[10px] text-verde/40 select-none pointer-events-none">
-        Scroll to zoom · Drag to pan · Click node to select
-      </div>
+      <span className="absolute left-[14px] bottom-3 z-10 text-[11px] text-fg-subtle pointer-events-none select-none">
+        Drag to pan &middot; scroll to zoom &middot; click a phase to inspect &middot; phases in the same column can run in parallel
+      </span>
     </div>
   )
 }
