@@ -1,5 +1,5 @@
-import { useState } from "react"
-import { NavLink } from "react-router-dom"
+import { useEffect, useState } from "react"
+import { NavLink, useLocation } from "react-router-dom"
 import {
   LayoutGrid,
   Languages,
@@ -18,6 +18,8 @@ import { cn } from "@/utils/cn"
 import { useAuth } from "@/contexts/AuthContext"
 import { useTheme } from "@/contexts/ThemeContext"
 import { ProfileDialog } from "@/components/common/ProfileDialog"
+import { UserAvatar } from "@/components/common/UserAvatar"
+import { useRequestCountsStore } from "@/stores/requestCountsStore"
 
 interface SidebarProps {
   mobileOpen: boolean
@@ -28,6 +30,7 @@ interface NavItemDef {
   to: string
   label: string
   icon: LucideIcon
+  badge?: number
 }
 
 interface NavSectionDef {
@@ -36,7 +39,7 @@ interface NavSectionDef {
 }
 
 function NavItem({ item, onNavigate }: { item: NavItemDef; onNavigate?: () => void }) {
-  const { icon: Icon, to, label } = item
+  const { icon: Icon, to, label, badge } = item
   return (
     <NavLink
       to={to}
@@ -52,6 +55,11 @@ function NavItem({ item, onNavigate }: { item: NavItemDef; onNavigate?: () => vo
     >
       <Icon className="w-[17px] h-[17px] shrink-0" strokeWidth={1.75} />
       <span className="flex-1">{label}</span>
+      {badge ? (
+        <span className="bg-telha text-on-dark rounded-full text-[10.5px] font-bold px-[7px] py-px shrink-0">
+          {badge}
+        </span>
+      ) : null}
     </NavLink>
   )
 }
@@ -95,18 +103,20 @@ function SidebarContent({
   onNavigate,
   onProfile,
   onLogout,
+  userId,
   userName,
+  userEmail,
   userRole,
-  userInitial,
   avatarUrl,
 }: {
   sections: NavSectionDef[]
   onNavigate?: () => void
   onProfile: () => void
   onLogout: () => void
+  userId?: string
   userName: string
+  userEmail: string
   userRole: string
-  userInitial: string
   avatarUrl?: string | null
 }) {
   return (
@@ -135,13 +145,14 @@ function SidebarContent({
             onClick={onProfile}
             className="flex items-center gap-2.5 flex-1 min-w-0 rounded-[10px] p-1 hover:bg-[var(--shell-active)] transition-colors"
           >
-            <span className="w-[34px] h-[34px] rounded-full bg-[rgba(246,245,235,0.14)] text-shell-fg grid place-items-center text-xs font-bold shrink-0 overflow-hidden">
-              {avatarUrl ? (
-                <img src={avatarUrl} alt="" className="h-full w-full object-cover" />
-              ) : (
-                userInitial
-              )}
-            </span>
+            <UserAvatar
+              id={userId}
+              name={userName}
+              email={userEmail}
+              avatarUrl={avatarUrl ?? null}
+              size="xs"
+              className="h-[34px] w-[34px] text-xs"
+            />
             <span className="flex flex-col min-w-0 text-left">
               <span className="text-[13.5px] font-semibold text-shell-fg truncate">{userName}</span>
               <span className="text-[11px] text-[var(--shell-dim)]">{userRole}</span>
@@ -164,11 +175,16 @@ function SidebarContent({
 export default function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
   const { isPlatformAdmin, isManager, logout, user } = useAuth()
   const [profileOpen, setProfileOpen] = useState(false)
+  const { pathname } = useLocation()
+  const counts = useRequestCountsStore((s) => s.counts)
+  const fetchCounts = useRequestCountsStore((s) => s.fetch)
 
-  const userInitial =
-    user?.display_name?.charAt(0).toUpperCase() ||
-    user?.email?.charAt(0).toUpperCase() ||
-    "?"
+  useEffect(() => {
+    if (isPlatformAdmin) {
+      void fetchCounts()
+    }
+  }, [isPlatformAdmin, fetchCounts, pathname])
+
   const userName = user?.display_name || user?.email || "Account"
   const userRole = isPlatformAdmin ? "Platform admin" : isManager ? "Manager" : "Member"
 
@@ -183,8 +199,8 @@ export default function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
     sections.push({
       label: "Content",
       items: [
-        { to: "/app/languages", label: "Languages", icon: Languages },
-        { to: "/app/projects", label: "Projects", icon: FolderOpen },
+        { to: "/app/languages", label: "Languages", icon: Languages, badge: counts.languageChanges },
+        { to: "/app/projects", label: "Projects", icon: FolderOpen, badge: counts.projectChanges },
         { to: "/app/map", label: "Map", icon: Globe },
       ],
     })
@@ -195,7 +211,7 @@ export default function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
       label: "Administration",
       items: [
         { to: "/app/phases", label: "Phases", icon: GitBranch },
-        { to: "/app/users", label: "Users", icon: Users },
+        { to: "/app/users", label: "Users", icon: Users, badge: counts.access },
         { to: "/app/apps", label: "Manage Apps", icon: AppWindow },
       ],
     })
@@ -213,9 +229,10 @@ export default function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
           sections={sections}
           onProfile={() => setProfileOpen(true)}
           onLogout={logout}
+          userId={user?.id}
           userName={userName}
+          userEmail={user?.email ?? ""}
           userRole={userRole}
-          userInitial={userInitial}
           avatarUrl={user?.avatar_url}
         />
       </aside>
@@ -236,9 +253,10 @@ export default function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
               onNavigate={onMobileClose}
               onProfile={openProfile}
               onLogout={logout}
+              userId={user?.id}
               userName={userName}
+              userEmail={user?.email ?? ""}
               userRole={userRole}
-              userInitial={userInitial}
               avatarUrl={user?.avatar_url}
             />
           </aside>
