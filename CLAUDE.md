@@ -432,8 +432,10 @@ Do not override, reinterpret, or invent visual rules.
 ### 9.6 Badges & States
 - **Shape**: `rounded-full px-2.5 py-0.5 text-xs font-semibold` pills
 - **Success / Active**: `bg-st-ok/15 text-st-ok`
-- **Pending / Inactive / Member**: `bg-muted text-fg-muted`
-- **Error / Manager**: `bg-accent-soft text-on-accent-soft`
+- **Pending / Inactive**: `bg-muted text-fg-muted`
+- **Error**: `bg-accent-soft text-on-accent-soft`
+- **Manager**: `bg-telha text-on-dark` (solid telha pill)
+- **Member**: `bg-secondary-strong text-on-dark` (solid #6F7440 pill)
 - **Admin**: `bg-inverse text-on-dark`
 - **Status dots**: `<span className="w-2 h-2 rounded-full bg-st-...">`
 

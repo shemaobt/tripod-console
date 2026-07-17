@@ -4,6 +4,7 @@ import { authAPI } from "@/services/api"
 import { ACCESS_TOKEN_KEY, REFRESH_TOKEN_KEY } from "@/constants/app"
 import { useLanguagesStore } from "@/stores/languagesStore"
 import { usePhasesStore } from "@/stores/phasesStore"
+import { useRequestCountsStore } from "@/stores/requestCountsStore"
 import type { User, MyRoleResponse } from "@/types"
 
 interface Session {
@@ -114,6 +115,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setSession(null)
     useLanguagesStore.getState().reset()
     usePhasesStore.getState().reset()
+    useRequestCountsStore.getState().reset()
     navigate("/login")
   }, [navigate])
 

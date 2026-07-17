@@ -13,8 +13,8 @@ const badgeVariants = cva(
         active: "bg-st-ok/15 text-st-ok",
         inactive: "bg-muted text-fg-muted",
         admin: "bg-inverse text-on-dark",
-        manager: "bg-accent-soft text-on-accent-soft",
-        member: "bg-muted text-fg-muted",
+        manager: "bg-telha text-on-dark",
+        member: "bg-secondary-strong text-on-dark",
       },
     },
     defaultVariants: {

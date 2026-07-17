@@ -1,3 +1,9 @@
+export interface ProjectMemberPreview {
+  user_id: string
+  display_name: string | null
+  avatar_url: string | null
+}
+
 export interface ProjectResponse {
   id: string
   name: string
@@ -7,6 +13,10 @@ export interface ProjectResponse {
   longitude: number | null
   location_display_name: string | null
   team_size: number
+  image_url?: string | null
+  phases_completed?: number
+  phases_total?: number
+  members_preview?: ProjectMemberPreview[]
   created_at: string
   updated_at: string
 }
@@ -24,6 +34,7 @@ export interface ProjectUpdate {
   name?: string
   description?: string | null
   language_id?: string
+  image_url?: string | null
 }
 
 export interface ProjectLocationUpdate {
