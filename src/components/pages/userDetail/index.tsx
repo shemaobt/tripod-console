@@ -129,7 +129,7 @@ export default function UserDetailPage() {
     }
     setAvatarUploading(true)
     try {
-      const { data } = await uploadsAPI.image(file, "user-avatars")
+      const { data } = await uploadsAPI.image(file, "avatars")
       const { data: updated } = await usersAPI.update(userId, {
         avatar_url: data.url,
       })
