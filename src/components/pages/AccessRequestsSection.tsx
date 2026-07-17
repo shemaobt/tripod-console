@@ -8,7 +8,7 @@ import { LoadingSpinner } from "@/components/common/LoadingSpinner"
 import { EmptyState } from "@/components/common/EmptyState"
 import { FilterBar } from "@/components/common/FilterBar"
 import { ReviewDialog } from "@/components/pages/ReviewDialog"
-import { UserAvatar } from "@/components/pages/UsersPage/UserAvatar"
+import { UserAvatar } from "@/components/common/UserAvatar"
 import { formatDate, timeAgo } from "@/utils/format"
 
 const statusMeta: Record<string, { dot: string; label: string }> = {
@@ -27,9 +27,10 @@ const statusChips = [
 interface AccessRequestsSectionProps {
   users: UserListResponse[]
   apps: AppResponse[]
+  onReviewed?: () => void
 }
 
-export function AccessRequestsSection({ users, apps }: AccessRequestsSectionProps) {
+export function AccessRequestsSection({ users, apps, onReviewed }: AccessRequestsSectionProps) {
   const [requests, setRequests] = useState<AccessRequestResponse[]>([])
   const [loading, setLoading] = useState(true)
   const [filterApp, setFilterApp] = useState("all")
@@ -64,6 +65,7 @@ export function AccessRequestsSection({ users, apps }: AccessRequestsSectionProp
       await accessRequestsAPI.review(requestId, { status, reason })
       toast.success(`Request ${status}`)
       fetchRequests()
+      onReviewed?.()
     } catch {
       toast.error(`Failed to ${status === "approved" ? "approve" : "reject"} request`)
       throw new Error("review failed")
@@ -165,6 +167,7 @@ function RequestCard({ req, user, appName, onApprove, onReject }: RequestCardPro
   return (
     <div className="flex items-start gap-3.5 px-5 py-4 border-b border-line last:border-b-0">
       <UserAvatar
+        id={req.user_id}
         name={user?.display_name ?? null}
         email={user?.email ?? req.user_id}
         avatarUrl={user?.avatar_url ?? null}

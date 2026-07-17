@@ -10,6 +10,7 @@ export interface ReviewableRequest {
   id: string
   origin: RequestOrigin
   kind: ChangeRequestKind
+  requesterUserId: string | null
   requesterName: string | null
   requesterEmail: string
   status: "pending" | "approved" | "rejected"
@@ -30,6 +31,7 @@ export function fromChangeRequest(req: ChangeRequestResponse): ReviewableRequest
     id: req.id,
     origin: "change",
     kind: req.kind,
+    requesterUserId: req.requester_user_id,
     requesterName: req.requester_display_name,
     requesterEmail: req.requester_email,
     status: req.status,
@@ -51,6 +53,7 @@ export function fromPublicRequest(req: PublicRequestAdminResponse): ReviewableRe
     id: req.id,
     origin: "public",
     kind: req.kind,
+    requesterUserId: null,
     requesterName: req.requester_name,
     requesterEmail: req.requester_email,
     status: req.status,

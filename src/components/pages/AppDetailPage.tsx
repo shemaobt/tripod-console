@@ -5,6 +5,7 @@ import { toast } from "sonner"
 import { appsAPI } from "@/services/api"
 import type { AppResponse, AppRoleResponse } from "@/types"
 import { cn } from "@/utils/cn"
+import { avatarColors, initialsOf } from "@/utils/avatar"
 import { Switch } from "@/components/ui/switch"
 import { LoadingSpinner } from "@/components/common/LoadingSpinner"
 import { ConfirmDialog } from "@/components/common/ConfirmDialog"
@@ -174,7 +175,8 @@ export default function AppDetailPage() {
     )
   }
 
-  const initials = app.name.slice(0, 2).toUpperCase()
+  const initials = initialsOf(app.name)
+  const tile = avatarColors(app.id, app.name)
 
   return (
     <div className="max-w-[1240px] mx-auto px-6 sm:px-10 pt-7 pb-14">
@@ -195,7 +197,10 @@ export default function AppDetailPage() {
               className="w-[52px] h-[52px] rounded-[14px] object-cover shrink-0"
             />
           ) : (
-            <span className="w-[52px] h-[52px] rounded-[14px] bg-inverse text-on-dark grid place-items-center text-base font-bold shrink-0">
+            <span
+              className="w-[52px] h-[52px] rounded-[14px] grid place-items-center text-base font-bold shrink-0"
+              style={{ backgroundColor: tile.bg, color: tile.fg }}
+            >
               {initials}
             </span>
           )}

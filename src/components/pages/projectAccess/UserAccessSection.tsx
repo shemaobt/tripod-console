@@ -3,7 +3,6 @@ import type { ProjectUserAccessDetailResponse } from "@/types"
 import { cn } from "@/utils/cn"
 import { card } from "@/styles"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
 import {
   Select,
   SelectContent,
@@ -14,12 +13,20 @@ import {
 import { LoadingSpinner } from "@/components/common/LoadingSpinner"
 import { EmptyState } from "@/components/common/EmptyState"
 import { InfoTooltip } from "@/components/common/InfoTooltip"
+import { UserAvatar } from "@/components/common/UserAvatar"
 import { formatDate } from "@/utils/format"
-import { initialsOf } from "./initials"
 import { RevokeButton } from "./RevokeButton"
 
 const TH =
   "px-5 py-3 text-[11px] font-semibold tracking-[0.08em] uppercase text-fg-subtle border-b border-line"
+
+const ROLE_PILL =
+  "h-8 w-auto gap-1.5 rounded-[8px] border-0 px-3 text-[13px] font-semibold lowercase shadow-none"
+
+const roleTone = (role: string) =>
+  role === "manager"
+    ? "bg-telha text-on-dark [&_svg]:text-on-dark"
+    : "bg-muted text-fg-strong"
 
 export function UserAccessSection({
   users,
@@ -82,16 +89,13 @@ export function UserAccessSection({
               <tr key={user.id} className="hover:bg-muted transition-colors">
                 <td className="px-5 py-3 border-b border-line">
                   <div className="flex items-center gap-3">
-                    <span
-                      className="w-8 h-8 rounded-full bg-azul/20 text-azul grid place-items-center text-[11px] font-bold flex-none bg-cover bg-center"
-                      style={
-                        user.avatar_url
-                          ? { backgroundImage: `url(${user.avatar_url})` }
-                          : undefined
-                      }
-                    >
-                      {!user.avatar_url && initialsOf(user.display_name || user.email)}
-                    </span>
+                    <UserAvatar
+                      id={user.user_id}
+                      name={user.display_name}
+                      email={user.email}
+                      avatarUrl={user.avatar_url}
+                      size="xs"
+                    />
                     <div className="flex flex-col min-w-0">
                       <span className="font-semibold text-fg-strong text-[13.5px] truncate">
                         {user.display_name || user.email}
@@ -108,21 +112,18 @@ export function UserAccessSection({
                       value={user.role}
                       onValueChange={(value) => onRoleChange(user.user_id, value)}
                     >
-                      <SelectTrigger className="w-[130px] h-9 text-xs">
+                      <SelectTrigger className={cn(ROLE_PILL, roleTone(user.role))}>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="member">Member</SelectItem>
-                        <SelectItem value="manager">Manager</SelectItem>
+                        <SelectItem value="member">member</SelectItem>
+                        <SelectItem value="manager">manager</SelectItem>
                       </SelectContent>
                     </Select>
                   ) : (
-                    <Badge
-                      variant={user.role === "manager" ? "manager" : "member"}
-                      className="capitalize"
-                    >
+                    <span className={cn(ROLE_PILL, roleTone(user.role))}>
                       {user.role}
-                    </Badge>
+                    </span>
                   )}
                 </td>
                 <td className="px-5 py-3 border-b border-line text-[12.5px] text-fg-subtle hidden md:table-cell">

@@ -4,6 +4,7 @@ import { toast } from "sonner"
 import { languagesAPI, changeRequestsAPI } from "@/services/api"
 import type { LanguageResponse, LanguageStatsResponse } from "@/types"
 import { useLanguagesStore } from "@/stores/languagesStore"
+import { useRequestCountsStore } from "@/stores/requestCountsStore"
 import { useAuth } from "@/contexts/AuthContext"
 import { cn } from "@/utils/cn"
 import { Button } from "@/components/ui/button"
@@ -68,6 +69,11 @@ export default function LanguagesPage() {
     useLanguagesStore.getState().invalidate()
     if (showInactive) loadAllLanguages()
     return fetchLanguages()
+  }
+
+  function handleReviewed() {
+    refreshLanguages()
+    useRequestCountsStore.getState().refresh()
   }
 
   const canDeactivate = isPlatformAdmin
@@ -308,7 +314,7 @@ export default function LanguagesPage() {
             <ChangeRequestsSection
               kinds={["create_language", "edit_language"]}
               emptyLabel="Managers' requests to create or edit a language appear here. Accept to apply the change or reject."
-              onReviewed={refreshLanguages}
+              onReviewed={handleReviewed}
             />
           ) : (
             <MyChangeRequestsSection

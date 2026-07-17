@@ -1,6 +1,7 @@
 import { AppWindow, Pencil, Trash2 } from "lucide-react"
 import type { AppResponse } from "@/types"
 import { cn } from "@/utils/cn"
+import { avatarColors, initialsOf } from "@/utils/avatar"
 import { platformLabel } from "@/constants/platforms"
 
 export function AppCard({
@@ -14,7 +15,8 @@ export function AppCard({
   onEdit: (e: React.MouseEvent) => void
   onDelete: (e: React.MouseEvent) => void
 }) {
-  const initials = app.name.slice(0, 2).toUpperCase()
+  const initials = app.name.trim() ? initialsOf(app.name) : ""
+  const tile = avatarColors(app.id, app.name)
   const platforms =
     app.platforms.length > 0
       ? app.platforms.map(platformLabel).join(" · ")
@@ -36,7 +38,10 @@ export function AppCard({
             className="w-11 h-11 rounded-[12px] object-cover shrink-0"
           />
         ) : (
-          <span className="w-11 h-11 rounded-[12px] bg-inverse text-on-dark grid place-items-center text-sm font-bold shrink-0">
+          <span
+            className="w-11 h-11 rounded-[12px] grid place-items-center text-sm font-bold shrink-0"
+            style={{ backgroundColor: tile.bg, color: tile.fg }}
+          >
             {initials || <AppWindow className="w-5 h-5" strokeWidth={1.75} />}
           </span>
         )}

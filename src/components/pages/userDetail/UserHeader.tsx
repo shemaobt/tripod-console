@@ -1,15 +1,8 @@
 import type { UserListResponse } from "@/types"
 import { cn } from "@/utils/cn"
+import { avatarColors, initialsOf } from "@/utils/avatar"
 import { Badge } from "@/components/ui/badge"
 import { getUserRole, roleMeta } from "./roles"
-
-function initialsFor(name: string | null, email: string): string {
-  return (name || email)
-    .split(/[\s@]+/)
-    .slice(0, 2)
-    .map((s) => s[0]?.toUpperCase())
-    .join("")
-}
 
 export function UserHeader({
   user,
@@ -21,6 +14,7 @@ export function UserHeader({
   onPickPhoto: () => void
 }) {
   const { variant, label } = roleMeta[getUserRole(user)]
+  const colors = avatarColors(user.id, user.display_name || user.email)
   return (
     <div className="flex items-center gap-4 mb-[22px]">
       <button
@@ -30,9 +24,11 @@ export function UserHeader({
         onClick={onPickPhoto}
         className={cn(
           "relative grid h-[54px] w-[54px] shrink-0 place-items-center overflow-hidden rounded-full",
-          "bg-accent-soft text-[17px] font-bold text-on-accent-soft transition-shadow",
+          "text-[17px] font-bold transition-shadow",
           "hover:shadow-[0_0_0_3px_var(--color-accent-soft)] disabled:opacity-60",
+          user.avatar_url && "bg-muted",
         )}
+        style={user.avatar_url ? undefined : { backgroundColor: colors.bg, color: colors.fg }}
       >
         {user.avatar_url ? (
           <img
@@ -41,7 +37,7 @@ export function UserHeader({
             className="absolute inset-0 h-full w-full object-cover"
           />
         ) : (
-          initialsFor(user.display_name, user.email)
+          initialsOf(user.display_name || user.email)
         )}
       </button>
       <div className="flex flex-col gap-[3px] min-w-0">
@@ -50,7 +46,9 @@ export function UserHeader({
         </h3>
         <div className="flex flex-wrap items-center gap-2.5">
           <span className="text-[13px] text-fg-muted">{user.email}</span>
-          <Badge variant={variant}>{label}</Badge>
+          <Badge variant={variant} className="whitespace-nowrap">
+            {label}
+          </Badge>
           {!user.is_active && (
             <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-st-warn">
               <span className="h-[7px] w-[7px] rounded-full bg-st-warn" />

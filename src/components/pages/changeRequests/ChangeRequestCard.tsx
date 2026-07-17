@@ -3,7 +3,7 @@ import type { ChangeRequestKind } from "@/types"
 import { useLanguagesStore } from "@/stores/languagesStore"
 import { cn } from "@/utils/cn"
 import { Badge } from "@/components/ui/badge"
-import { UserAvatar } from "@/components/pages/UsersPage/UserAvatar"
+import { UserAvatar } from "@/components/common/UserAvatar"
 import type { ReviewableRequest } from "@/components/pages/changeRequests/reviewableRequest"
 import { formatDate, timeAgo } from "@/utils/format"
 
@@ -60,6 +60,7 @@ export function ChangeRequestCard({ req, onApprove, onReject }: ChangeRequestCar
   return (
     <div className="flex items-start gap-3.5 px-5 py-4 border-b border-line last:border-b-0">
       <UserAvatar
+        id={req.requesterUserId ?? req.requesterEmail}
         name={req.requesterName}
         email={req.requesterEmail}
         avatarUrl={null}

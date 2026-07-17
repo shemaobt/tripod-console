@@ -9,12 +9,13 @@ import { LoadingSpinner } from "@/components/common/LoadingSpinner"
 import { EmptyState } from "@/components/common/EmptyState"
 import { FilterBar } from "@/components/common/FilterBar"
 import { AccessRequestsSection } from "@/components/pages/AccessRequestsSection"
+import { useRequestCountsStore } from "@/stores/requestCountsStore"
 import { UserCard } from "./UserCard"
 
 const roleLegend = [
   { label: "Platform admin", dot: "bg-inverse" },
-  { label: "Manager", dot: "bg-accent" },
-  { label: "Member", dot: "bg-st-ok" },
+  { label: "Manager", dot: "bg-telha" },
+  { label: "Member", dot: "bg-verde-claro" },
 ]
 
 export default function UsersPage() {
@@ -24,6 +25,13 @@ export default function UsersPage() {
   const [loading, setLoading] = useState(true)
   const [filterApp, setFilterApp] = useState("all")
   const [search, setSearch] = useState("")
+  const accessCount = useRequestCountsStore((s) => s.counts.access)
+  const fetchCounts = useRequestCountsStore((s) => s.fetch)
+  const refreshCounts = useRequestCountsStore((s) => s.refresh)
+
+  useEffect(() => {
+    fetchCounts()
+  }, [fetchCounts])
 
   useEffect(() => {
     async function fetchData() {
@@ -97,7 +105,14 @@ export default function UsersPage() {
 
           <TabsList className="self-start sm:self-auto">
             <TabsTrigger value="users">Users</TabsTrigger>
-            <TabsTrigger value="requests">Access requests</TabsTrigger>
+            <TabsTrigger value="requests">
+              Access requests
+              {accessCount > 0 && (
+                <span className="bg-telha text-on-dark rounded-full text-[10px] font-bold px-1.5 py-px">
+                  {accessCount}
+                </span>
+              )}
+            </TabsTrigger>
           </TabsList>
         </div>
 
@@ -141,7 +156,6 @@ export default function UsersPage() {
                     key={user.id}
                     user={user}
                     roles={userRolesMap.get(user.id) ?? []}
-                    apps={apps}
                   />
                 ))}
               </div>
@@ -150,7 +164,7 @@ export default function UsersPage() {
         </TabsContent>
 
         <TabsContent value="requests">
-          <AccessRequestsSection users={users} apps={apps} />
+          <AccessRequestsSection users={users} apps={apps} onReviewed={refreshCounts} />
         </TabsContent>
       </Tabs>
     </div>
