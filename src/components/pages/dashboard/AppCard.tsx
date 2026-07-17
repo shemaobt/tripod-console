@@ -1,6 +1,7 @@
-import { LayoutGrid, ArrowUpRight } from "lucide-react"
+import { ArrowUpRight } from "lucide-react"
 import type { UserAppResponse } from "@/types"
 import { cn } from "@/utils/cn"
+import { avatarColors, initialsOf } from "@/utils/avatar"
 import { platformLabel } from "@/constants/platforms"
 
 interface LaunchLink {
@@ -9,7 +10,7 @@ interface LaunchLink {
 }
 
 export function AppCard({ app }: { app: UserAppResponse }) {
-  const initials = app.name.slice(0, 2).toUpperCase()
+  const tile = avatarColors(app.id, app.name)
   const roleLabel = app.is_platform_admin
     ? "Platform admin"
     : app.roles.length > 0
@@ -38,8 +39,11 @@ export function AppCard({ app }: { app: UserAppResponse }) {
             className="w-[42px] h-[42px] rounded-[12px] object-cover shrink-0"
           />
         ) : (
-          <span className="w-[42px] h-[42px] rounded-[12px] bg-inverse text-on-dark grid place-items-center text-[13px] font-bold shrink-0">
-            {initials || <LayoutGrid className="w-5 h-5" strokeWidth={1.75} />}
+          <span
+            className="w-[42px] h-[42px] rounded-[12px] grid place-items-center text-[13px] font-bold shrink-0"
+            style={{ backgroundColor: tile.bg, color: tile.fg }}
+          >
+            {initialsOf(app.name)}
           </span>
         )}
         <div className="flex flex-col min-w-0 gap-px">
