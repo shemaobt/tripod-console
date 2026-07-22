@@ -192,7 +192,7 @@ export default function ProjectDetailPage() {
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
                   disabled={imageBusy}
-                  title="Upload project image"
+                  title={project.image_url ? "Change project image" : "Upload project image"}
                   className={tileClass}
                   style={tileStyle}
                 >
@@ -229,12 +229,22 @@ export default function ProjectDetailPage() {
                 <span className="text-[13px] text-fg-muted">
                   {project.team_size} team member{project.team_size === 1 ? "" : "s"}
                 </span>
+                {canEdit && (
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={imageBusy}
+                    className="text-[13px] font-semibold text-accent hover:text-accent-hover hover:underline disabled:opacity-50"
+                  >
+                    {project.image_url ? "Change image" : "Upload image"}
+                  </button>
+                )}
                 {canEdit && project.image_url && (
                   <button
                     type="button"
                     onClick={handleRemoveImage}
                     disabled={imageBusy}
-                    className="text-xs font-semibold text-st-warn hover:underline"
+                    className="text-[13px] font-semibold text-fg-subtle hover:text-st-warn hover:underline disabled:opacity-50"
                   >
                     Remove image
                   </button>

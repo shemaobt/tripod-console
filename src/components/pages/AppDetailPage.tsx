@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useParams, useNavigate } from "react-router"
 import { ArrowLeft } from "lucide-react"
 import { toast } from "sonner"
-import { appsAPI } from "@/services/api"
+import { appsAPI, uploadsAPI } from "@/services/api"
 import type { AppResponse, AppRoleResponse } from "@/types"
 import { cn } from "@/utils/cn"
 import { avatarColors, initialsOf } from "@/utils/avatar"
@@ -49,6 +49,36 @@ export default function AppDetailPage() {
     auto_approve: false,
   })
   const [saving, setSaving] = useState(false)
+  const [iconBusy, setIconBusy] = useState(false)
+  const iconInputRef = useRef<HTMLInputElement>(null)
+
+  async function handleIconFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    try {
+      if (!["image/jpeg", "image/png", "image/webp", "image/svg+xml"].includes(file.type)) {
+        toast.error("Please upload a JPG, PNG, WebP, or SVG image")
+        return
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error("Image must be under 5 MB")
+        return
+      }
+      setIconBusy(true)
+      const { data } = await uploadsAPI.image(file, "app-icons")
+      setForm((f) => ({ ...f, icon_url: data.url }))
+      toast.success("Icon uploaded — Save changes to apply")
+    } catch {
+      toast.error("Failed to upload icon")
+    } finally {
+      setIconBusy(false)
+      if (iconInputRef.current) iconInputRef.current.value = ""
+    }
+  }
+
+  function handleRemoveIcon() {
+    setForm((f) => ({ ...f, icon_url: "" }))
+  }
 
   const [roleForm, setRoleForm] = useState({ role_key: "", label: "", description: "" })
   const [addingRole, setAddingRole] = useState(false)
@@ -190,20 +220,27 @@ export default function AppDetailPage() {
 
       <div className="flex items-center justify-between gap-4 mb-6">
         <div className="flex items-center gap-3.5">
-          {app.icon_url ? (
-            <img
-              src={app.icon_url}
-              alt={app.name}
-              className="w-[52px] h-[52px] rounded-[14px] object-cover shrink-0"
-            />
-          ) : (
-            <span
-              className="w-[52px] h-[52px] rounded-[14px] grid place-items-center text-base font-bold shrink-0"
-              style={{ backgroundColor: tile.bg, color: tile.fg }}
-            >
-              {initials}
-            </span>
-          )}
+          <button
+            type="button"
+            onClick={() => iconInputRef.current?.click()}
+            disabled={iconBusy}
+            title={form.icon_url ? "Change app icon" : "Upload app icon"}
+            className="w-[52px] h-[52px] rounded-[14px] overflow-hidden grid place-items-center text-base font-bold shrink-0 cursor-pointer transition-shadow hover:shadow-[0_0_0_3px_var(--color-accent-soft)]"
+            style={form.icon_url ? undefined : { backgroundColor: tile.bg, color: tile.fg }}
+          >
+            {form.icon_url ? (
+              <img src={form.icon_url} alt="" className="h-full w-full object-cover" />
+            ) : (
+              initials
+            )}
+          </button>
+          <input
+            ref={iconInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp,image/svg+xml"
+            className="hidden"
+            onChange={handleIconFile}
+          />
           <div className="flex flex-col gap-[3px] min-w-0">
             <h3 className="text-[23px] font-bold text-fg-strong tracking-tight truncate">{app.name}</h3>
             <div className="flex items-center gap-2.5 flex-wrap">
@@ -211,6 +248,24 @@ export default function AppDetailPage() {
                 {app.app_key}
               </span>
               <span className="text-[11px] text-fg-subtle">app_key is immutable</span>
+              <button
+                type="button"
+                onClick={() => iconInputRef.current?.click()}
+                disabled={iconBusy}
+                className="text-[13px] font-semibold text-accent hover:text-accent-hover hover:underline disabled:opacity-50"
+              >
+                {form.icon_url ? "Change icon" : "Upload icon"}
+              </button>
+              {form.icon_url && (
+                <button
+                  type="button"
+                  onClick={handleRemoveIcon}
+                  disabled={iconBusy}
+                  className="text-[13px] font-semibold text-fg-subtle hover:text-st-warn hover:underline disabled:opacity-50"
+                >
+                  Remove icon
+                </button>
+              )}
               <span className="inline-flex items-center gap-1.5 text-[12.5px] text-fg-muted">
                 <span
                   className={cn(

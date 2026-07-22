@@ -2,7 +2,6 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { ImageUpload } from "@/components/common/ImageUpload"
 import { PlatformMultiSelect } from "@/components/common/PlatformMultiSelect"
 
 export interface AppFormState {
@@ -31,17 +30,6 @@ export function DetailsCard({
   return (
     <div className="bg-elevated rounded-[18px] shadow-[var(--shadow-card)] p-[22px] flex flex-col gap-[18px]">
       <h4 className="text-[15.5px] font-semibold text-fg-strong">Details</h4>
-
-      <div className="space-y-1.5">
-        <Label>App icon</Label>
-        <ImageUpload
-          value={form.icon_url || null}
-          onChange={(url) => setForm((f) => ({ ...f, icon_url: url ?? "" }))}
-          folder="app-icons"
-          shape="square"
-          size="md"
-        />
-      </div>
 
       <div className="space-y-1.5">
         <Label htmlFor="f_ap_name">Name</Label>
