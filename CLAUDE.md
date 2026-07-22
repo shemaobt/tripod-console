@@ -486,7 +486,7 @@ ADMINISTRATION                            [admin only]
 - **Nav items**: `rounded-[10px]` rows; active = `bg-[var(--shell-active)] text-shell-fg`; inactive = `text-[var(--shell-dim)]`, hover gets the active treatment
 - **Footer**: `border-t border-[var(--shell-line)]` with profile button (avatar + display name + role label, opens ProfileDialog) and a sign-out icon button
 - **RBAC**: "Main" for all console users; "Content" shown to platform admins + managers; "Administration" only when `isPlatformAdmin`
-- **No collapsed icon-rail mode.** Mobile (`lg:hidden`): overlay drawer with dark backdrop and close button
+- **Collapsible icon rail (desktop).** A collapse toggle (PanelLeftClose/PanelLeftOpen) shrinks the rail to `w-[72px]` icon-only mode — icons stay, section captions become hairline dividers, nav badges render as a numeric corner bubble, labels surface via `title` tooltips, and the theme pill collapses to a single icon. State persists in the `sidebarStore` (Zustand + localStorage `tc_sidebar`). Collapse is desktop-only. Mobile (`lg:hidden`): overlay drawer with dark backdrop and close button, always expanded
 
 ---
 
