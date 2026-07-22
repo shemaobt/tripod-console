@@ -207,6 +207,8 @@ export const languagesAPI = {
     api.put<LanguageResponse>(`/languages/${languageId}`, data),
   delete: (languageId: string) =>
     api.delete<void>(`/languages/${languageId}`),
+  reactivate: (languageId: string) =>
+    api.post<LanguageResponse>(`/languages/${languageId}/reactivate`),
   stats: (languageId: string) =>
     api.get<LanguageStatsResponse>(`/languages/${languageId}/stats`),
   get: (languageId: string) =>

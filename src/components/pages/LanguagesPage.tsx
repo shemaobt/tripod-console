@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react"
-import { Languages, Plus, Pencil, Trash2 } from "lucide-react"
+import { Languages, Plus, Pencil, Trash2, RotateCcw } from "lucide-react"
 import { toast } from "sonner"
 import { languagesAPI, changeRequestsAPI } from "@/services/api"
 import type { LanguageResponse, LanguageStatsResponse } from "@/types"
@@ -45,6 +45,7 @@ export default function LanguagesPage() {
   const [deleteStats, setDeleteStats] = useState<LanguageStatsResponse | null>(null)
   const [deleting, setDeleting] = useState(false)
   const [allLanguages, setAllLanguages] = useState<LanguageResponse[]>([])
+  const [reactivatingId, setReactivatingId] = useState<string | null>(null)
 
   useEffect(() => {
     fetchLanguages()
@@ -176,6 +177,25 @@ export default function LanguagesPage() {
     }
   }
 
+  async function handleReactivate(lang: LanguageResponse) {
+    if (reactivatingId) return
+    setReactivatingId(lang.id)
+    try {
+      await languagesAPI.reactivate(lang.id)
+      toast.success("Language reactivated")
+      await refreshLanguages()
+    } catch (err: unknown) {
+      const status = (err as { response?: { status?: number } })?.response?.status
+      if (status === 403) {
+        toast.error("Only platform admins can reactivate languages")
+      } else {
+        toast.error("Failed to reactivate language")
+      }
+    } finally {
+      setReactivatingId(null)
+    }
+  }
+
   if (loading) {
     return <LoadingSpinner />
   }
@@ -212,7 +232,13 @@ export default function LanguagesPage() {
           </thead>
           <tbody>
             {displayLanguages.map((lang) => (
-              <tr key={lang.id} className="hover:bg-muted">
+              <tr
+                key={lang.id}
+                className={cn(
+                  "transition-colors",
+                  lang.is_active ? "hover:bg-muted" : "bg-muted hover:bg-quiet",
+                )}
+              >
                 <td className={cn(tdClass, "font-semibold text-fg-strong")}>{lang.name}</td>
                 <td className={tdClass}>
                   <span className="font-mono text-xs bg-muted rounded-md px-2 py-0.5 text-fg-muted">
@@ -251,6 +277,21 @@ export default function LanguagesPage() {
                       className={cn(iconBtn, "text-fg-subtle hover:bg-accent-soft hover:text-on-accent-soft")}
                     >
                       <Trash2 className="w-[15px] h-[15px]" strokeWidth={1.75} />
+                    </button>
+                  )}
+                  {canDeactivate && !lang.is_active && (
+                    <button
+                      type="button"
+                      onClick={() => handleReactivate(lang)}
+                      disabled={reactivatingId !== null}
+                      title="Reactivate"
+                      aria-label={`Reactivate ${lang.name}`}
+                      className={cn(
+                        iconBtn,
+                        "text-fg-subtle hover:bg-st-ok/15 hover:text-st-ok disabled:opacity-50",
+                      )}
+                    >
+                      <RotateCcw className="w-[15px] h-[15px]" strokeWidth={1.75} />
                     </button>
                   )}
                 </td>
