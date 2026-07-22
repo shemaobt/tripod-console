@@ -75,14 +75,17 @@ export function ProfileDialog({ open, onOpenChange }: ProfileDialogProps) {
         </DialogHeader>
 
         <div className="space-y-5 pt-1">
-          <div className="flex justify-center py-2">
+          <div className="pt-1">
             <ImageUpload
               value={avatarUrl}
               onChange={setAvatarUrl}
               folder="avatars"
               shape="circle"
-              size="lg"
-              placeholder={<UserIcon className="h-8 w-8 text-fg-subtle" />}
+              size="xl"
+              uploadLabel="Upload photo"
+              changeLabel="Change photo"
+              hint="JPEG, PNG, WebP or SVG · up to 5 MB"
+              placeholder={<UserIcon className="h-9 w-9 text-fg-subtle" />}
             />
           </div>
 

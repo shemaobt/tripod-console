@@ -10,8 +10,11 @@ interface ImageUploadProps {
   onChange: (url: string | null) => void
   folder: string
   shape?: "square" | "circle"
-  size?: "sm" | "md" | "lg"
+  size?: "sm" | "md" | "lg" | "xl"
   placeholder?: React.ReactNode
+  uploadLabel?: string
+  changeLabel?: string
+  hint?: React.ReactNode
   className?: string
 }
 
@@ -19,6 +22,7 @@ const sizeClasses = {
   sm: "h-16 w-16",
   md: "h-24 w-24",
   lg: "h-32 w-32",
+  xl: "h-36 w-36",
 }
 
 export function ImageUpload({
@@ -28,6 +32,9 @@ export function ImageUpload({
   shape = "square",
   size = "md",
   placeholder,
+  uploadLabel,
+  changeLabel,
+  hint,
   className,
 }: ImageUploadProps) {
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -129,7 +136,11 @@ export function ImageUpload({
           disabled={uploading}
           className="text-xs"
         >
-          {uploading ? "Uploading..." : value ? "Change" : "Upload"}
+          {uploading
+            ? "Uploading..."
+            : value
+              ? changeLabel ?? "Change"
+              : uploadLabel ?? "Upload"}
         </Button>
         {value && (
           <Button
@@ -144,6 +155,7 @@ export function ImageUpload({
             Remove
           </Button>
         )}
+        {hint && <p className="text-[11px] text-fg-subtle leading-snug max-w-[190px]">{hint}</p>}
       </div>
     </div>
   )
