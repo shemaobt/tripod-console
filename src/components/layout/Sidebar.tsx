@@ -191,7 +191,13 @@ export default function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
   const sections: NavSectionDef[] = [
     {
       label: "Main",
-      items: [{ to: "/app/dashboard", label: "My Apps", icon: LayoutGrid }],
+      items: [
+        {
+          to: "/app/dashboard",
+          label: isPlatformAdmin ? "Dashboard" : "My Apps",
+          icon: LayoutGrid,
+        },
+      ],
     },
   ]
 
