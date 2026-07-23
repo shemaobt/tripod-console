@@ -3,11 +3,11 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  --breakpoint-sm: 50rem;
-  --breakpoint-md: 60rem;
-  --breakpoint-lg: 80rem;
-  --breakpoint-xl: 100rem;
-  --breakpoint-2xl: 120rem;
+  --breakpoint-sm: 55rem;
+  --breakpoint-md: 66rem;
+  --breakpoint-lg: 88rem;
+  --breakpoint-xl: 110rem;
+  --breakpoint-2xl: 132rem;
 
   --color-branco: #F6F5EB;
   --color-areia: #C5C29F;
@@ -123,7 +123,7 @@
 }
 
 html {
-  font-size: 125%;
+  font-size: 137.5%;
 }
 
 body {
