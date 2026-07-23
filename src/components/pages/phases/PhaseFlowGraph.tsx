@@ -2,6 +2,7 @@ import { useMemo, useCallback, useRef, useState, useEffect } from "react"
 import { ZoomIn, ZoomOut, Maximize2 } from "lucide-react"
 import type { PhaseResponse } from "@/types"
 import { cn } from "@/utils/cn"
+import { uiScale } from "@/utils/uiScale"
 
 const NODE_WIDTH = 180
 const NODE_HEIGHT = 60
@@ -95,7 +96,8 @@ export function PhaseFlowGraph({
   minHeight = 480,
 }: PhaseFlowGraphProps) {
   const containerRef = useRef<HTMLDivElement>(null)
-  const [zoom, setZoom] = useState(1)
+  const baseScale = useMemo(() => uiScale(), [])
+  const [zoom, setZoom] = useState(baseScale)
   const [pan, setPan] = useState({ x: 0, y: 0 })
   const [isPanning, setIsPanning] = useState(false)
   const panStart = useRef({ x: 0, y: 0, panX: 0, panY: 0 })
@@ -110,13 +112,13 @@ export function PhaseFlowGraph({
     const rect = containerRef.current.getBoundingClientRect()
     const scaleX = rect.width / svgWidth
     const scaleY = rect.height / svgHeight
-    const fitZoom = Math.min(scaleX, scaleY, 1) * 0.9
+    const fitZoom = Math.min(scaleX, scaleY, baseScale) * 0.9
     setZoom(Math.max(fitZoom, MIN_ZOOM))
     setPan({
       x: (rect.width - svgWidth * fitZoom) / 2,
       y: (rect.height - svgHeight * fitZoom) / 2,
     })
-  }, [phases.length, svgWidth, svgHeight])
+  }, [phases.length, svgWidth, svgHeight, baseScale])
 
   function handleWheel(e: React.WheelEvent) {
     e.preventDefault()
@@ -159,7 +161,7 @@ export function PhaseFlowGraph({
     const rect = containerRef.current.getBoundingClientRect()
     const scaleX = rect.width / svgWidth
     const scaleY = rect.height / svgHeight
-    const fitZoom = Math.min(scaleX, scaleY, 1) * 0.9
+    const fitZoom = Math.min(scaleX, scaleY, baseScale) * 0.9
     setZoom(Math.max(fitZoom, MIN_ZOOM))
     setPan({
       x: (rect.width - svgWidth * fitZoom) / 2,
@@ -232,7 +234,7 @@ export function PhaseFlowGraph({
   return (
     <div
       className="relative bg-elevated rounded-[1.125rem] shadow-[var(--shadow-card)] overflow-hidden"
-      style={{ height: minHeight }}
+      style={{ height: minHeight * baseScale }}
     >
       <div className="absolute top-3 right-3 z-10 flex flex-col gap-1.5">
         <button
