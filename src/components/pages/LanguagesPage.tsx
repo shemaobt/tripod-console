@@ -1,8 +1,13 @@
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { Languages, Plus, Pencil, Trash2, RotateCcw } from "lucide-react"
 import { toast } from "sonner"
-import { languagesAPI, changeRequestsAPI } from "@/services/api"
-import type { LanguageResponse, LanguageStatsResponse } from "@/types"
+import { languagesAPI, changeRequestsAPI, projectsAPI } from "@/services/api"
+import type {
+  LanguageProjectRef,
+  LanguageResponse,
+  LanguageStatsResponse,
+  ProjectResponse,
+} from "@/types"
 import { useLanguagesStore } from "@/stores/languagesStore"
 import { useRequestCountsStore } from "@/stores/requestCountsStore"
 import { useAuth } from "@/contexts/AuthContext"
@@ -46,11 +51,26 @@ export default function LanguagesPage() {
   const [deleting, setDeleting] = useState(false)
   const [allLanguages, setAllLanguages] = useState<LanguageResponse[]>([])
   const [reactivatingId, setReactivatingId] = useState<string | null>(null)
+  const [projects, setProjects] = useState<ProjectResponse[]>([])
 
   useEffect(() => {
     fetchLanguages()
+    projectsAPI
+      .list()
+      .then(({ data }) => setProjects(data))
+      .catch(() => setProjects([]))
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  const projectsByLanguage = useMemo(() => {
+    const byLanguage = new Map<string, LanguageProjectRef[]>()
+    for (const project of projects) {
+      const refs = byLanguage.get(project.language_id) ?? []
+      refs.push({ id: project.id, name: project.name })
+      byLanguage.set(project.language_id, refs)
+    }
+    return byLanguage
+  }, [projects])
 
   const loadAllLanguages = useCallback(async () => {
     if (!isPlatformAdmin) return
@@ -155,10 +175,13 @@ export default function LanguagesPage() {
     }
   }
 
-  const usedByProjects = (deleteStats?.project_count ?? 0) > 0
+  const blockers = deleteTarget
+    ? (deleteStats?.projects ?? projectsByLanguage.get(deleteTarget.id) ?? [])
+    : []
+  const usedByProjects = blockers.length > 0
 
   async function handleDeactivate() {
-    if (!deleteTarget || deleting) return
+    if (!deleteTarget || deleting || usedByProjects) return
     setDeleting(true)
     try {
       await languagesAPI.delete(deleteTarget.id)
@@ -169,6 +192,8 @@ export default function LanguagesPage() {
       const status = (err as { response?: { status?: number } })?.response?.status
       if (status === 403) {
         toast.error("Only platform admins can deactivate languages")
+      } else if (status === 409) {
+        toast.error("This language is used by projects and cannot be deactivated")
       } else {
         toast.error("Failed to deactivate language")
       }
@@ -245,7 +270,9 @@ export default function LanguagesPage() {
                     {lang.code}
                   </span>
                 </td>
-                <td className={cn(tdClass, "text-fg-subtle")}>—</td>
+                <td className={cn(tdClass, "text-fg-muted")}>
+                  {projectsByLanguage.get(lang.id)?.length ?? 0}
+                </td>
                 <td className={tdClass}>
                   <span className="inline-flex items-center gap-2 text-[13px] text-fg-muted">
                     <span className={cn("w-2 h-2 rounded-full", lang.is_active ? "bg-st-ok" : "bg-st-idle")} />
@@ -444,29 +471,34 @@ export default function LanguagesPage() {
       <Dialog open={deleteTarget !== null} onOpenChange={(open) => { if (!open) setDeleteTarget(null) }}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Deactivate Language</DialogTitle>
+            <DialogTitle>Deactivate {deleteTarget?.name}</DialogTitle>
             <DialogDescription>
-              {deleteTarget
-                ? usedByProjects && deleteStats
-                  ? `"${deleteTarget.name}" is used by ${deleteStats.project_count} project${deleteStats.project_count !== 1 ? "s" : ""}. Deactivating it hides it from new project creation; the projects below keep using it.`
-                  : `Deactivating "${deleteTarget.name}" hides it from new project creation. Existing projects are unaffected.`
-                : ""}
+              {usedByProjects
+                ? "Blocked — a language in use cannot be deactivated (409 lists the projects)."
+                : `Soft delete — "${deleteTarget?.name}" stops appearing for new projects and stays in history. You can reactivate it later.`}
             </DialogDescription>
           </DialogHeader>
-          {usedByProjects && deleteStats && (
-            <ul className="mt-1 max-h-40 overflow-y-auto rounded-[10px] border border-line bg-muted divide-y divide-line">
-              {deleteStats.projects.map((project) => (
-                <li key={project.id} className="px-3 py-2 text-sm text-fg">
-                  {project.name}
-                </li>
+          {usedByProjects && (
+            <div className="flex max-h-44 flex-col gap-1.5 overflow-y-auto rounded-[12px] bg-accent-soft px-4 py-3.5">
+              <span className="text-[12px] font-bold uppercase tracking-[0.04em] text-on-accent-soft">
+                In use — deactivation blocked
+              </span>
+              {blockers.map((project) => (
+                <span key={project.id} className="text-[13px] text-fg-strong">
+                  · {project.name}
+                </span>
               ))}
-            </ul>
+            </div>
           )}
           <DialogFooter className="border-t border-line pt-4 mt-2">
             <Button variant="outline" onClick={() => setDeleteTarget(null)} disabled={deleting}>
               Cancel
             </Button>
-            <Button variant="destructive" onClick={handleDeactivate} disabled={deleting}>
+            <Button
+              variant="destructive"
+              onClick={handleDeactivate}
+              disabled={deleting || usedByProjects}
+            >
               {deleting ? "Deactivating..." : "Deactivate"}
             </Button>
           </DialogFooter>
