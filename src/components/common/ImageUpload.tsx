@@ -83,6 +83,8 @@ export function ImageUpload({
           actions === "buttons" &&
             "border-2 border-dashed border-line transition-colors hover:border-accent group",
           actions === "buttons" && value && "border-solid border-line",
+          actions === "links" &&
+            "transition-shadow hover:shadow-[0_0_0_0.1875rem_var(--color-accent-soft)]",
         )}
         onClick={() => !uploading && fileInputRef.current?.click()}
       >
