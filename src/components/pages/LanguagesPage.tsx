@@ -175,13 +175,13 @@ export default function LanguagesPage() {
     }
   }
 
-  const blockers = deleteTarget
+  const projectsInUse = deleteTarget
     ? (deleteStats?.projects ?? projectsByLanguage.get(deleteTarget.id) ?? [])
     : []
-  const usedByProjects = blockers.length > 0
+  const usedByProjects = projectsInUse.length > 0
 
   async function handleDeactivate() {
-    if (!deleteTarget || deleting || usedByProjects) return
+    if (!deleteTarget || deleting) return
     setDeleting(true)
     try {
       await languagesAPI.delete(deleteTarget.id)
@@ -193,7 +193,7 @@ export default function LanguagesPage() {
       if (status === 403) {
         toast.error("Only platform admins can deactivate languages")
       } else if (status === 409) {
-        toast.error("This language is used by projects and cannot be deactivated")
+        toast.error("The API refused to deactivate a language that is in use")
       } else {
         toast.error("Failed to deactivate language")
       }
@@ -474,16 +474,16 @@ export default function LanguagesPage() {
             <DialogTitle>Deactivate {deleteTarget?.name}</DialogTitle>
             <DialogDescription>
               {usedByProjects
-                ? "Blocked — a language in use cannot be deactivated (409 lists the projects)."
+                ? `Soft delete — "${deleteTarget?.name}" stops appearing for new projects. The ${projectsInUse.length} project${projectsInUse.length !== 1 ? "s" : ""} below keep using it, and you can reactivate it later.`
                 : `Soft delete — "${deleteTarget?.name}" stops appearing for new projects and stays in history. You can reactivate it later.`}
             </DialogDescription>
           </DialogHeader>
           {usedByProjects && (
             <div className="flex max-h-44 flex-col gap-1.5 overflow-y-auto rounded-[12px] bg-accent-soft px-4 py-3.5">
               <span className="text-[12px] font-bold uppercase tracking-[0.04em] text-on-accent-soft">
-                In use — deactivation blocked
+                In use — {projectsInUse.length} project{projectsInUse.length !== 1 ? "s" : ""}
               </span>
-              {blockers.map((project) => (
+              {projectsInUse.map((project) => (
                 <span key={project.id} className="text-[13px] text-fg-strong">
                   · {project.name}
                 </span>
@@ -494,11 +494,7 @@ export default function LanguagesPage() {
             <Button variant="outline" onClick={() => setDeleteTarget(null)} disabled={deleting}>
               Cancel
             </Button>
-            <Button
-              variant="destructive"
-              onClick={handleDeactivate}
-              disabled={deleting || usedByProjects}
-            >
+            <Button variant="destructive" onClick={handleDeactivate} disabled={deleting}>
               {deleting ? "Deactivating..." : "Deactivate"}
             </Button>
           </DialogFooter>
