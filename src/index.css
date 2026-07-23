@@ -154,6 +154,14 @@ body {
 .leaflet-popup-tip {
   background: var(--color-elevated);
 }
+.leaflet-popup-close-button {
+  color: var(--color-fg-subtle) !important;
+  padding: 8px 9px 0 0 !important;
+}
+.leaflet-popup-close-button:hover {
+  color: var(--color-fg-strong) !important;
+  background: transparent !important;
+}
 .leaflet-bar a {
   background: var(--color-elevated) !important;
   color: var(--color-fg-strong) !important;

@@ -1,15 +1,11 @@
 import { useNavigate } from "react-router"
-import { MapPin, ArrowRight } from "lucide-react"
-import type { PhaseStatus, ProjectResponse, ProjectPhaseResponse } from "@/types"
+import type { ProjectResponse, ProjectPhaseResponse } from "@/types"
+import { PHASE_STATUS_CONFIG } from "@/constants/phaseStatus"
+import { cn } from "@/utils/cn"
 
 export const TELHA = "#BE4A01"
 
-const PHASE_DOT: Record<PhaseStatus, string> = {
-  not_started: "bg-st-idle",
-  in_progress: "bg-st-info",
-  completed: "bg-st-ok",
-  blocked: "bg-st-warn",
-}
+const MAX_CHIPS = 4
 
 export function ProjectPopupContent({
   project,
@@ -28,8 +24,9 @@ export function ProjectPopupContent({
       : null
   const locationLine = [project.location_display_name, coords].filter(Boolean).join(" · ")
 
-  const activePhaseId = phases.find((p) => p.status === "in_progress")?.phase_id
   const completed = phases.filter((p) => p.status === "completed").length
+  const shownPhases = phases.slice(0, MAX_CHIPS)
+  const hiddenPhases = phases.length - shownPhases.length
 
   const meta = [
     languageName,
@@ -40,56 +37,51 @@ export function ProjectPopupContent({
     .join(" · ")
 
   return (
-    <div className="w-[252px] max-w-full font-sans">
-      <h3 className="text-[15px] font-bold leading-snug text-fg-strong">{project.name}</h3>
+    <div className="min-w-[210px] max-w-[250px] font-sans">
+      <h3 className="text-[14px] font-semibold leading-snug text-fg-strong">{project.name}</h3>
 
-      {locationLine && (
-        <div className="mt-1 flex items-center gap-1.5 text-[12px] text-fg-muted">
-          <MapPin className="h-[13px] w-[13px] flex-none" strokeWidth={1.75} />
-          <span className="truncate">{locationLine}</span>
-        </div>
-      )}
+      {locationLine && <p className="mt-0.5 text-[11px] text-fg-subtle">{locationLine}</p>}
 
       {project.description && (
-        <p className="mt-2.5 line-clamp-3 text-[12.5px] leading-relaxed text-fg-muted">
+        <p className="mt-1.5 line-clamp-3 text-[12px] leading-relaxed text-fg-muted">
           {project.description}
         </p>
       )}
 
       {phases.length > 0 && (
-        <div className="mt-3 flex flex-wrap gap-1.5">
-          {phases.map((phase) => {
-            const active = phase.phase_id === activePhaseId
+        <div className="mt-2 flex flex-wrap gap-1.5">
+          {shownPhases.map((phase) => {
+            const status = PHASE_STATUS_CONFIG[phase.status]
             return (
               <span
                 key={phase.phase_id}
-                className={
-                  active
-                    ? "inline-flex items-center gap-1.5 rounded-full bg-accent px-2.5 py-1 text-[11px] font-semibold text-white"
-                    : "inline-flex items-center gap-1.5 rounded-full bg-muted px-2.5 py-1 text-[11px] font-medium text-fg"
-                }
+                title={status.label}
+                className={cn(
+                  "inline-flex items-center gap-1.5 rounded-full px-2 py-[3px] text-[10.5px] font-semibold",
+                  status.pill,
+                )}
               >
-                <span
-                  className={`h-1.5 w-1.5 flex-none rounded-full ${
-                    active ? "bg-white/85" : PHASE_DOT[phase.status]
-                  }`}
-                />
+                <span className={cn("h-1.5 w-1.5 flex-none rounded-full", status.dot)} />
                 {phase.phase_name}
               </span>
             )
           })}
+          {hiddenPhases > 0 && (
+            <span className="inline-flex items-center rounded-full bg-muted px-2 py-[3px] text-[10.5px] font-semibold text-fg-muted">
+              +{hiddenPhases}
+            </span>
+          )}
         </div>
       )}
 
-      <p className="mt-3 border-t border-line pt-2.5 text-[12px] text-fg-subtle">{meta}</p>
+      <p className="mt-2 text-[11px] text-fg-subtle">{meta}</p>
 
       <button
         type="button"
         onClick={() => navigate(`/app/projects/${project.id}`)}
-        className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-[12px] bg-accent px-4 py-2 text-[13px] font-semibold text-white transition-colors hover:bg-accent-hover"
+        className="mt-2.5 rounded-full bg-accent px-3.5 py-[7px] text-[12px] font-semibold text-white transition-colors hover:bg-accent-hover"
       >
         Open project
-        <ArrowRight className="h-[15px] w-[15px]" strokeWidth={2} />
       </button>
     </div>
   )

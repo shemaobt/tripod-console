@@ -5,9 +5,13 @@ import "leaflet/dist/leaflet.css"
 import { projectsAPI } from "@/services/api"
 import type { ProjectResponse, ProjectPhaseResponse } from "@/types"
 import { useLanguagesStore } from "@/stores/languagesStore"
+import { useTheme } from "@/contexts/ThemeContext"
 import { LoadingSpinner } from "@/components/common/LoadingSpinner"
 import { ProjectPopupContent, TELHA } from "./map/ProjectPopupContent"
 import { FieldMapPanel, type MapRow } from "./map/FieldMapPanel"
+
+const LIGHT_TILES = "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+const DARK_TILES = "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
 
 const markerSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="42" viewBox="0 0 32 42" fill="none">
   <filter id="s" x="0" y="2" width="32" height="40" filterUnits="userSpaceOnUse">
@@ -39,6 +43,8 @@ export default function MapPage() {
   const [loading, setLoading] = useState(true)
   const { fetch: fetchLanguages, getLanguageName } = useLanguagesStore()
   const [activeProject, setActiveProject] = useState<ProjectResponse | null>(null)
+  const { resolvedTheme } = useTheme()
+  const tileUrl = resolvedTheme === "dark" ? DARK_TILES : LIGHT_TILES
 
   useEffect(() => {
     async function fetchData() {
@@ -106,8 +112,9 @@ export default function MapPage() {
         zoomControl={false}
       >
         <TileLayer
+          key={tileUrl}
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
-          url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+          url={tileUrl}
           maxZoom={20}
         />
         {activeProject && (
@@ -125,7 +132,7 @@ export default function MapPage() {
               click: () => setActiveProject(project),
             }}
           >
-            <Popup closeButton={false} maxWidth={320} minWidth={260}>
+            <Popup maxWidth={300}>
               <ProjectPopupContent
                 project={project}
                 languageName={getLanguageName(project.language_id)}

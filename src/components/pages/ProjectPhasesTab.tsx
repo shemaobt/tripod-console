@@ -1,9 +1,10 @@
 import { useEffect, useState, useMemo, useCallback, useRef } from "react"
-import { Check, Circle, Loader2, AlertTriangle, GitBranch } from "lucide-react"
+import { Check, GitBranch } from "lucide-react"
 import { toast } from "sonner"
 import { projectsAPI } from "@/services/api"
 import { PHASE_STATUSES } from "@/types"
 import type { PhaseStatus, ProjectPhaseResponse } from "@/types"
+import { PHASE_STATUS_CONFIG } from "@/constants/phaseStatus"
 import { cn } from "@/utils/cn"
 import { card } from "@/styles"
 import { LoadingSpinner } from "@/components/common/LoadingSpinner"
@@ -12,43 +13,6 @@ import { InfoTooltip } from "@/components/common/InfoTooltip"
 import {
   Popover, PopoverContent, PopoverTrigger,
 } from "@/components/ui/popover"
-
-const STATUS_CONFIG: Record<PhaseStatus, {
-  label: string
-  pill: string
-  dot: string
-  ring: string
-  icon: typeof Circle
-}> = {
-  not_started: {
-    label: "Not Started",
-    pill: "bg-muted text-st-idle",
-    dot: "bg-st-idle",
-    ring: "ring-line",
-    icon: Circle,
-  },
-  in_progress: {
-    label: "In Progress",
-    pill: "bg-st-info/15 text-st-info",
-    dot: "bg-st-info",
-    ring: "ring-st-info/40",
-    icon: Loader2,
-  },
-  completed: {
-    label: "Completed",
-    pill: "bg-st-ok/15 text-st-ok",
-    dot: "bg-st-ok",
-    ring: "ring-st-ok/40",
-    icon: Check,
-  },
-  blocked: {
-    label: "Blocked",
-    pill: "bg-accent-soft text-on-accent-soft",
-    dot: "bg-st-warn",
-    ring: "ring-st-warn/40",
-    icon: AlertTriangle,
-  },
-}
 
 const NODE_WIDTH = 180
 const NODE_HEIGHT = 64
@@ -176,7 +140,7 @@ function PhaseNode({
   node: LayoutNode
   onStatusClick: (node: LayoutNode) => void
 }) {
-  const config = STATUS_CONFIG[node.status]
+  const config = PHASE_STATUS_CONFIG[node.status]
 
   return (
     <g>
@@ -243,7 +207,7 @@ function StatusPopover({
         </p>
         <div className="space-y-0.5">
           {PHASE_STATUSES.map((status) => {
-            const config = STATUS_CONFIG[status]
+            const config = PHASE_STATUS_CONFIG[status]
             const StatusIcon = config.icon
             const isActive = node.status === status
             return (
@@ -304,7 +268,7 @@ export function ProjectPhasesTab({ projectId }: { projectId: string }) {
     try {
       const { data: updated } = await projectsAPI.updatePhaseStatus(projectId, phaseId, status)
       setPhases((prev) => prev.map((p) => (p.phase_id === phaseId ? updated : p)))
-      toast.success(`Phase status updated to ${STATUS_CONFIG[status].label}`)
+      toast.success(`Phase status updated to ${PHASE_STATUS_CONFIG[status].label}`)
     } catch {
       toast.error("Failed to update phase status")
     }

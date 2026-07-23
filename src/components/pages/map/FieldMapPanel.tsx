@@ -75,7 +75,7 @@ export function FieldMapPanel({
       </div>
 
       <span className="text-[10.5px] text-fg-subtle">
-        Tiles: CARTO Voyager · click a project to fly to it
+        Tiles: CARTO · click a project to fly to it
       </span>
     </div>
   )
