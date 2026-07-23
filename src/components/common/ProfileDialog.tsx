@@ -68,9 +68,9 @@ export function ProfileDialog({ open, onOpenChange }: ProfileDialogProps) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Edit Profile</DialogTitle>
+          <DialogTitle>Your profile</DialogTitle>
           <DialogDescription>
-            Update your display name and profile photo.
+            Only changed fields are sent. Email cannot be changed.
           </DialogDescription>
         </DialogHeader>
 
@@ -82,15 +82,16 @@ export function ProfileDialog({ open, onOpenChange }: ProfileDialogProps) {
               folder="avatars"
               shape="circle"
               size="xl"
+              actions="links"
               uploadLabel="Upload photo"
               changeLabel="Change photo"
-              hint="JPEG, PNG, WebP or SVG · up to 5 MB"
-              placeholder={<UserIcon className="h-9 w-9 text-fg-subtle" />}
+              removeLabel="Remove"
+              placeholder={<UserIcon className="h-12 w-12 text-fg-subtle" />}
             />
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="profile-display-name">Display Name</Label>
+            <Label htmlFor="profile-display-name">Display name</Label>
             <Input
               id="profile-display-name"
               value={displayName}
@@ -104,7 +105,7 @@ export function ProfileDialog({ open, onOpenChange }: ProfileDialogProps) {
             <Label>Email</Label>
             <Input value={user?.email || ""} disabled />
             <p className="text-xs text-fg-subtle mt-1.5">
-              Email cannot be changed
+              Email cannot be changed.
             </p>
           </div>
         </div>
@@ -118,7 +119,7 @@ export function ProfileDialog({ open, onOpenChange }: ProfileDialogProps) {
             Cancel
           </Button>
           <Button onClick={handleSave} disabled={saving}>
-            {saving ? "Saving..." : "Save"}
+            {saving ? "Saving..." : "Save profile"}
           </Button>
         </DialogFooter>
       </DialogContent>

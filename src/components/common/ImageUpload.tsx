@@ -11,9 +11,11 @@ interface ImageUploadProps {
   folder: string
   shape?: "square" | "circle"
   size?: "sm" | "md" | "lg" | "xl"
+  actions?: "buttons" | "links"
   placeholder?: React.ReactNode
   uploadLabel?: string
   changeLabel?: string
+  removeLabel?: string
   hint?: React.ReactNode
   className?: string
 }
@@ -31,9 +33,11 @@ export function ImageUpload({
   folder,
   shape = "square",
   size = "md",
+  actions = "buttons",
   placeholder,
   uploadLabel,
   changeLabel,
+  removeLabel,
   hint,
   className,
 }: ImageUploadProps) {
@@ -127,33 +131,62 @@ export function ImageUpload({
           onChange={handleFileSelect}
         />
       </div>
-      <div className="flex flex-col gap-1.5">
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={() => fileInputRef.current?.click()}
-          disabled={uploading}
-          className="text-xs"
-        >
-          {uploading
-            ? "Uploading..."
-            : value
-              ? changeLabel ?? "Change"
-              : uploadLabel ?? "Upload"}
-        </Button>
-        {value && (
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={() => onChange(null)}
-            disabled={uploading}
-            className="text-xs text-st-warn gap-1"
-          >
-            <X className="h-3 w-3" />
-            Remove
-          </Button>
+      <div className={cn("flex flex-col", actions === "links" ? "gap-2" : "gap-1.5")}>
+        {actions === "links" ? (
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploading}
+              className="text-[0.8125rem] font-semibold text-accent hover:underline disabled:opacity-50"
+            >
+              {uploading
+                ? "Uploading..."
+                : value
+                  ? changeLabel ?? "Change"
+                  : uploadLabel ?? "Upload"}
+            </button>
+            {value && (
+              <button
+                type="button"
+                onClick={() => onChange(null)}
+                disabled={uploading}
+                className="text-[0.8125rem] font-semibold text-st-warn hover:underline disabled:opacity-50"
+              >
+                {removeLabel ?? "Remove"}
+              </button>
+            )}
+          </div>
+        ) : (
+          <>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploading}
+              className="text-xs"
+            >
+              {uploading
+                ? "Uploading..."
+                : value
+                  ? changeLabel ?? "Change"
+                  : uploadLabel ?? "Upload"}
+            </Button>
+            {value && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => onChange(null)}
+                disabled={uploading}
+                className="text-xs text-st-warn gap-1"
+              >
+                <X className="h-3 w-3" />
+                {removeLabel ?? "Remove"}
+              </Button>
+            )}
+          </>
         )}
         {hint && <p className="text-[0.6875rem] text-fg-subtle leading-snug max-w-[11.875rem]">{hint}</p>}
       </div>
