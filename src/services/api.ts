@@ -6,8 +6,10 @@ import type {
   User,
   MyRoleResponse,
   MyManagedOrgsResponse,
+  MyManagedProjectsResponse,
   UserListResponse,
   UserUpdate,
+  UserRoleUpdate,
   UserRoleResponse,
   AppResponse,
   AppCreate,
@@ -16,6 +18,8 @@ import type {
   AppRoleResponse,
   LanguageResponse,
   LanguageCreate,
+  LanguageUpdate,
+  LanguageStatsResponse,
   OrganizationResponse,
   OrganizationCreate,
   OrganizationUpdate,
@@ -38,16 +42,40 @@ import type {
   RoleCheckResponse,
   AccessRequestResponse,
   AccessRequestReview,
+  ChangeRequestResponse,
+  ChangeRequestCreate,
+  ChangeRequestReview,
   PhaseResponse,
   PhaseCreate,
   PhaseUpdate,
   PhaseDependencyResponse,
   ProjectPhaseResponse,
+  PhaseStatus,
+  PublicLanguageOption,
+  PublicLanguageRequestCreate,
+  PublicProjectRequestCreate,
+  PublicRequestAdminResponse,
+  PublicRequestKind,
+  PublicRequestResponse,
+  PublicRequestReview,
+  PublicRequestStatus,
 } from "@/types"
 
 const api = axios.create({
   baseURL: "/api",
 })
+
+const PUBLIC_PATHS = ["/request"]
+
+function redirectToLoginUnlessPublic() {
+  const { pathname } = window.location
+  const isPublic = PUBLIC_PATHS.some(
+    (path) => pathname === path || pathname.startsWith(`${path}/`),
+  )
+  if (!isPublic) {
+    window.location.href = "/login"
+  }
+}
 
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem(ACCESS_TOKEN_KEY)
@@ -100,7 +128,7 @@ api.interceptors.response.use(
       isRefreshing = false
       localStorage.removeItem(ACCESS_TOKEN_KEY)
       localStorage.removeItem(REFRESH_TOKEN_KEY)
-      window.location.href = "/login"
+      redirectToLoginUnlessPublic()
       return Promise.reject(error)
     }
 
@@ -117,7 +145,7 @@ api.interceptors.response.use(
       processQueue(refreshError, null)
       localStorage.removeItem(ACCESS_TOKEN_KEY)
       localStorage.removeItem(REFRESH_TOKEN_KEY)
-      window.location.href = "/login"
+      redirectToLoginUnlessPublic()
       return Promise.reject(refreshError)
     } finally {
       isRefreshing = false
@@ -137,6 +165,8 @@ export const authAPI = {
     api.patch<User>("/auth/me", data),
   myRoles: () => api.get<MyRoleResponse[]>("/auth/my-roles"),
   myManagedOrgs: () => api.get<MyManagedOrgsResponse>("/auth/my-managed-orgs"),
+  myManagedProjects: () =>
+    api.get<MyManagedProjectsResponse>("/auth/my-managed-projects"),
 }
 
 export const usersAPI = {
@@ -145,6 +175,8 @@ export const usersAPI = {
   get: (userId: string) => api.get<UserListResponse>(`/users/${userId}`),
   update: (userId: string, data: UserUpdate) =>
     api.patch<UserListResponse>(`/users/${userId}`, data),
+  updateRole: (userId: string, data: UserRoleUpdate) =>
+    api.put<UserListResponse>(`/users/${userId}/role`, data),
   delete: (userId: string) => api.delete(`/users/${userId}`),
   listRoles: (userId: string) =>
     api.get<UserRoleResponse[]>(`/users/${userId}/roles`),
@@ -167,9 +199,18 @@ export const appsAPI = {
 }
 
 export const languagesAPI = {
-  list: () => api.get<LanguageResponse[]>("/languages"),
+  list: (params?: { include_inactive?: boolean }) =>
+    api.get<LanguageResponse[]>("/languages", { params }),
   create: (data: LanguageCreate) =>
     api.post<LanguageResponse>("/languages", data),
+  update: (languageId: string, data: LanguageUpdate) =>
+    api.put<LanguageResponse>(`/languages/${languageId}`, data),
+  delete: (languageId: string) =>
+    api.delete<void>(`/languages/${languageId}`),
+  reactivate: (languageId: string) =>
+    api.post<LanguageResponse>(`/languages/${languageId}/reactivate`),
+  stats: (languageId: string) =>
+    api.get<LanguageStatsResponse>(`/languages/${languageId}/stats`),
   get: (languageId: string) =>
     api.get<LanguageResponse>(`/languages/${languageId}`),
   getByCode: (code: string) =>
@@ -235,11 +276,7 @@ export const projectsAPI = {
     api.delete(`/projects/${projectId}/access/organizations/${orgId}`),
   listPhases: (projectId: string) =>
     api.get<ProjectPhaseResponse[]>(`/projects/${projectId}/phases`),
-  attachPhase: (projectId: string, phaseId: string) =>
-    api.post(`/projects/${projectId}/phases`, { phase_id: phaseId }),
-  detachPhase: (projectId: string, phaseId: string) =>
-    api.delete(`/projects/${projectId}/phases/${phaseId}`),
-  updatePhaseStatus: (projectId: string, phaseId: string, status: string) =>
+  updatePhaseStatus: (projectId: string, phaseId: string, status: PhaseStatus) =>
     api.patch<ProjectPhaseResponse>(`/projects/${projectId}/phases/${phaseId}`, { status }),
   listPhasesWithDeps: (projectId: string) =>
     api.get<{ phases: ProjectPhaseResponse[]; dependencies: Record<string, string[]> }>(`/projects/${projectId}/phases-with-deps`),
@@ -276,6 +313,19 @@ export const accessRequestsAPI = {
     ),
 }
 
+export const changeRequestsAPI = {
+  list: (params?: { kind?: string; status?: string }) =>
+    api.get<ChangeRequestResponse[]>("/change-requests", { params }),
+  mine: () => api.get<ChangeRequestResponse[]>("/change-requests/mine"),
+  create: (data: ChangeRequestCreate) =>
+    api.post<ChangeRequestResponse>("/change-requests", data),
+  review: (requestId: string, data: ChangeRequestReview) =>
+    api.patch<ChangeRequestResponse>(
+      `/change-requests/${requestId}/review`,
+      data,
+    ),
+}
+
 export const rolesAPI = {
   assign: (data: RoleAssignRequest) =>
     api.post<RoleAssignmentResponse>("/roles/assign", data),
@@ -302,6 +352,21 @@ export const uploadsAPI = {
       headers: { "Content-Type": "multipart/form-data" },
     })
   },
+}
+
+export const publicAPI = {
+  listLanguages: () => api.get<PublicLanguageOption[]>("/public/languages"),
+  requestLanguage: (data: PublicLanguageRequestCreate) =>
+    api.post<PublicRequestResponse>("/public/requests/language", data),
+  requestProject: (data: PublicProjectRequestCreate) =>
+    api.post<PublicRequestResponse>("/public/requests/project", data),
+}
+
+export const publicRequestsAPI = {
+  list: (params?: { kind?: PublicRequestKind; status?: PublicRequestStatus }) =>
+    api.get<PublicRequestAdminResponse[]>("/public-requests", { params }),
+  review: (requestId: string, data: PublicRequestReview) =>
+    api.patch<PublicRequestAdminResponse>(`/public-requests/${requestId}/review`, data),
 }
 
 export default api

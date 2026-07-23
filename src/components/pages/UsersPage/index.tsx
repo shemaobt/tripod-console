@@ -1,22 +1,22 @@
 import { useEffect, useState, useMemo } from "react"
-import { Users, Inbox, Search, Filter } from "lucide-react"
+import { Users } from "lucide-react"
 import { toast } from "sonner"
 import { usersAPI, appsAPI } from "@/services/api"
 import type { UserListResponse, UserRoleResponse, AppResponse } from "@/types"
+import { cn } from "@/utils/cn"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import { Input } from "@/components/ui/input"
 import { LoadingSpinner } from "@/components/common/LoadingSpinner"
 import { EmptyState } from "@/components/common/EmptyState"
-import { InfoTooltip } from "@/components/common/InfoTooltip"
+import { FilterBar } from "@/components/common/FilterBar"
 import { AccessRequestsSection } from "@/components/pages/AccessRequestsSection"
+import { useRequestCountsStore } from "@/stores/requestCountsStore"
 import { UserCard } from "./UserCard"
+
+const roleLegend = [
+  { label: "Platform admin", dot: "bg-inverse" },
+  { label: "Manager", dot: "bg-telha" },
+  { label: "Member", dot: "bg-verde-claro" },
+]
 
 export default function UsersPage() {
   const [users, setUsers] = useState<UserListResponse[]>([])
@@ -25,6 +25,13 @@ export default function UsersPage() {
   const [loading, setLoading] = useState(true)
   const [filterApp, setFilterApp] = useState("all")
   const [search, setSearch] = useState("")
+  const accessCount = useRequestCountsStore((s) => s.counts.access)
+  const fetchCounts = useRequestCountsStore((s) => s.fetch)
+  const refreshCounts = useRequestCountsStore((s) => s.refresh)
+
+  useEffect(() => {
+    fetchCounts()
+  }, [fetchCounts])
 
   useEffect(() => {
     async function fetchData() {
@@ -72,61 +79,65 @@ export default function UsersPage() {
   }
 
   return (
-    <div className="p-6 md:p-8 lg:p-10 space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold text-preto tracking-tight flex items-center">
-          Users
-          <InfoTooltip content="View and manage all registered users in the platform." />
-        </h1>
-        <p className="text-sm text-verde/60 mt-1">
-          {users.length} registered user{users.length !== 1 ? "s" : ""}
-        </p>
-      </div>
-
+    <div className="max-w-[77.5rem] mx-auto px-6 sm:px-10 pt-8 pb-14">
       <Tabs defaultValue="users">
-        <TabsList>
-          <TabsTrigger value="users">
-            <Users className="h-4 w-4 mr-1.5" />
-            Users
-          </TabsTrigger>
-          <TabsTrigger value="requests">
-            <Inbox className="h-4 w-4 mr-1.5" />
-            Access Requests
-          </TabsTrigger>
-        </TabsList>
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between mb-5">
+          <div className="flex flex-col gap-1">
+            <span className="text-[0.8125rem] font-semibold tracking-[0.14em] uppercase text-fg-muted">
+              Administration
+            </span>
+            <h3 className="text-[1.5625rem] font-bold text-fg-strong tracking-tight">Users</h3>
+            <span className="text-[0.78125rem] text-fg-subtle">
+              Global roles are derived from data — manager means managing at least one project.
+            </span>
+            <div className="flex flex-wrap items-center gap-x-3.5 gap-y-1.5 mt-[0.1875rem]">
+              {roleLegend.map((r) => (
+                <span
+                  key={r.label}
+                  className="inline-flex items-center gap-1.5 text-[0.71875rem] text-fg-muted"
+                >
+                  <span className={cn("w-2 h-2 rounded-full shrink-0", r.dot)} />
+                  {r.label}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          <TabsList className="self-start sm:self-auto">
+            <TabsTrigger value="users">Users</TabsTrigger>
+            <TabsTrigger value="requests">
+              Access requests
+              {accessCount > 0 && (
+                <span className="bg-telha text-on-dark rounded-full text-[0.625rem] font-bold px-1.5 py-px">
+                  {accessCount}
+                </span>
+              )}
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
         <TabsContent value="users">
-          <div className="space-y-5">
-            <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-areia/15 bg-surface-alt/30 p-3.5">
-              <div className="relative flex-1 min-w-0 sm:min-w-[200px]">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-verde/30" />
-                <Input
-                  placeholder="Search by email or name..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="pl-9 bg-surface border-areia/20"
-                />
-              </div>
-              <div className="flex items-center gap-2">
-                <Filter className="h-4 w-4 text-verde/30" />
-                <Select value={filterApp} onValueChange={setFilterApp}>
-                  <SelectTrigger className="w-full sm:w-48 bg-surface">
-                    <SelectValue placeholder="All Apps" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Apps</SelectItem>
-                    {apps.map((app) => (
-                      <SelectItem key={app.id} value={app.app_key}>
-                        {app.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <span className="text-xs text-verde/50 tabular-nums ml-auto">
-                {filteredUsers.length} result{filteredUsers.length !== 1 ? "s" : ""}
-              </span>
-            </div>
+          <div className="space-y-4">
+            <FilterBar
+              search={{
+                value: search,
+                onChange: setSearch,
+                placeholder: "Search name or email…",
+              }}
+              filters={[
+                {
+                  key: "app",
+                  label: "All Apps",
+                  value: filterApp,
+                  onChange: setFilterApp,
+                  options: [
+                    { value: "all", label: "All Apps" },
+                    ...apps.map((app) => ({ value: app.app_key, label: app.name })),
+                  ],
+                },
+              ]}
+              resultLabel={`${filteredUsers.length} result${filteredUsers.length !== 1 ? "s" : ""}`}
+            />
 
             {filteredUsers.length === 0 ? (
               <EmptyState
@@ -139,13 +150,12 @@ export default function UsersPage() {
                 }
               />
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3.5">
                 {filteredUsers.map((user) => (
                   <UserCard
                     key={user.id}
                     user={user}
                     roles={userRolesMap.get(user.id) ?? []}
-                    apps={apps}
                   />
                 ))}
               </div>
@@ -154,7 +164,7 @@ export default function UsersPage() {
         </TabsContent>
 
         <TabsContent value="requests">
-          <AccessRequestsSection users={users} apps={apps} />
+          <AccessRequestsSection users={users} apps={apps} onReviewed={refreshCounts} />
         </TabsContent>
       </Tabs>
     </div>

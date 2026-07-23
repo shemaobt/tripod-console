@@ -1,12 +1,12 @@
 import { useState } from "react"
-import { Navigate } from "react-router-dom"
+import { Link, Navigate } from "react-router-dom"
 import { toast } from "sonner"
+import { Loader2 } from "lucide-react"
 import { useAuth } from "@/contexts/AuthContext"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { LoadingSpinner } from "@/components/common/LoadingSpinner"
-import { Loader2 } from "lucide-react"
 
 export default function LoginPage() {
   const { user, isLoading, login } = useAuth()
@@ -39,161 +39,84 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex">
-      {/* Left — Background image panel */}
-      <div className="hidden lg:flex lg:w-[55%] xl:w-[60%] relative overflow-hidden">
-        <img
-          src="/assets/background.pptx.jpg"
-          alt=""
-          className="absolute inset-0 w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-preto/80 via-preto/30 to-preto/5" />
-        <div className="absolute inset-0 bg-gradient-to-r from-transparent to-preto/30" />
-
-        {/* Branding overlay */}
-        <div className="relative mt-auto p-12 pb-14 w-full">
-          <div className="flex items-center gap-3.5 mb-5">
-            <div className="h-12 w-12 rounded-2xl bg-telha flex items-center justify-center shadow-lg">
-              <img
-                src="/assets/icon-dark.svg"
-                alt="Shema"
-                className="h-7 w-7 brightness-0 invert"
-              />
-            </div>
-            <div>
-              <p className="text-branco font-semibold text-xl tracking-tight">Tripod Console</p>
-              <p className="text-branco/40 text-xs tracking-wide">by Shema</p>
-            </div>
+    <div className="min-h-screen grid lg:grid-cols-[1.05fr_1fr] bg-canvas">
+      <div className="hidden lg:flex relative overflow-hidden bg-inverse text-[#F6F5EB] flex-col justify-between px-[3.25rem] py-11">
+        <img src="/assets/logo-branco.svg" alt="Shemá" className="h-7 w-auto self-start relative z-10" />
+        <div className="relative z-10 max-w-[29.375rem] flex flex-col gap-[1.125rem] pb-8">
+          <span className="text-[0.8125rem] font-semibold tracking-[0.14em] uppercase text-[#F6F5EB]/60">
+            Tripod Console
+          </span>
+          <div className="font-black text-[3.125rem] leading-[1.03] tracking-[-0.01em] uppercase">
+            Every mother tongue, heard.
           </div>
-          <p className="text-branco/50 text-sm max-w-lg leading-relaxed">
-            Supporting language preservation through technology for Bible Translation.
+          <p className="font-serif text-[1.03125rem] leading-[1.65] text-[#F6F5EB]/80">
+            Languages, projects, workflow phases and access — the governance console for the Shema oral
+            Bible translation ecosystem.
+          </p>
+          <p className="font-serif italic text-[0.9375rem] text-[#F6F5EB]/65 mt-1.5">
+            “Assim na terra como no céu.”
           </p>
         </div>
+        <img
+          src="/assets/icon-branco.svg"
+          alt=""
+          className="absolute -right-[4.375rem] -bottom-20 w-[22.5rem] opacity-10 pointer-events-none"
+        />
       </div>
 
-      {/* Right — Login form */}
-      <div className="flex-1 flex flex-col bg-branco relative overflow-hidden">
-        {/* Subtle decorative gradient */}
-        <div
-          className="absolute -top-32 -right-32 w-[500px] h-[500px] rounded-full opacity-[0.04] pointer-events-none"
-          style={{ background: "radial-gradient(circle, var(--color-telha), transparent 70%)" }}
-        />
-        <div
-          className="absolute -bottom-48 -left-48 w-[400px] h-[400px] rounded-full opacity-[0.03] pointer-events-none"
-          style={{ background: "radial-gradient(circle, var(--color-azul), transparent 70%)" }}
-        />
-
-        <div className="flex-1 flex items-center justify-center px-8 sm:px-12 lg:px-16 xl:px-20 py-12 relative">
-          <div className="w-full max-w-[420px]">
-            {/* Mobile hero with background image */}
-            <div className="lg:hidden -mx-8 sm:-mx-12 -mt-12 mb-10">
-              <div className="relative h-52 overflow-hidden">
-                <img
-                  src="/assets/background.pptx.jpg"
-                  alt=""
-                  className="absolute inset-0 w-full h-full object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-branco via-preto/20 to-transparent" />
-                <div className="absolute bottom-5 left-8 sm:left-12 flex items-center gap-3">
-                  <div className="h-11 w-11 rounded-xl bg-telha flex items-center justify-center shadow-lg">
-                    <img src="/assets/icon-dark.svg" alt="Shema" className="h-6 w-6 brightness-0 invert" />
-                  </div>
-                  <span className="text-branco font-semibold text-lg tracking-tight drop-shadow-md">
-                    Tripod
-                  </span>
-                </div>
-              </div>
+      <div className="flex flex-col items-center justify-center px-6 sm:px-10 py-12">
+        <form onSubmit={handleSubmit} className="w-full max-w-[22.5rem] flex flex-col gap-6">
+          <div className="flex flex-col gap-1.5">
+            <div className="lg:hidden mb-4">
+              <img src="/assets/logo-verde.svg" alt="Shemá" className="h-6 w-auto dark:hidden" />
+              <img src="/assets/logo-branco.svg" alt="Shemá" className="h-6 w-auto hidden dark:block" />
             </div>
-
-            {/* Brand wordmark + heading */}
-            <div className="mb-10 space-y-5">
-              <div className="hidden lg:flex items-center gap-3 mb-2">
-                <div className="h-1.5 w-10 rounded-full bg-telha" />
-                <span className="text-[11px] font-bold tracking-[0.25em] uppercase text-telha/80">
-                  Console
-                </span>
-              </div>
-
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-preto tracking-tight leading-[0.95]">
-                Tripod
-              </h1>
-
-              <p className="text-base sm:text-lg text-verde/50 leading-relaxed max-w-sm">
-                Sign in to manage languages, communities, and projects.
-              </p>
-            </div>
-
-            {/* Three-pillar visual — representing the "tripod" */}
-            <div className="hidden lg:flex items-center gap-3 mb-10">
-              {[
-                { label: "Languages", color: "bg-azul" },
-                { label: "Communities", color: "bg-verde-claro" },
-                { label: "Projects", color: "bg-telha" },
-              ].map((pillar) => (
-                <div key={pillar.label} className="flex items-center gap-2">
-                  <div className={`h-2 w-2 rounded-full ${pillar.color}`} />
-                  <span className="text-xs text-verde/40 font-medium">{pillar.label}</span>
-                </div>
-              ))}
-            </div>
-
-            {/* Form */}
-            <form onSubmit={handleSubmit} className="space-y-5">
-              <div className="space-y-2">
-                <Label htmlFor="email" className="text-sm font-medium text-preto">
-                  Email address
-                </Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="you@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  autoComplete="email"
-                  autoFocus
-                  className="h-12 rounded-xl text-base"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="password" className="text-sm font-medium text-preto">
-                  Password
-                </Label>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="Enter your password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  autoComplete="current-password"
-                  className="h-12 rounded-xl text-base"
-                />
-              </div>
-              <Button
-                type="submit"
-                className="w-full h-12 rounded-xl text-base font-semibold mt-1"
-                disabled={submitting}
-              >
-                {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
-                {submitting ? "Signing in..." : "Sign in"}
-              </Button>
-            </form>
-
-            {/* Footer */}
-            <div className="mt-10 pt-6 border-t border-areia/15 flex items-center justify-between">
-              <p className="text-sm text-verde/40">
-                Need access? Contact your administrator.
-              </p>
-              <div className="hidden lg:flex items-center gap-2">
-                <div className="h-6 w-6 rounded-md bg-telha/8 flex items-center justify-center">
-                  <img src="/assets/icon-dark.svg" alt="" className="h-3.5 w-3.5 opacity-35" />
-                </div>
-                <span className="text-xs text-verde/30 font-medium tracking-wide">Shema</span>
-              </div>
-            </div>
+            <h3 className="text-[1.625rem] font-bold text-fg-strong tracking-tight">Sign in</h3>
+            <p className="text-sm text-fg-muted">Use your Shema account to manage the platform.</p>
           </div>
-        </div>
+
+          <div className="flex flex-col gap-1">
+            <Label htmlFor="email">Email</Label>
+            <Input
+              id="email"
+              type="email"
+              placeholder="you@shema.org"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              autoComplete="email"
+              autoFocus
+            />
+          </div>
+
+          <div className="flex flex-col gap-1">
+            <Label htmlFor="password">Password</Label>
+            <Input
+              id="password"
+              type="password"
+              placeholder="••••••••"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              autoComplete="current-password"
+            />
+          </div>
+
+          <Button type="submit" className="w-full" disabled={submitting}>
+            {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
+            {submitting ? "Signing in…" : "Sign in"}
+          </Button>
+
+          <div className="border-t border-line pt-[1.125rem] flex flex-col gap-2">
+            <span className="text-[0.8125rem] text-fg-muted">Need access? Contact your administrator.</span>
+            <Link
+              to="/request"
+              className="text-[0.84375rem] font-semibold text-accent hover:text-accent-hover hover:underline self-start"
+            >
+              Submit a public request →
+            </Link>
+          </div>
+        </form>
       </div>
     </div>
   )

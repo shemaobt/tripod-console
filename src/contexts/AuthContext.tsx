@@ -2,13 +2,24 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 import { useNavigate } from "react-router-dom"
 import { authAPI } from "@/services/api"
 import { ACCESS_TOKEN_KEY, REFRESH_TOKEN_KEY } from "@/constants/app"
+import { useLanguagesStore } from "@/stores/languagesStore"
+import { usePhasesStore } from "@/stores/phasesStore"
+import { useRequestCountsStore } from "@/stores/requestCountsStore"
 import type { User, MyRoleResponse } from "@/types"
+
+interface Session {
+  user: User
+  appRoles: MyRoleResponse[]
+  managedOrgIds: string[]
+  managedProjectIds: string[]
+}
 
 interface AuthContextValue {
   user: User | null
   isPlatformAdmin: boolean
   appRoles: MyRoleResponse[]
   managedOrgIds: string[]
+  managedProjectIds: string[]
   isManager: boolean
   managedOrgId: string | null
   isLoading: boolean
@@ -20,6 +31,9 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | null>(null)
 
+const EMPTY_ROLES: MyRoleResponse[] = []
+const EMPTY_IDS: string[] = []
+
 // eslint-disable-next-line react-refresh/only-export-components
 export function useAuth() {
   const ctx = useContext(AuthContext)
@@ -27,19 +41,40 @@ export function useAuth() {
   return ctx
 }
 
+function clearTokens() {
+  localStorage.removeItem(ACCESS_TOKEN_KEY)
+  localStorage.removeItem(REFRESH_TOKEN_KEY)
+}
+
+async function loadSession(knownUser?: User): Promise<Session> {
+  const [user, rolesRes, managedOrgsRes, managedProjectsRes] = await Promise.all([
+    knownUser ? Promise.resolve(knownUser) : authAPI.me().then((res) => res.data),
+    authAPI.myRoles(),
+    authAPI.myManagedOrgs(),
+    authAPI.myManagedProjects(),
+  ])
+
+  return {
+    user,
+    appRoles: rolesRes.data,
+    managedOrgIds: managedOrgsRes.data.managed_org_ids,
+    managedProjectIds: managedProjectsRes.data.managed_project_ids,
+  }
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null)
-  const [appRoles, setAppRoles] = useState<MyRoleResponse[]>([])
-  const [managedOrgIds, setManagedOrgIds] = useState<string[]>([])
+  const [session, setSession] = useState<Session | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const navigate = useNavigate()
 
-  const isPlatformAdmin = useMemo(() => user?.is_platform_admin ?? false, [user])
-  const isManager = useMemo(() => managedOrgIds.length > 0, [managedOrgIds])
-  const managedOrgId = useMemo(
-    () => (managedOrgIds.length === 1 ? managedOrgIds[0] : null),
-    [managedOrgIds],
-  )
+  const user = session?.user ?? null
+  const appRoles = session?.appRoles ?? EMPTY_ROLES
+  const managedOrgIds = session?.managedOrgIds ?? EMPTY_IDS
+  const managedProjectIds = session?.managedProjectIds ?? EMPTY_IDS
+
+  const isPlatformAdmin = user?.is_platform_admin ?? false
+  const isManager = managedProjectIds.length > 0 || managedOrgIds.length > 0
+  const managedOrgId = managedOrgIds.length === 1 ? managedOrgIds[0] : null
 
   const isAppAdmin = useCallback(
     (appKey: string) =>
@@ -52,14 +87,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const { data } = await authAPI.login(email, password)
       localStorage.setItem(ACCESS_TOKEN_KEY, data.tokens.access_token)
       localStorage.setItem(REFRESH_TOKEN_KEY, data.tokens.refresh_token)
-      setUser(data.user)
 
-      const [rolesRes, managedRes] = await Promise.all([
-        authAPI.myRoles(),
-        authAPI.myManagedOrgs(),
-      ])
-      setAppRoles(rolesRes.data)
-      setManagedOrgIds(managedRes.data.managed_org_ids)
+      try {
+        setSession(await loadSession(data.user))
+      } catch (error) {
+        clearTokens()
+        throw error
+      }
 
       navigate("/app/dashboard")
     },
@@ -67,8 +101,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   )
 
   const refreshUser = useCallback(async () => {
-    const { data } = await authAPI.me()
-    setUser(data)
+    setSession(await loadSession())
   }, [])
 
   const logout = useCallback(async () => {
@@ -77,20 +110,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (refreshToken) {
         await authAPI.logout(refreshToken)
       }
-    } catch {
-      // Ignore logout API errors — clear local state regardless
-    }
-    localStorage.removeItem(ACCESS_TOKEN_KEY)
-    localStorage.removeItem(REFRESH_TOKEN_KEY)
-    setUser(null)
-    setAppRoles([])
-    setManagedOrgIds([])
+    } catch {}
+    clearTokens()
+    setSession(null)
+    useLanguagesStore.getState().reset()
+    usePhasesStore.getState().reset()
+    useRequestCountsStore.getState().reset()
     navigate("/login")
   }, [navigate])
 
   useEffect(() => {
-    const token = localStorage.getItem(ACCESS_TOKEN_KEY)
-    if (!token) {
+    if (!localStorage.getItem(ACCESS_TOKEN_KEY)) {
       setIsLoading(false)
       return
     }
@@ -99,20 +129,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     async function restoreSession() {
       try {
-        const [meRes, rolesRes, managedRes] = await Promise.all([
-          authAPI.me(),
-          authAPI.myRoles(),
-          authAPI.myManagedOrgs(),
-        ])
+        const restored = await loadSession()
         if (!cancelled) {
-          setUser(meRes.data)
-          setAppRoles(rolesRes.data)
-          setManagedOrgIds(managedRes.data.managed_org_ids)
+          setSession(restored)
         }
       } catch {
         if (!cancelled) {
-          localStorage.removeItem(ACCESS_TOKEN_KEY)
-          localStorage.removeItem(REFRESH_TOKEN_KEY)
+          clearTokens()
         }
       } finally {
         if (!cancelled) {
@@ -128,8 +151,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   const value = useMemo<AuthContextValue>(
-    () => ({ user, isPlatformAdmin, appRoles, managedOrgIds, isManager, managedOrgId, isLoading, login, logout, isAppAdmin, refreshUser }),
-    [user, isPlatformAdmin, appRoles, managedOrgIds, isManager, managedOrgId, isLoading, login, logout, isAppAdmin, refreshUser],
+    () => ({ user, isPlatformAdmin, appRoles, managedOrgIds, managedProjectIds, isManager, managedOrgId, isLoading, login, logout, isAppAdmin, refreshUser }),
+    [user, isPlatformAdmin, appRoles, managedOrgIds, managedProjectIds, isManager, managedOrgId, isLoading, login, logout, isAppAdmin, refreshUser],
   )
 
   return (

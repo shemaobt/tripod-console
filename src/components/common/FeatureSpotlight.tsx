@@ -32,17 +32,17 @@ export function FeatureSpotlight({
   return (
     <Popover open>
       <PopoverTrigger asChild>
-        <div className="relative inline-block ring-2 ring-telha/30 animate-pulse rounded-lg">
+        <div className="relative inline-block ring-2 ring-accent/30 animate-pulse rounded-full">
           {children}
         </div>
       </PopoverTrigger>
-      <PopoverContent side={side} className="w-72">
-        <div className="space-y-2">
-          <h4 className="text-sm font-semibold text-preto">{title}</h4>
-          <p className="text-sm text-verde">{description}</p>
+      <PopoverContent side={side} className="w-[16.875rem] bg-inverse text-on-dark">
+        <div className="flex flex-col gap-2">
+          <h4 className="text-[0.8125rem] font-semibold text-on-dark">{title}</h4>
+          <p className="text-xs text-on-dark/80 leading-relaxed">{description}</p>
           <Button
             size="sm"
-            variant="outline"
+            className="self-start"
             onClick={() => dismiss(featureKey)}
           >
             Got it

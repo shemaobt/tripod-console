@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from "react"
 import { MapPin, Loader2, Search, X } from "lucide-react"
-import { Input } from "@/components/ui/input"
 import { cn } from "@/utils/cn"
 import { placesAPI } from "@/services/api"
 
@@ -100,7 +99,6 @@ export function LocationSearchInput({
         setSuggestions([])
       }
     } catch {
-      // fall back silently
     } finally {
       setResolving(false)
     }
@@ -115,52 +113,52 @@ export function LocationSearchInput({
   return (
     <div ref={containerRef} className={cn("relative", className)}>
       {value ? (
-        <div className="flex items-center gap-3 rounded-lg border border-areia/30 bg-surface-alt/30 px-3 py-3">
-          <div className="flex items-center justify-center h-9 w-9 rounded-lg bg-azul/15 shrink-0">
+        <div className="flex items-center gap-3 rounded-2xl bg-muted px-3 py-3">
+          <div className="flex items-center justify-center h-9 w-9 rounded-xl bg-azul/15 shrink-0">
             <MapPin className="h-4 w-4 text-azul" />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-preto truncate">
+            <p className="text-sm font-semibold text-fg-strong truncate">
               {value.displayName}
             </p>
-            <p className="text-xs text-verde/60 font-mono mt-0.5">
+            <p className="text-xs text-fg-subtle font-mono mt-0.5">
               {value.latitude.toFixed(6)}, {value.longitude.toFixed(6)}
             </p>
           </div>
           <button
             type="button"
             onClick={handleClear}
-            className="flex items-center justify-center h-7 w-7 rounded-md text-verde/50 hover:text-preto hover:bg-areia/10 transition-colors shrink-0"
+            className="flex items-center justify-center h-7 w-7 rounded-[0.5625rem] text-fg-subtle hover:text-on-accent-soft hover:bg-accent-soft transition-colors shrink-0"
           >
             <X className="h-4 w-4" />
           </button>
         </div>
       ) : (
         <>
-          <div className="relative">
+          <div className="flex items-center gap-2 bg-muted rounded-full px-4 py-2.5">
             {resolving ? (
-              <Loader2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-verde/40 animate-spin" />
+              <Loader2 className="h-4 w-4 text-fg-subtle animate-spin shrink-0" />
             ) : (
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-verde/40" />
+              <Search className="h-4 w-4 text-fg-subtle shrink-0" />
             )}
-            <Input
+            <input
               value={query}
               onChange={(e) => handleInputChange(e.target.value)}
               onFocus={() =>
                 query.trim() && suggestions.length > 0 && setShowResults(true)
               }
               placeholder="Search for a location..."
-              className="pl-9"
+              className="flex-1 bg-transparent border-0 outline-none text-sm text-fg-strong placeholder:text-fg-subtle"
             />
           </div>
           {showResults && query.trim().length > 0 && (
-            <div className="absolute top-full left-0 right-0 mt-1 z-50 bg-surface border border-areia/30 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+            <div className="absolute top-full left-0 right-0 mt-1.5 z-50 bg-elevated rounded-xl shadow-[var(--shadow-lg)] p-1.5 max-h-60 overflow-y-auto">
               {loading ? (
                 <div className="flex items-center justify-center py-4">
-                  <Loader2 className="h-5 w-5 text-verde/40 animate-spin" />
+                  <Loader2 className="h-5 w-5 text-fg-subtle animate-spin" />
                 </div>
               ) : suggestions.length === 0 ? (
-                <p className="text-sm text-verde/50 text-center py-4">
+                <p className="text-sm text-fg-subtle text-center py-4">
                   No locations found
                 </p>
               ) : (
@@ -171,17 +169,17 @@ export function LocationSearchInput({
                     key={suggestion.placePrediction.placeId}
                     type="button"
                     onClick={() => handleSelectSuggestion(suggestion)}
-                    className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-surface-alt/50 transition-colors text-left"
+                    className="w-full flex items-center gap-3 px-2.5 py-2 rounded-lg hover:bg-muted transition-colors text-left"
                   >
-                    <MapPin className="h-4 w-4 text-verde/40 shrink-0" />
+                    <MapPin className="h-4 w-4 text-fg-subtle shrink-0" />
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm text-preto truncate">
+                      <p className="text-sm text-fg-strong truncate">
                         {suggestion.placePrediction.structuredFormat?.mainText?.text ??
                           suggestion.placePrediction.text?.text ??
                           "Unknown"}
                       </p>
                       {suggestion.placePrediction.structuredFormat?.secondaryText?.text && (
-                        <p className="text-xs text-verde/60 truncate">
+                        <p className="text-xs text-fg-subtle truncate">
                           {suggestion.placePrediction.structuredFormat.secondaryText.text}
                         </p>
                       )}

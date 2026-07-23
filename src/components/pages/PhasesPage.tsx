@@ -1,18 +1,17 @@
 import { useEffect, useState } from "react"
-import { Plus, Pencil, Trash2, GitBranch } from "lucide-react"
+import { Pencil, Trash2, GitBranch } from "lucide-react"
 import { toast } from "sonner"
 import { phasesAPI } from "@/services/api"
 import type { PhaseResponse } from "@/types"
 import { usePhasesStore } from "@/stores/phasesStore"
 import { cn } from "@/utils/cn"
-import { card, states } from "@/styles"
+import { states } from "@/styles"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { LoadingSpinner } from "@/components/common/LoadingSpinner"
 import { EmptyState } from "@/components/common/EmptyState"
-import { InfoTooltip } from "@/components/common/InfoTooltip"
 import { ConfirmDialog } from "@/components/common/ConfirmDialog"
 import {
   Dialog,
@@ -24,6 +23,10 @@ import {
 } from "@/components/ui/dialog"
 import { PhaseFlowGraph } from "./phases/PhaseFlowGraph"
 import { DependencyPanel } from "./phases/DependencyPanel"
+
+const th =
+  "px-5 py-3 text-left text-[0.6875rem] font-semibold tracking-[0.08em] uppercase text-fg-subtle border-b border-line"
+const td = "px-5 py-3 border-b border-line"
 
 export default function PhasesPage() {
   const { phases, dependencies: allDeps, loading, fetch: fetchPhasesData } = usePhasesStore()
@@ -42,6 +45,9 @@ export default function PhasesPage() {
   }, [fetchPhasesData])
 
   const selectedPhase = phases.find((p) => p.id === selectedPhaseId) ?? null
+  const requiredBy = selectedPhase
+    ? phases.filter((p) => (allDeps.get(p.id) ?? []).includes(selectedPhase.id))
+    : []
 
   function openCreateDialog() {
     setEditingPhase(null)
@@ -129,153 +135,141 @@ export default function PhasesPage() {
 
   if (error) {
     return (
-      <div className="p-4 sm:p-6 md:p-8">
+      <div className="max-w-[77.5rem] mx-auto px-6 sm:px-10 pt-8 pb-14">
         <div className={states.error}>{error}</div>
       </div>
     )
   }
 
   return (
-    <div className="p-4 sm:p-6 md:p-8 space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-1">
-          <h1 className="text-2xl font-bold tracking-tight text-preto">
-            Phases
-          </h1>
-          <InfoTooltip content="Phases define the stages of a project workflow. Set up dependencies to enforce ordering between phases." />
+    <div className="max-w-[77.5rem] mx-auto px-6 sm:px-10 pt-8 pb-14">
+      <div className="mb-5 flex items-end justify-between gap-4">
+        <div className="flex flex-col gap-1">
+          <span className="text-[0.8125rem] font-semibold tracking-[0.14em] uppercase text-fg-muted">
+            Content
+          </span>
+          <h3 className="text-[1.5625rem] font-bold tracking-tight text-fg-strong">Phases</h3>
+          <span className="text-[0.78125rem] text-fg-subtle">
+            Global catalog — changes affect every project. Editable by admins and managers.
+          </span>
         </div>
-        <Button onClick={openCreateDialog}>
-          <Plus className="h-4 w-4 mr-2" />
-          New Phase
+        <Button size="lg" onClick={openCreateDialog}>
+          New phase
         </Button>
       </div>
 
       {phases.length === 0 ? (
-        <EmptyState
-          icon={GitBranch}
-          title="No phases yet"
-          description="Phases represent stages in your project workflow, like 'Planning', 'Data Collection', or 'Review'. Create your first phase to get started."
-          actionLabel="Create Phase"
-          onAction={openCreateDialog}
-        />
+        <div className="bg-elevated rounded-[1.125rem] shadow-[var(--shadow-card)] p-5 sm:p-6">
+          <EmptyState
+            icon={GitBranch}
+            title="No phases yet"
+            description="Phases represent stages in your project workflow, like 'Planning', 'Data Collection', or 'Review'. Create your first phase to get started."
+            actionLabel="Create Phase"
+            onAction={openCreateDialog}
+          />
+        </div>
       ) : (
-        <div className="space-y-6">
-          {/* Phase Graph — full width, prominent */}
-          <div className={card.padded}>
-            <h2 className="text-sm font-semibold text-verde mb-4 flex items-center gap-1">
-              Dependency Graph
-              <InfoTooltip content="Visual representation of phase ordering. Arrows flow from prerequisite to dependent phase. Click a node to manage its dependencies." />
-            </h2>
+        <div className="space-y-[1.125rem]">
+          <div className="grid grid-cols-1 gap-[1.125rem] lg:grid-cols-[1fr_18.75rem] items-start">
             <PhaseFlowGraph
               phases={phases}
               dependencies={allDeps}
               selectedPhaseId={selectedPhaseId}
               onSelectPhase={setSelectedPhaseId}
-              minHeight={480}
+              minHeight={460}
+            />
+            <DependencyPanel
+              selectedPhase={selectedPhase}
+              phases={phases}
+              dependencies={selectedPhase ? allDeps.get(selectedPhase.id) ?? [] : []}
+              requiredBy={requiredBy}
+              onAddDependency={handleAddDependency}
+              onRemoveDependency={handleRemoveDependency}
+              onEdit={() => selectedPhase && openEditDialog(selectedPhase)}
+              onDelete={() => selectedPhase && setDeleteTarget(selectedPhase)}
             />
           </div>
 
-          {/* Table + Dependency Panel side by side */}
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-            {/* Phase Table */}
-            <div className={card.padded}>
-              <h2 className="text-sm font-semibold text-verde mb-4 flex items-center gap-1">
-                All Phases
-                <InfoTooltip content="Click a phase in the graph to manage its dependencies." />
-              </h2>
-              <div className="overflow-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b border-areia/20">
-                      <th className="text-left px-3 py-2.5 text-verde font-medium">
-                        Name
-                      </th>
-                      <th className="text-left px-3 py-2.5 text-verde font-medium hidden sm:table-cell">
-                        Description
-                      </th>
-                      <th className="text-center px-3 py-2.5 text-verde font-medium">
-                        Deps
-                      </th>
-                      <th className="text-right px-3 py-2.5 text-verde font-medium">
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {phases.map((phase) => {
-                      const depCount = (allDeps.get(phase.id) ?? []).length
-                      return (
-                        <tr
-                          key={phase.id}
-                          className={cn(
-                            "border-t border-areia/10 hover:bg-surface-alt/50 transition-colors cursor-pointer",
-                            selectedPhaseId === phase.id && "bg-surface-alt",
-                          )}
-                          onClick={() => setSelectedPhaseId(selectedPhaseId === phase.id ? null : phase.id)}
-                        >
-                          <td className="px-3 py-3 font-medium text-preto">
-                            {phase.name}
-                          </td>
-                          <td className="px-3 py-3 text-verde/70 hidden sm:table-cell max-w-[200px] truncate">
-                            {phase.description || "\u2014"}
-                          </td>
-                          <td className="px-3 py-3 text-center text-verde/70">
-                            {depCount}
-                          </td>
-                          <td className="px-3 py-3 text-right">
-                            <div className="flex items-center justify-end gap-1">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={(e) => { e.stopPropagation(); openEditDialog(phase) }}
-                              >
-                                <Pencil className="h-3.5 w-3.5" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={(e) => { e.stopPropagation(); setDeleteTarget(phase) }}
-                                className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                              >
-                                <Trash2 className="h-3.5 w-3.5" />
-                              </Button>
-                            </div>
-                          </td>
-                        </tr>
-                      )
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            {/* Dependency Panel */}
-            <div>
-              {selectedPhase ? (
-                <DependencyPanel
-                  selectedPhase={selectedPhase}
-                  phases={phases}
-                  dependencies={allDeps.get(selectedPhaseId!) ?? []}
-                  onAddDependency={handleAddDependency}
-                  onRemoveDependency={handleRemoveDependency}
-                />
-              ) : (
-                <div className={cn(card.padded, "flex items-center justify-center text-sm text-verde/50")} style={{ minHeight: 120 }}>
-                  Select a phase to manage its dependencies
-                </div>
-              )}
+          <div className="bg-elevated rounded-[1.125rem] shadow-[var(--shadow-card)] overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse text-sm">
+                <thead>
+                  <tr>
+                    <th className={th}>Phase</th>
+                    <th className={th}>Description</th>
+                    <th className={th}>Depends on</th>
+                    <th className={th}>Projects</th>
+                    <th className={cn(th, "text-right")} />
+                  </tr>
+                </thead>
+                <tbody>
+                  {phases.map((phase) => {
+                    const depNames = (allDeps.get(phase.id) ?? [])
+                      .map((id) => phases.find((p) => p.id === id)?.name)
+                      .filter(Boolean)
+                      .join(", ")
+                    const projectCount = phase.project_ids?.length ?? 0
+                    return (
+                      <tr
+                        key={phase.id}
+                        className={cn(
+                          "cursor-pointer transition-colors hover:bg-muted",
+                          selectedPhaseId === phase.id && "bg-muted",
+                        )}
+                        onClick={() => setSelectedPhaseId(phase.id)}
+                      >
+                        <td className={cn(td, "whitespace-nowrap font-semibold text-fg-strong")}>
+                          {phase.name}
+                        </td>
+                        <td className={cn(td, "text-[0.8125rem] text-fg-muted")}>
+                          {phase.description || "—"}
+                        </td>
+                        <td className={cn(td, "text-[0.78125rem] text-fg-subtle")}>
+                          {depNames || "—"}
+                        </td>
+                        <td className={cn(td, "text-fg-muted")}>
+                          {projectCount > 0 ? projectCount : "—"}
+                        </td>
+                        <td className={cn(td, "whitespace-nowrap text-right")}>
+                          <div className="flex items-center justify-end gap-1">
+                            <button
+                              type="button"
+                              title="Edit"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                openEditDialog(phase)
+                              }}
+                              className="grid h-[1.875rem] w-[1.875rem] place-items-center rounded-[0.5625rem] text-fg-subtle transition-colors hover:bg-muted hover:text-fg-strong"
+                            >
+                              <Pencil className="h-[0.9375rem] w-[0.9375rem]" strokeWidth={1.75} />
+                            </button>
+                            <button
+                              type="button"
+                              title="Delete"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                setDeleteTarget(phase)
+                              }}
+                              className="grid h-[1.875rem] w-[1.875rem] place-items-center rounded-[0.5625rem] text-fg-subtle transition-colors hover:bg-accent-soft hover:text-on-accent-soft"
+                            >
+                              <Trash2 className="h-[0.9375rem] w-[0.9375rem]" strokeWidth={1.75} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
       )}
 
-      {/* Create / Edit Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>
-              {editingPhase ? "Edit Phase" : "New Phase"}
-            </DialogTitle>
+            <DialogTitle>{editingPhase ? "Edit Phase" : "New Phase"}</DialogTitle>
             <DialogDescription>
               {editingPhase
                 ? "Update the phase name and description."
@@ -304,25 +298,16 @@ export default function PhasesPage() {
             </div>
           </div>
           <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setDialogOpen(false)}
-              disabled={saving}
-            >
+            <Button variant="outline" onClick={() => setDialogOpen(false)} disabled={saving}>
               Cancel
             </Button>
             <Button onClick={handleSave} disabled={saving}>
-              {saving
-                ? "Saving..."
-                : editingPhase
-                  ? "Save Changes"
-                  : "Create Phase"}
+              {saving ? "Saving..." : editingPhase ? "Save Changes" : "Create Phase"}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      {/* Delete Confirmation */}
       <ConfirmDialog
         open={!!deleteTarget}
         onOpenChange={(open) => !open && setDeleteTarget(null)}

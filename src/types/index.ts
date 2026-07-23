@@ -6,11 +6,14 @@ export type {
   TokenRefreshRequest,
   MyRoleResponse,
   MyManagedOrgsResponse,
+  MyManagedProjectsResponse,
 } from "./auth"
 
 export type {
+  UserRole,
   UserListResponse,
   UserUpdate,
+  UserRoleUpdate,
   UserRoleResponse,
 } from "./user"
 
@@ -25,6 +28,9 @@ export type {
 export type {
   LanguageResponse,
   LanguageCreate,
+  LanguageUpdate,
+  LanguageProjectRef,
+  LanguageStatsResponse,
 } from "./language"
 
 export type {
@@ -62,9 +68,30 @@ export type {
 } from "./accessRequest"
 
 export type {
+  ChangeRequestKind,
+  ChangeRequestResponse,
+  ChangeRequestCreate,
+  ChangeRequestReview,
+} from "./changeRequest"
+
+export type {
   PhaseResponse,
   PhaseCreate,
   PhaseUpdate,
   PhaseDependencyResponse,
   ProjectPhaseResponse,
+  PhaseStatus,
 } from "./phase"
+
+export type {
+  PublicLanguageOption,
+  PublicLanguageRequestCreate,
+  PublicProjectRequestCreate,
+  PublicRequestAdminResponse,
+  PublicRequestKind,
+  PublicRequestResponse,
+  PublicRequestReview,
+  PublicRequestStatus,
+} from "./publicRequest"
+
+export { PHASE_STATUSES } from "./phase"

@@ -1,9 +1,8 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { NavLink, useLocation } from "react-router-dom"
 import {
   LayoutGrid,
   Languages,
-  Building2,
   FolderOpen,
   GitBranch,
   Globe,
@@ -12,344 +11,369 @@ import {
   LogOut,
   Sun,
   Moon,
+  X,
+  PanelLeftClose,
+  PanelLeftOpen,
 } from "lucide-react"
+import type { LucideIcon } from "lucide-react"
 import { cn } from "@/utils/cn"
 import { useAuth } from "@/contexts/AuthContext"
 import { useTheme } from "@/contexts/ThemeContext"
-import {
-  Tooltip,
-  TooltipTrigger,
-  TooltipContent,
-  TooltipProvider,
-} from "@/components/ui/tooltip"
 import { ProfileDialog } from "@/components/common/ProfileDialog"
+import { UserAvatar } from "@/components/common/UserAvatar"
+import { useRequestCountsStore } from "@/stores/requestCountsStore"
+import { useSidebarStore } from "@/stores/sidebarStore"
 
 interface SidebarProps {
   mobileOpen: boolean
   onMobileClose: () => void
 }
 
-const mainNavItems = [
-  { to: "/app/dashboard", label: "My Apps", icon: LayoutGrid },
-]
-
-const contentNavItems = [
-  { to: "/app/languages", label: "Languages", icon: Languages },
-  { to: "/app/organizations", label: "Organizations", icon: Building2 },
-  { to: "/app/projects", label: "Projects", icon: FolderOpen },
-  { to: "/app/phases", label: "Phases", icon: GitBranch },
-  { to: "/app/map", label: "Map", icon: Globe },
-]
-
-const adminNavItems = [
-  { to: "/app/users", label: "Users", icon: Users },
-  { to: "/app/apps", label: "Manage Apps", icon: AppWindow },
-]
-
-function SidebarIcon({
-  to,
-  label,
-  icon: Icon,
-}: {
+interface NavItemDef {
   to: string
   label: string
-  icon: React.ComponentType<{ className?: string }>
-}) {
-  const location = useLocation()
-  const isActive =
-    location.pathname === to || location.pathname.startsWith(to + "/")
-
-  return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <NavLink
-          to={to}
-          className={cn(
-            "flex items-center justify-center w-11 h-11 rounded-xl transition-all duration-200",
-            isActive
-              ? "bg-preto text-branco shadow-sm dark:bg-branco dark:text-preto"
-              : "text-verde/50 hover:bg-surface-alt hover:text-verde"
-          )}
-        >
-          <Icon className="w-[22px] h-[22px]" />
-        </NavLink>
-      </TooltipTrigger>
-      <TooltipContent side="right" sideOffset={12}>
-        {label}
-      </TooltipContent>
-    </Tooltip>
-  )
+  icon: LucideIcon
+  badge?: number
 }
 
-function MobileNavItem({
-  to,
-  label,
-  icon: Icon,
-  onClose,
-}: {
-  to: string
+interface NavSectionDef {
   label: string
-  icon: React.ComponentType<{ className?: string }>
-  onClose: () => void
-}) {
-  const location = useLocation()
-  const isActive =
-    location.pathname === to || location.pathname.startsWith(to + "/")
+  items: NavItemDef[]
+}
 
+function NavItem({
+  item,
+  collapsed,
+  onNavigate,
+}: {
+  item: NavItemDef
+  collapsed: boolean
+  onNavigate?: () => void
+}) {
+  const { icon: Icon, to, label, badge } = item
   return (
     <NavLink
       to={to}
-      onClick={onClose}
-      className={cn(
-        "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200",
-        isActive
-          ? "bg-preto text-branco dark:bg-branco dark:text-preto"
-          : "text-verde/70 hover:bg-surface-alt hover:text-verde"
-      )}
+      onClick={onNavigate}
+      title={collapsed ? label : undefined}
+      className={({ isActive }) =>
+        cn(
+          "relative flex items-center rounded-[0.625rem] text-sm font-medium transition-colors",
+          collapsed ? "justify-center w-11 h-11 mx-auto" : "gap-[0.6875rem] w-full px-2.5 py-2.5",
+          isActive
+            ? "bg-[var(--shell-active)] text-shell-fg"
+            : "text-[var(--shell-dim)] hover:bg-[var(--shell-active)] hover:text-shell-fg",
+        )
+      }
     >
-      <Icon className="w-5 h-5 shrink-0" />
-      <span>{label}</span>
+      <Icon className="w-[1.0625rem] h-[1.0625rem] shrink-0" strokeWidth={1.75} />
+      {!collapsed && <span className="flex-1">{label}</span>}
+      {badge ? (
+        collapsed ? (
+          <span className="absolute top-0.5 right-0.5 min-w-[0.9375rem] h-[0.9375rem] px-1 grid place-items-center bg-telha text-on-dark rounded-full text-[0.5625rem] font-bold leading-none">
+            {badge}
+          </span>
+        ) : (
+          <span className="bg-telha text-on-dark rounded-full text-[0.65625rem] font-bold px-[0.4375rem] py-px shrink-0">
+            {badge}
+          </span>
+        )
+      ) : null}
     </NavLink>
+  )
+}
+
+function ThemeToggle() {
+  const { resolvedTheme, setTheme } = useTheme()
+  return (
+    <div className="inline-flex bg-[rgba(246,245,235,0.07)] rounded-full p-[0.1875rem] shrink-0">
+      <button
+        onClick={() => setTheme("light")}
+        title="Light theme"
+        aria-label="Light theme"
+        className={cn(
+          "w-[1.875rem] h-[1.625rem] rounded-full grid place-items-center transition-colors",
+          resolvedTheme === "light"
+            ? "bg-[rgba(246,245,235,0.16)] text-shell-fg"
+            : "text-[var(--shell-dim)] hover:text-shell-fg",
+        )}
+      >
+        <Sun className="w-3.5 h-3.5" strokeWidth={2} />
+      </button>
+      <button
+        onClick={() => setTheme("dark")}
+        title="Dark theme"
+        aria-label="Dark theme"
+        className={cn(
+          "w-[1.875rem] h-[1.625rem] rounded-full grid place-items-center transition-colors",
+          resolvedTheme === "dark"
+            ? "bg-[rgba(246,245,235,0.16)] text-shell-fg"
+            : "text-[var(--shell-dim)] hover:text-shell-fg",
+        )}
+      >
+        <Moon className="w-3.5 h-3.5" strokeWidth={2} />
+      </button>
+    </div>
+  )
+}
+
+function ThemeToggleIcon() {
+  const { resolvedTheme, setTheme } = useTheme()
+  const isDark = resolvedTheme === "dark"
+  return (
+    <button
+      onClick={() => setTheme(isDark ? "light" : "dark")}
+      title={isDark ? "Light theme" : "Dark theme"}
+      aria-label="Toggle theme"
+      className="w-9 h-9 rounded-[0.5625rem] grid place-items-center text-[var(--shell-dim)] hover:bg-[var(--shell-active)] hover:text-shell-fg transition-colors"
+    >
+      {isDark ? <Sun className="w-4 h-4" strokeWidth={2} /> : <Moon className="w-4 h-4" strokeWidth={2} />}
+    </button>
+  )
+}
+
+function SidebarContent({
+  sections,
+  collapsed,
+  onToggleCollapse,
+  onNavigate,
+  onProfile,
+  onLogout,
+  userId,
+  userName,
+  userEmail,
+  userRole,
+  avatarUrl,
+}: {
+  sections: NavSectionDef[]
+  collapsed: boolean
+  onToggleCollapse?: () => void
+  onNavigate?: () => void
+  onProfile: () => void
+  onLogout: () => void
+  userId?: string
+  userName: string
+  userEmail: string
+  userRole: string
+  avatarUrl?: string | null
+}) {
+  return (
+    <div className="flex flex-col h-full">
+      {collapsed ? (
+        <div className="flex justify-center pb-1">
+          <button
+            onClick={onToggleCollapse}
+            title="Expand sidebar"
+            aria-label="Expand sidebar"
+            className="w-11 h-11 rounded-[0.625rem] grid place-items-center text-[var(--shell-dim)] hover:bg-[var(--shell-active)] hover:text-shell-fg transition-colors"
+          >
+            <PanelLeftOpen className="w-[1.125rem] h-[1.125rem]" strokeWidth={1.75} />
+          </button>
+        </div>
+      ) : (
+        <div className="flex items-center justify-between gap-2.5 px-2.5 pb-1">
+          <img src="/assets/logo-branco.svg" alt="Shemá" className="h-[1.375rem] w-auto" />
+          <div className="flex items-center gap-1.5">
+            <ThemeToggle />
+            {onToggleCollapse && (
+              <button
+                onClick={onToggleCollapse}
+                title="Collapse sidebar"
+                aria-label="Collapse sidebar"
+                className="w-8 h-8 rounded-[0.5625rem] grid place-items-center text-[var(--shell-dim)] hover:bg-[var(--shell-active)] hover:text-shell-fg transition-colors shrink-0"
+              >
+                <PanelLeftClose className="w-[1.0625rem] h-[1.0625rem]" strokeWidth={1.75} />
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+      <nav className="flex-1 overflow-y-auto">
+        {sections.map((section, i) => (
+          <div
+            key={section.label}
+            className={cn("flex flex-col gap-0.5", collapsed ? "mt-3" : "mt-[1.375rem]")}
+          >
+            {collapsed
+              ? i > 0 && <div className="mx-auto mb-2 h-px w-7 bg-[var(--shell-line)]" />
+              : (
+                <span className="px-2.5 pb-1.5 text-[0.65625rem] font-semibold tracking-[0.14em] uppercase text-[var(--shell-dim)]">
+                  {section.label}
+                </span>
+              )}
+            {section.items.map((item) => (
+              <NavItem key={item.to} item={item} collapsed={collapsed} onNavigate={onNavigate} />
+            ))}
+          </div>
+        ))}
+      </nav>
+
+      <div className="mt-auto pt-[1.125rem]">
+        {collapsed ? (
+          <div className="border-t border-[var(--shell-line)] pt-3 flex flex-col items-center gap-1.5">
+            <ThemeToggleIcon />
+            <button
+              onClick={onProfile}
+              title={userName}
+              aria-label="Open profile"
+              className="rounded-full p-0.5 hover:ring-2 hover:ring-[var(--shell-active)] transition-shadow"
+            >
+              <UserAvatar
+                id={userId}
+                name={userName}
+                email={userEmail}
+                avatarUrl={avatarUrl ?? null}
+                size="xs"
+                className="h-9 w-9 text-xs"
+              />
+            </button>
+            <button
+              onClick={onLogout}
+              title="Sign out"
+              aria-label="Sign out"
+              className="w-9 h-9 rounded-[0.5625rem] grid place-items-center text-[var(--shell-dim)] hover:bg-[var(--shell-active)] hover:text-shell-fg transition-colors"
+            >
+              <LogOut className="w-4 h-4" strokeWidth={1.75} />
+            </button>
+          </div>
+        ) : (
+          <div className="border-t border-[var(--shell-line)] pt-3.5 flex items-center gap-2.5">
+            <button
+              onClick={onProfile}
+              className="flex items-center gap-2.5 flex-1 min-w-0 rounded-[0.625rem] p-1 hover:bg-[var(--shell-active)] transition-colors"
+            >
+              <UserAvatar
+                id={userId}
+                name={userName}
+                email={userEmail}
+                avatarUrl={avatarUrl ?? null}
+                size="xs"
+                className="h-[2.125rem] w-[2.125rem] text-xs"
+              />
+              <span className="flex flex-col min-w-0 text-left">
+                <span className="text-[0.84375rem] font-semibold text-shell-fg truncate">{userName}</span>
+                <span className="text-[0.6875rem] text-[var(--shell-dim)]">{userRole}</span>
+              </span>
+            </button>
+            <button
+              onClick={onLogout}
+              title="Sign out"
+              aria-label="Sign out"
+              className="w-8 h-8 rounded-[0.5625rem] grid place-items-center text-[var(--shell-dim)] hover:bg-[var(--shell-active)] hover:text-shell-fg transition-colors shrink-0"
+            >
+              <LogOut className="w-4 h-4" strokeWidth={1.75} />
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
   )
 }
 
 export default function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
   const { isPlatformAdmin, isManager, logout, user } = useAuth()
-  const { resolvedTheme, setTheme } = useTheme()
   const [profileOpen, setProfileOpen] = useState(false)
+  const { pathname } = useLocation()
+  const counts = useRequestCountsStore((s) => s.counts)
+  const fetchCounts = useRequestCountsStore((s) => s.fetch)
+  const collapsed = useSidebarStore((s) => s.collapsed)
+  const toggleCollapsed = useSidebarStore((s) => s.toggle)
 
-  const userInitial = user?.email?.charAt(0).toUpperCase() || "?"
+  useEffect(() => {
+    if (isPlatformAdmin) {
+      void fetchCounts()
+    }
+  }, [isPlatformAdmin, fetchCounts, pathname])
+
+  const userName = user?.display_name || user?.email || "Account"
+  const userRole = isPlatformAdmin ? "Platform admin" : isManager ? "Manager" : "Member"
+
+  const sections: NavSectionDef[] = [
+    {
+      label: "Main",
+      items: [
+        {
+          to: "/app/dashboard",
+          label: isPlatformAdmin ? "Dashboard" : "My Apps",
+          icon: LayoutGrid,
+        },
+      ],
+    },
+  ]
+
+  if (isPlatformAdmin || isManager) {
+    sections.push({
+      label: "Content",
+      items: [
+        { to: "/app/languages", label: "Languages", icon: Languages, badge: counts.languageChanges },
+        { to: "/app/projects", label: "Projects", icon: FolderOpen, badge: counts.projectChanges },
+        { to: "/app/map", label: "Map", icon: Globe },
+      ],
+    })
+  }
+
+  if (isPlatformAdmin) {
+    sections.push({
+      label: "Administration",
+      items: [
+        { to: "/app/phases", label: "Phases", icon: GitBranch },
+        { to: "/app/users", label: "Users", icon: Users, badge: counts.access },
+        { to: "/app/apps", label: "Manage Apps", icon: AppWindow },
+      ],
+    })
+  }
+
+  const openProfile = () => {
+    setProfileOpen(true)
+    onMobileClose()
+  }
 
   return (
     <>
-      {/* Desktop sidebar — icon only */}
-      <aside className="hidden lg:flex h-screen sticky top-0 shrink-0">
-        <TooltipProvider delayDuration={0}>
-          <div className="w-[72px] bg-surface border-r border-areia/15 h-full flex flex-col items-center py-5 gap-4">
-            {/* Brand logo */}
-            <NavLink
-              to="/app/dashboard"
-              className="flex items-center justify-center w-11 h-11 rounded-full bg-telha shadow-sm hover:bg-telha/90 transition-colors"
-            >
-              <img
-                src="/assets/icon-dark.svg"
-                alt="Shema"
-                className="w-5 h-5 brightness-0 invert"
-              />
-            </NavLink>
-
-            {/* Theme toggle */}
-            <div className="flex flex-col items-center gap-0.5">
-              <button
-                onClick={() => setTheme("light")}
-                className={cn(
-                  "flex items-center justify-center w-9 h-9 rounded-lg transition-all duration-200",
-                  resolvedTheme === "light"
-                    ? "bg-surface-alt text-preto shadow-inner"
-                    : "text-verde/35 hover:text-verde/60"
-                )}
-                aria-label="Light mode"
-              >
-                <Sun className="w-[18px] h-[18px]" />
-              </button>
-              <button
-                onClick={() => setTheme("dark")}
-                className={cn(
-                  "flex items-center justify-center w-9 h-9 rounded-lg transition-all duration-200",
-                  resolvedTheme === "dark"
-                    ? "bg-surface-alt text-preto shadow-inner"
-                    : "text-verde/35 hover:text-verde/60"
-                )}
-                aria-label="Dark mode"
-              >
-                <Moon className="w-[18px] h-[18px]" />
-              </button>
-            </div>
-
-            {/* Separator */}
-            <div className="w-8 border-t border-areia/20" />
-
-            {/* Nav icons */}
-            <nav className="flex-1 flex flex-col items-center gap-1.5">
-              {mainNavItems.map((item) => (
-                <SidebarIcon key={item.to} {...item} />
-              ))}
-
-              {(isPlatformAdmin || isManager) && (
-                <>
-                  <div className="w-6 border-t border-areia/15 my-1.5" />
-                  {contentNavItems.map((item) => (
-                    <SidebarIcon key={item.to} {...item} />
-                  ))}
-                </>
-              )}
-
-              {isPlatformAdmin && (
-                <>
-                  <div className="w-6 border-t border-areia/15 my-1.5" />
-                  {adminNavItems.map((item) => (
-                    <SidebarIcon key={item.to} {...item} />
-                  ))}
-                </>
-              )}
-            </nav>
-
-            {/* Bottom: user + logout */}
-            <div className="flex flex-col items-center gap-2 pt-3 border-t border-areia/15">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <button
-                    onClick={() => setProfileOpen(true)}
-                    className="flex items-center justify-center w-10 h-10 rounded-full bg-azul/20 text-verde text-xs font-bold cursor-pointer select-none overflow-hidden hover:ring-2 hover:ring-telha/30 transition-all"
-                  >
-                    {user?.avatar_url ? (
-                      <img src={user.avatar_url} alt="" className="h-full w-full object-cover" />
-                    ) : (
-                      userInitial
-                    )}
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent side="right" sideOffset={12}>
-                  Edit profile
-                </TooltipContent>
-              </Tooltip>
-
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <button
-                    onClick={logout}
-                    className="flex items-center justify-center w-9 h-9 rounded-lg text-verde/40 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-all duration-200"
-                    aria-label="Log out"
-                  >
-                    <LogOut className="w-[18px] h-[18px]" />
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent side="right" sideOffset={12}>
-                  Log out
-                </TooltipContent>
-              </Tooltip>
-            </div>
-          </div>
-        </TooltipProvider>
+      <aside
+        className={cn(
+          "hidden lg:flex shrink-0 h-screen sticky top-0 bg-shell text-shell-fg flex-col pt-[1.375rem] pb-4 transition-[width] duration-200",
+          collapsed ? "w-[4.5rem] px-2" : "w-[16.125rem] px-3.5",
+        )}
+      >
+        <SidebarContent
+          sections={sections}
+          collapsed={collapsed}
+          onToggleCollapse={toggleCollapsed}
+          onProfile={() => setProfileOpen(true)}
+          onLogout={logout}
+          userId={user?.id}
+          userName={userName}
+          userEmail={user?.email ?? ""}
+          userRole={userRole}
+          avatarUrl={user?.avatar_url}
+        />
       </aside>
 
-      {/* Mobile overlay */}
       {mobileOpen && (
         <div className="fixed inset-0 z-40 lg:hidden">
-          <div
-            className="absolute inset-0 bg-preto/50 backdrop-blur-sm"
-            onClick={onMobileClose}
-          />
-          <aside className="relative z-50 h-full w-[min(18rem,calc(100vw-3.5rem))] bg-surface shadow-2xl">
-            <div className="h-full flex flex-col">
-              {/* Mobile header */}
-              <div className="flex items-center gap-3 h-14 px-4 border-b border-areia/15">
-                <div className="flex items-center justify-center w-9 h-9 rounded-full bg-telha">
-                  <img
-                    src="/assets/icon-dark.svg"
-                    alt="Shema"
-                    className="w-4 h-4 brightness-0 invert"
-                  />
-                </div>
-                <span className="text-sm font-semibold text-preto tracking-tight">
-                  Tripod Console
-                </span>
-              </div>
-
-              {/* Mobile nav */}
-              <nav className="flex-1 overflow-y-auto p-3 space-y-1">
-                {mainNavItems.map((item) => (
-                  <MobileNavItem
-                    key={item.to}
-                    {...item}
-                    onClose={onMobileClose}
-                  />
-                ))}
-
-                {(isPlatformAdmin || isManager) && (
-                  <>
-                    <div className="my-2 border-t border-areia/15" />
-                    {contentNavItems.map((item) => (
-                      <MobileNavItem
-                        key={item.to}
-                        {...item}
-                        onClose={onMobileClose}
-                      />
-                    ))}
-                  </>
-                )}
-
-                {isPlatformAdmin && (
-                  <>
-                    <div className="my-2 border-t border-areia/15" />
-                    {adminNavItems.map((item) => (
-                      <MobileNavItem
-                        key={item.to}
-                        {...item}
-                        onClose={onMobileClose}
-                      />
-                    ))}
-                  </>
-                )}
-              </nav>
-
-              {/* Mobile footer */}
-              <div className="p-3 border-t border-areia/15 space-y-2">
-                {user && (
-                  <button
-                    onClick={() => { setProfileOpen(true); onMobileClose() }}
-                    className="flex items-center gap-3 px-3 py-2 rounded-xl w-full hover:bg-surface-alt transition-colors"
-                  >
-                    <div className="flex items-center justify-center w-8 h-8 rounded-full bg-azul/20 text-verde text-xs font-bold overflow-hidden shrink-0">
-                      {user.avatar_url ? (
-                        <img src={user.avatar_url} alt="" className="h-full w-full object-cover" />
-                      ) : (
-                        userInitial
-                      )}
-                    </div>
-                    <div className="text-left min-w-0">
-                      <p className="text-xs text-verde truncate">{user.display_name || user.email}</p>
-                      <p className="text-[10px] text-verde/50">Edit profile</p>
-                    </div>
-                  </button>
-                )}
-
-                <div className="flex items-center gap-1 px-3">
-                  <button
-                    onClick={() => setTheme("light")}
-                    className={cn(
-                      "flex items-center justify-center w-8 h-8 rounded-lg transition-all",
-                      resolvedTheme === "light"
-                        ? "bg-surface-alt text-preto"
-                        : "text-verde/35"
-                    )}
-                    aria-label="Light mode"
-                  >
-                    <Sun className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => setTheme("dark")}
-                    className={cn(
-                      "flex items-center justify-center w-8 h-8 rounded-lg transition-all",
-                      resolvedTheme === "dark"
-                        ? "bg-surface-alt text-preto"
-                        : "text-verde/35"
-                    )}
-                    aria-label="Dark mode"
-                  >
-                    <Moon className="w-4 h-4" />
-                  </button>
-                </div>
-
-                <button
-                  onClick={logout}
-                  className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-verde/70 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/30 dark:hover:text-red-400 transition-all w-full"
-                >
-                  <LogOut className="w-5 h-5 shrink-0" />
-                  <span>Log out</span>
-                </button>
-              </div>
-            </div>
+          <div className="absolute inset-0 bg-preto/50 animate-fade-in" onClick={onMobileClose} />
+          <aside className="relative z-50 h-full w-[min(16.125rem,calc(100vw-3rem))] bg-shell text-shell-fg flex flex-col px-3.5 pt-[1.375rem] pb-4">
+            <button
+              onClick={onMobileClose}
+              aria-label="Close menu"
+              className="absolute right-3 top-3 w-8 h-8 rounded-[0.5625rem] grid place-items-center text-[var(--shell-dim)] hover:bg-[var(--shell-active)] hover:text-shell-fg transition-colors"
+            >
+              <X className="w-4 h-4" strokeWidth={2} />
+            </button>
+            <SidebarContent
+              sections={sections}
+              collapsed={false}
+              onNavigate={onMobileClose}
+              onProfile={openProfile}
+              onLogout={logout}
+              userId={user?.id}
+              userName={userName}
+              userEmail={user?.email ?? ""}
+              userRole={userRole}
+              avatarUrl={user?.avatar_url}
+            />
           </aside>
         </div>
       )}
