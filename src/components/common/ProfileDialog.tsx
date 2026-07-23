@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react"
-import { User as UserIcon } from "lucide-react"
 import { toast } from "sonner"
 import { authAPI } from "@/services/api"
 import { useAuth } from "@/contexts/AuthContext"
+import { avatarColors, initialsOf } from "@/utils/avatar"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -64,6 +64,9 @@ export function ProfileDialog({ open, onOpenChange }: ProfileDialogProps) {
     }
   }
 
+  const avatarName = user?.display_name || user?.email || ""
+  const colors = avatarColors(user?.id ?? "", avatarName)
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
@@ -86,7 +89,14 @@ export function ProfileDialog({ open, onOpenChange }: ProfileDialogProps) {
               uploadLabel="Upload photo"
               changeLabel="Change photo"
               removeLabel="Remove"
-              placeholder={<UserIcon className="h-12 w-12 text-fg-subtle" />}
+              placeholder={
+                <span
+                  className="flex h-full w-full items-center justify-center text-[2.5rem] font-bold"
+                  style={{ backgroundColor: colors.bg, color: colors.fg }}
+                >
+                  {initialsOf(displayName || avatarName)}
+                </span>
+              }
             />
           </div>
 

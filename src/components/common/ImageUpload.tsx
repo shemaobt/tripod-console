@@ -77,10 +77,12 @@ export function ImageUpload({
     <div className={cn("flex items-center gap-4", className)}>
       <div
         className={cn(
-          "relative overflow-hidden border-2 border-dashed border-line flex items-center justify-center bg-muted cursor-pointer transition-colors hover:border-accent group",
+          "relative overflow-hidden flex items-center justify-center bg-muted cursor-pointer",
           shape === "circle" ? "rounded-full" : "rounded-xl",
           sizeClasses[size],
-          value && "border-solid border-line",
+          actions === "buttons" &&
+            "border-2 border-dashed border-line transition-colors hover:border-accent group",
+          actions === "buttons" && value && "border-solid border-line",
         )}
         onClick={() => !uploading && fileInputRef.current?.click()}
       >
@@ -98,7 +100,7 @@ export function ImageUpload({
         ) : (
           placeholder || <Upload className="h-6 w-6 text-fg-subtle group-hover:text-fg-muted transition-colors" />
         )}
-        {value && !uploading && (
+        {actions === "buttons" && value && !uploading && (
           <div
             className={cn(
               "absolute inset-0 flex items-center justify-center gap-2 bg-black/50 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity",
