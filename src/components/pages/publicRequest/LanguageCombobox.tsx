@@ -41,7 +41,7 @@ export function LanguageCombobox({ languages, value, onChange }: LanguageCombobo
           type="button"
           role="combobox"
           aria-expanded={open}
-          className="flex w-full items-center justify-between gap-2.5 border-b-[1.5px] border-input-border py-[9px] text-[15px] text-fg-strong"
+          className="flex w-full items-center justify-between gap-2.5 border-b-[0.09375rem] border-input-border py-[0.5625rem] text-[0.9375rem] text-fg-strong"
         >
           <span className={cn("truncate", !selected && "text-fg-subtle")}>{triggerLabel}</span>
           <ChevronDown className="h-4 w-4 shrink-0 text-fg-subtle" />
@@ -59,20 +59,20 @@ export function LanguageCombobox({ languages, value, onChange }: LanguageCombobo
           className="mb-2 text-sm"
           autoFocus
         />
-        <div className="max-h-[230px] overflow-y-auto">
+        <div className="max-h-[14.375rem] overflow-y-auto">
           {filtered.map((lang) => (
             <button
               key={lang.id}
               type="button"
               onClick={() => select(lang.id)}
-              className="flex w-full items-center justify-between gap-2.5 rounded-lg px-2.5 py-[9px] text-left text-[14px] text-fg hover:bg-muted"
+              className="flex w-full items-center justify-between gap-2.5 rounded-lg px-2.5 py-[0.5625rem] text-left text-[0.875rem] text-fg hover:bg-muted"
             >
               <span className="truncate">{lang.name}</span>
-              <span className="font-mono text-[11.5px] text-fg-subtle">{lang.code}</span>
+              <span className="font-mono text-[0.71875rem] text-fg-subtle">{lang.code}</span>
             </button>
           ))}
           {filtered.length === 0 && (
-            <p className="px-2.5 py-[9px] text-sm text-fg-subtle">No language matches "{query}"</p>
+            <p className="px-2.5 py-[0.5625rem] text-sm text-fg-subtle">No language matches "{query}"</p>
           )}
         </div>
       </PopoverContent>

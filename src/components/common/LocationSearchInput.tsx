@@ -128,7 +128,7 @@ export function LocationSearchInput({
           <button
             type="button"
             onClick={handleClear}
-            className="flex items-center justify-center h-7 w-7 rounded-[9px] text-fg-subtle hover:text-on-accent-soft hover:bg-accent-soft transition-colors shrink-0"
+            className="flex items-center justify-center h-7 w-7 rounded-[0.5625rem] text-fg-subtle hover:text-on-accent-soft hover:bg-accent-soft transition-colors shrink-0"
           >
             <X className="h-4 w-4" />
           </button>

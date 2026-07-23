@@ -11,7 +11,7 @@ export default function AccessDeniedPage({ variant = "default" }: AccessDeniedPa
 
   return (
     <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
-      <div className="rounded-[16px] bg-muted p-5 mb-5">
+      <div className="rounded-[1rem] bg-muted p-5 mb-5">
         <ShieldX className="h-9 w-9 text-fg-subtle" strokeWidth={1.75} />
       </div>
       <h1 className="text-2xl font-bold text-fg-strong mb-2">Access denied</h1>
@@ -20,14 +20,14 @@ export default function AccessDeniedPage({ variant = "default" }: AccessDeniedPa
         <button
           type="button"
           onClick={() => logout()}
-          className="text-[13.5px] font-semibold text-accent hover:underline"
+          className="text-[0.84375rem] font-semibold text-accent hover:underline"
         >
           Sign out →
         </button>
       ) : (
         <Link
           to="/app/dashboard"
-          className="text-[13.5px] font-semibold text-accent hover:underline"
+          className="text-[0.84375rem] font-semibold text-accent hover:underline"
         >
           Go to dashboard →
         </Link>

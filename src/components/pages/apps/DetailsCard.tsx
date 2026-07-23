@@ -28,8 +28,8 @@ export function DetailsCard({
   onSave: () => void
 }) {
   return (
-    <div className="bg-elevated rounded-[18px] shadow-[var(--shadow-card)] p-[22px] flex flex-col gap-[18px]">
-      <h4 className="text-[15.5px] font-semibold text-fg-strong">Details</h4>
+    <div className="bg-elevated rounded-[1.125rem] shadow-[var(--shadow-card)] p-[1.375rem] flex flex-col gap-[1.125rem]">
+      <h4 className="text-[0.96875rem] font-semibold text-fg-strong">Details</h4>
 
       <div className="space-y-1.5">
         <Label htmlFor="f_ap_name">Name</Label>

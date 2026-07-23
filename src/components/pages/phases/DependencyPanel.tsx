@@ -15,8 +15,8 @@ interface DependencyPanelProps {
   onDelete: () => void
 }
 
-const cardClass = "bg-elevated rounded-[18px] shadow-[var(--shadow-card)] p-5 min-h-[220px]"
-const sectionLabel = "text-[11px] font-semibold tracking-[0.1em] uppercase text-fg-subtle"
+const cardClass = "bg-elevated rounded-[1.125rem] shadow-[var(--shadow-card)] p-5 min-h-[13.75rem]"
+const sectionLabel = "text-[0.6875rem] font-semibold tracking-[0.1em] uppercase text-fg-subtle"
 
 export function DependencyPanel({
   selectedPhase,
@@ -34,8 +34,8 @@ export function DependencyPanel({
     return (
       <div className={cardClass}>
         <div className="flex flex-col gap-1.5 pt-1.5">
-          <h4 className="text-[15.5px] font-semibold text-fg-strong">Dependencies</h4>
-          <p className="text-[13px] text-fg-subtle leading-[1.55]">
+          <h4 className="text-[0.96875rem] font-semibold text-fg-strong">Dependencies</h4>
+          <p className="text-[0.8125rem] text-fg-subtle leading-[1.55]">
             Select a phase in the graph to inspect and edit its dependencies, or
             create a new phase for the whole ecosystem.
           </p>
@@ -63,17 +63,17 @@ export function DependencyPanel({
     <div className={cardClass}>
       <div className="flex flex-col gap-3.5">
         <div className="flex flex-col gap-1">
-          <h4 className="text-[15.5px] font-semibold text-fg-strong">
+          <h4 className="text-[0.96875rem] font-semibold text-fg-strong">
             {selectedPhase.name}
           </h4>
           {selectedPhase.description ? (
-            <p className="text-[12.5px] text-fg-muted leading-[1.5]">
+            <p className="text-[0.78125rem] text-fg-muted leading-[1.5]">
               {selectedPhase.description}
             </p>
           ) : (
-            <p className="text-[12.5px] text-fg-subtle italic">No description</p>
+            <p className="text-[0.78125rem] text-fg-subtle italic">No description</p>
           )}
-          <span className="text-[11.5px] text-fg-subtle">{usedLine}</span>
+          <span className="text-[0.71875rem] text-fg-subtle">{usedLine}</span>
         </div>
 
         <div className="flex flex-col gap-2">
@@ -83,16 +83,16 @@ export function DependencyPanel({
               {depPhases.map((dep) => (
                 <span
                   key={dep.id}
-                  className="inline-flex items-center gap-1.5 rounded-full bg-muted pl-3 pr-1.5 py-[5px] text-xs text-fg"
+                  className="inline-flex items-center gap-1.5 rounded-full bg-muted pl-3 pr-1.5 py-[0.3125rem] text-xs text-fg"
                 >
                   {dep.name}
                   <button
                     type="button"
                     onClick={() => onRemoveDependency(dep.id)}
                     title="Remove dependency"
-                    className="grid h-[18px] w-[18px] place-items-center rounded-full text-fg-subtle transition-colors hover:bg-accent-soft hover:text-on-accent-soft"
+                    className="grid h-[1.125rem] w-[1.125rem] place-items-center rounded-full text-fg-subtle transition-colors hover:bg-accent-soft hover:text-on-accent-soft"
                   >
-                    <X className="h-[11px] w-[11px]" strokeWidth={2} />
+                    <X className="h-[0.6875rem] w-[0.6875rem]" strokeWidth={2} />
                   </button>
                 </span>
               ))}
@@ -106,22 +106,22 @@ export function DependencyPanel({
               <PopoverTrigger asChild>
                 <button
                   type="button"
-                  className="inline-flex w-fit items-center gap-1.5 text-[12.5px] font-semibold text-accent hover:underline"
+                  className="inline-flex w-fit items-center gap-1.5 text-[0.78125rem] font-semibold text-accent hover:underline"
                 >
-                  <Plus className="h-[13px] w-[13px]" strokeWidth={2} />
+                  <Plus className="h-[0.8125rem] w-[0.8125rem]" strokeWidth={2} />
                   Add dependency
                 </button>
               </PopoverTrigger>
               <PopoverContent
                 align="start"
-                className="max-h-[220px] w-[230px] overflow-auto p-1.5"
+                className="max-h-[13.75rem] w-[14.375rem] overflow-auto p-1.5"
               >
                 {availablePhases.map((p) => (
                   <button
                     key={p.id}
                     type="button"
                     onClick={() => pick(p.id)}
-                    className="block w-full rounded-lg px-2.5 py-2 text-left text-[13px] text-fg transition-colors hover:bg-muted"
+                    className="block w-full rounded-lg px-2.5 py-2 text-left text-[0.8125rem] text-fg transition-colors hover:bg-muted"
                   >
                     {p.name}
                   </button>
@@ -130,7 +130,7 @@ export function DependencyPanel({
             </Popover>
           )}
 
-          <span className="text-[11px] text-fg-subtle">
+          <span className="text-[0.6875rem] text-fg-subtle">
             Self-dependency and duplicates are rejected (409); cycles are blocked
             client-side.
           </span>
@@ -143,7 +143,7 @@ export function DependencyPanel({
               {requiredBy.map((r) => (
                 <span
                   key={r.id}
-                  className="rounded-full bg-muted px-3 py-[5px] text-xs text-fg-muted"
+                  className="rounded-full bg-muted px-3 py-[0.3125rem] text-xs text-fg-muted"
                 >
                   {r.name}
                 </span>

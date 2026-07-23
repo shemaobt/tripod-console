@@ -32,15 +32,15 @@ export function ProjectCard({ project, langName, langCode, onOpen, onEdit }: Pro
   return (
     <article
       onClick={onOpen}
-      className="group relative flex cursor-pointer flex-col gap-2.5 rounded-[18px] bg-elevated p-5 shadow-[var(--shadow-card)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[var(--shadow-md)]"
+      className="group relative flex cursor-pointer flex-col gap-2.5 rounded-[1.125rem] bg-elevated p-5 shadow-[var(--shadow-card)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[var(--shadow-md)]"
     >
       <button
         type="button"
         onClick={onEdit}
         aria-label={`Edit ${project.name}`}
-        className="absolute right-2.5 top-2.5 grid h-[30px] w-[30px] place-items-center rounded-[9px] bg-elevated text-fg-subtle opacity-0 shadow-[var(--shadow-sm)] transition-all hover:bg-muted hover:text-fg-strong group-hover:opacity-100"
+        className="absolute right-2.5 top-2.5 grid h-[1.875rem] w-[1.875rem] place-items-center rounded-[0.5625rem] bg-elevated text-fg-subtle opacity-0 shadow-[var(--shadow-sm)] transition-all hover:bg-muted hover:text-fg-strong group-hover:opacity-100"
       >
-        <Pencil className="h-[15px] w-[15px]" strokeWidth={1.75} />
+        <Pencil className="h-[0.9375rem] w-[0.9375rem]" strokeWidth={1.75} />
       </button>
 
       <div className="flex items-start justify-between gap-2.5">
@@ -49,43 +49,43 @@ export function ProjectCard({ project, langName, langCode, onOpen, onEdit }: Pro
             <img
               src={project.image_url}
               alt=""
-              className="h-10 w-10 flex-none rounded-[12px] object-cover"
+              className="h-10 w-10 flex-none rounded-[0.75rem] object-cover"
             />
           ) : (
             <span
-              className="grid h-10 w-10 flex-none place-items-center rounded-[12px] text-xs font-bold"
+              className="grid h-10 w-10 flex-none place-items-center rounded-[0.75rem] text-xs font-bold"
               style={{ backgroundColor: tile.bg, color: tile.fg }}
             >
               {initialsOf(project.name)}
             </span>
           )}
-          <span className="text-[15px] font-semibold leading-snug text-fg-strong">
+          <span className="text-[0.9375rem] font-semibold leading-snug text-fg-strong">
             {project.name}
           </span>
         </div>
-        <span className="flex-none rounded-md bg-muted px-2 py-0.5 font-mono text-[11.5px] text-fg-muted">
+        <span className="flex-none rounded-md bg-muted px-2 py-0.5 font-mono text-[0.71875rem] text-fg-muted">
           {langCode || "—"}
         </span>
       </div>
 
       <span className="inline-flex items-center gap-1.5 text-xs text-fg-subtle">
-        <MapPin className="h-[13px] w-[13px] flex-none" strokeWidth={1.75} />
+        <MapPin className="h-[0.8125rem] w-[0.8125rem] flex-none" strokeWidth={1.75} />
         {locationText || "No location set"} · {langName ?? "—"}
       </span>
 
-      <p className="line-clamp-2 text-[13px] leading-relaxed text-fg-muted">
+      <p className="line-clamp-2 text-[0.8125rem] leading-relaxed text-fg-muted">
         {project.description || "No description yet."}
       </p>
 
       {phasesTotal != null && (
         <div className="mt-0.5 flex flex-col gap-1.5">
-          <div className="h-[6px] overflow-hidden rounded-full bg-muted">
+          <div className="h-[0.375rem] overflow-hidden rounded-full bg-muted">
             <div
               className="h-full rounded-full bg-verde-claro"
               style={{ width: `${pct}%` }}
             />
           </div>
-          <span className="text-[11.5px] text-fg-subtle">
+          <span className="text-[0.71875rem] text-fg-subtle">
             {phasesTotal === 0
               ? "No phases attached"
               : `${phasesDone}/${phasesTotal} phases completed`}
@@ -105,7 +105,7 @@ export function ProjectCard({ project, langName, langCode, onOpen, onEdit }: Pro
                   email={member.display_name ?? member.user_id}
                   avatarUrl={member.avatar_url}
                   size="xs"
-                  className="-ml-2 h-[26px] w-[26px] border-2 border-elevated text-[9.5px] first:ml-0"
+                  className="-ml-2 h-[1.625rem] w-[1.625rem] border-2 border-elevated text-[0.59375rem] first:ml-0"
                 />
               ))}
             </div>
@@ -116,7 +116,7 @@ export function ProjectCard({ project, langName, langCode, onOpen, onEdit }: Pro
                   <span
                     key={i}
                     className={cn(
-                      "-ml-2 h-[26px] w-[26px] rounded-full border-2 border-elevated first:ml-0",
+                      "-ml-2 h-[1.625rem] w-[1.625rem] rounded-full border-2 border-elevated first:ml-0",
                       MEMBER_STYLES[i % MEMBER_STYLES.length]
                     )}
                   />
@@ -124,11 +124,11 @@ export function ProjectCard({ project, langName, langCode, onOpen, onEdit }: Pro
               </div>
             )
           )}
-          <span className="text-[11.5px] text-fg-subtle">
+          <span className="text-[0.71875rem] text-fg-subtle">
             {memberCount} member{memberCount !== 1 ? "s" : ""}
           </span>
         </div>
-        <span className="text-[11px] text-fg-subtle">Updated {formatDate(project.updated_at)}</span>
+        <span className="text-[0.6875rem] text-fg-subtle">Updated {formatDate(project.updated_at)}</span>
       </div>
     </article>
   )

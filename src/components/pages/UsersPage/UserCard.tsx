@@ -25,7 +25,7 @@ export function UserCard({ user, roles }: UserCardProps) {
         name={user.display_name}
         email={user.email}
         avatarUrl={user.avatar_url}
-        className="h-[42px] w-[42px] text-[13px]"
+        className="h-[2.625rem] w-[2.625rem] text-[0.8125rem]"
       />
 
       <div className="flex flex-col gap-0.5 min-w-0 flex-1">
@@ -33,19 +33,19 @@ export function UserCard({ user, roles }: UserCardProps) {
           {user.display_name || user.email}
         </span>
         {user.display_name && (
-          <span className="text-[11.5px] text-fg-subtle truncate">{user.email}</span>
+          <span className="text-[0.71875rem] text-fg-subtle truncate">{user.email}</span>
         )}
 
         <div className="flex items-center gap-2 mt-1 min-w-0">
           <Badge variant={variant} className="shrink-0 whitespace-nowrap">
             {label}
           </Badge>
-          <span className="text-[11px] text-fg-subtle truncate">
+          <span className="text-[0.6875rem] text-fg-subtle truncate">
             {roles.length} app role{roles.length === 1 ? "" : "s"}
           </span>
           {!user.is_active && (
-            <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-st-warn shrink-0">
-              <span className="w-[7px] h-[7px] rounded-full bg-st-warn" />
+            <span className="inline-flex items-center gap-1.5 text-[0.6875rem] font-semibold text-st-warn shrink-0">
+              <span className="w-[0.4375rem] h-[0.4375rem] rounded-full bg-st-warn" />
               Inactive
             </span>
           )}

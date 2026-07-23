@@ -183,7 +183,7 @@ export function ProjectAccessTab({ projectId }: { projectId: string }) {
       title="Project Access Management"
       description="Control who can access this project by granting access to individual users or entire organizations."
     >
-      <div className="space-y-[18px]">
+      <div className="space-y-[1.125rem]">
         <UserAccessSection
           users={userAccess}
           loading={usersLoading}

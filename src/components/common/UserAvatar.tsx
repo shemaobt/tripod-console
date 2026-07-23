@@ -3,7 +3,7 @@ import { cn } from "@/utils/cn"
 import { avatarColors, initialsOf } from "@/utils/avatar"
 
 const sizeClasses = {
-  xs: "h-8 w-8 text-[11px]",
+  xs: "h-8 w-8 text-[0.6875rem]",
   sm: "h-9 w-9 text-xs",
   md: "h-11 w-11 text-sm",
   lg: "h-14 w-14 text-base",

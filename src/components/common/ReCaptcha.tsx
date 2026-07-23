@@ -90,5 +90,5 @@ export function ReCaptcha({ onChange }: ReCaptchaProps) {
     )
   }
 
-  return <div ref={containerRef} className="min-h-[78px]" />
+  return <div ref={containerRef} className="min-h-[4.875rem]" />
 }

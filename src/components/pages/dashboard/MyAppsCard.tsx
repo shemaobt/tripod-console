@@ -12,11 +12,11 @@ export function MyAppsCard({
   showManageLink: boolean
 }) {
   return (
-    <div className="bg-elevated rounded-[18px] shadow-[var(--shadow-card)] p-5">
+    <div className="bg-elevated rounded-[1.125rem] shadow-[var(--shadow-card)] p-5">
       <div className="flex items-center justify-between mb-3.5">
-        <h4 className="text-[15.5px] font-semibold text-fg-strong">My apps</h4>
+        <h4 className="text-[0.96875rem] font-semibold text-fg-strong">My apps</h4>
         {showManageLink && (
-          <Link to="/app/apps" className="text-[12.5px] font-semibold text-accent hover:underline">
+          <Link to="/app/apps" className="text-[0.78125rem] font-semibold text-accent hover:underline">
             Manage apps →
           </Link>
         )}

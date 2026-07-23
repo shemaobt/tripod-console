@@ -32,13 +32,13 @@ const DialogContent = React.forwardRef<
     <DialogPrimitive.Content
       ref={ref}
       className={cn(
-        "fixed left-[50%] top-[50%] z-50 grid w-[calc(100%-2rem)] sm:w-full max-w-[530px] translate-x-[-50%] translate-y-[-50%] gap-4 border-0 bg-elevated p-5 sm:p-6 shadow-[var(--shadow-lg)] rounded-[20px] max-h-[88vh] overflow-y-auto animate-pop-in",
+        "fixed left-[50%] top-[50%] z-50 grid w-[calc(100%-2rem)] sm:w-full max-w-[33.125rem] translate-x-[-50%] translate-y-[-50%] gap-4 border-0 bg-elevated p-5 sm:p-6 shadow-[var(--shadow-lg)] rounded-[1.25rem] max-h-[88vh] overflow-y-auto animate-pop-in",
         className
       )}
       {...props}
     >
       {children}
-      <DialogPrimitive.Close className="absolute right-4 top-4 w-8 h-8 rounded-[9px] grid place-items-center text-fg-subtle hover:bg-muted hover:text-fg-strong transition-colors focus:outline-none disabled:pointer-events-none">
+      <DialogPrimitive.Close className="absolute right-4 top-4 w-8 h-8 rounded-[0.5625rem] grid place-items-center text-fg-subtle hover:bg-muted hover:text-fg-strong transition-colors focus:outline-none disabled:pointer-events-none">
         <X className="h-4 w-4" />
         <span className="sr-only">Close</span>
       </DialogPrimitive.Close>
@@ -73,7 +73,7 @@ const DialogTitle = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <DialogPrimitive.Title
     ref={ref}
-    className={cn("text-[17px] font-semibold leading-tight text-fg-strong", className)}
+    className={cn("text-[1.0625rem] font-semibold leading-tight text-fg-strong", className)}
     {...props}
   />
 ))

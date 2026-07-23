@@ -18,10 +18,10 @@ import { formatDate } from "@/utils/format"
 import { RevokeButton } from "./RevokeButton"
 
 const TH =
-  "px-5 py-3 text-[11px] font-semibold tracking-[0.08em] uppercase text-fg-subtle border-b border-line"
+  "px-5 py-3 text-[0.6875rem] font-semibold tracking-[0.08em] uppercase text-fg-subtle border-b border-line"
 
 const ROLE_PILL =
-  "h-8 w-auto gap-1.5 rounded-[8px] border-0 px-3 text-[13px] font-semibold lowercase shadow-none"
+  "h-8 w-auto gap-1.5 rounded-[0.5rem] border-0 px-3 text-[0.8125rem] font-semibold lowercase shadow-none"
 
 const roleTone = (role: string) =>
   role === "manager"
@@ -56,7 +56,7 @@ export function UserAccessSection({
   return (
     <div className={cn(card.base, "overflow-hidden")}>
       <div className="flex items-center justify-between px-5 py-4 border-b border-line">
-        <h4 className="flex items-center text-[15.5px] font-semibold text-fg-strong">
+        <h4 className="flex items-center text-[0.96875rem] font-semibold text-fg-strong">
           People
           <InfoTooltip content="Individual users who have been granted direct access to this project." />
         </h4>
@@ -97,7 +97,7 @@ export function UserAccessSection({
                       size="xs"
                     />
                     <div className="flex flex-col min-w-0">
-                      <span className="font-semibold text-fg-strong text-[13.5px] truncate">
+                      <span className="font-semibold text-fg-strong text-[0.84375rem] truncate">
                         {user.display_name || user.email}
                       </span>
                       <span className="text-xs text-fg-subtle truncate">
@@ -126,7 +126,7 @@ export function UserAccessSection({
                     </span>
                   )}
                 </td>
-                <td className="px-5 py-3 border-b border-line text-[12.5px] text-fg-subtle hidden md:table-cell">
+                <td className="px-5 py-3 border-b border-line text-[0.78125rem] text-fg-subtle hidden md:table-cell">
                   {formatDate(user.granted_at)}
                 </td>
                 <td className="px-5 py-3 border-b border-line text-right">

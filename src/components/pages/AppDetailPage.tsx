@@ -199,7 +199,7 @@ export default function AppDetailPage() {
 
   if (!app) {
     return (
-      <div className="max-w-[1240px] mx-auto px-6 sm:px-10 pt-8">
+      <div className="max-w-[77.5rem] mx-auto px-6 sm:px-10 pt-8">
         <p className="text-fg-muted">App not found.</p>
       </div>
     )
@@ -209,12 +209,12 @@ export default function AppDetailPage() {
   const tile = avatarColors(app.id, app.name)
 
   return (
-    <div className="max-w-[1240px] mx-auto px-6 sm:px-10 pt-7 pb-14">
+    <div className="max-w-[77.5rem] mx-auto px-6 sm:px-10 pt-7 pb-14">
       <button
         onClick={() => navigate("/app/apps")}
-        className="inline-flex items-center gap-[7px] text-[13px] font-semibold text-fg-muted hover:text-fg-strong transition-colors mb-4"
+        className="inline-flex items-center gap-[0.4375rem] text-[0.8125rem] font-semibold text-fg-muted hover:text-fg-strong transition-colors mb-4"
       >
-        <ArrowLeft className="w-[15px] h-[15px]" strokeWidth={1.75} />
+        <ArrowLeft className="w-[0.9375rem] h-[0.9375rem]" strokeWidth={1.75} />
         Manage apps
       </button>
 
@@ -225,7 +225,7 @@ export default function AppDetailPage() {
             onClick={() => iconInputRef.current?.click()}
             disabled={iconBusy}
             title={form.icon_url ? "Change app icon" : "Upload app icon"}
-            className="w-[52px] h-[52px] rounded-[14px] overflow-hidden grid place-items-center text-base font-bold shrink-0 cursor-pointer transition-shadow hover:shadow-[0_0_0_3px_var(--color-accent-soft)]"
+            className="w-[3.25rem] h-[3.25rem] rounded-[0.875rem] overflow-hidden grid place-items-center text-base font-bold shrink-0 cursor-pointer transition-shadow hover:shadow-[0_0_0_0.1875rem_var(--color-accent-soft)]"
             style={form.icon_url ? undefined : { backgroundColor: tile.bg, color: tile.fg }}
           >
             {form.icon_url ? (
@@ -241,18 +241,18 @@ export default function AppDetailPage() {
             className="hidden"
             onChange={handleIconFile}
           />
-          <div className="flex flex-col gap-[3px] min-w-0">
-            <h3 className="text-[23px] font-bold text-fg-strong tracking-tight truncate">{app.name}</h3>
+          <div className="flex flex-col gap-[0.1875rem] min-w-0">
+            <h3 className="text-[1.4375rem] font-bold text-fg-strong tracking-tight truncate">{app.name}</h3>
             <div className="flex items-center gap-2.5 flex-wrap">
-              <span className="font-mono text-[11.5px] bg-muted rounded-md px-2 py-[3px] text-fg-muted">
+              <span className="font-mono text-[0.71875rem] bg-muted rounded-md px-2 py-[0.1875rem] text-fg-muted">
                 {app.app_key}
               </span>
-              <span className="text-[11px] text-fg-subtle">app_key is immutable</span>
+              <span className="text-[0.6875rem] text-fg-subtle">app_key is immutable</span>
               <button
                 type="button"
                 onClick={() => iconInputRef.current?.click()}
                 disabled={iconBusy}
-                className="text-[13px] font-semibold text-accent hover:text-accent-hover hover:underline disabled:opacity-50"
+                className="text-[0.8125rem] font-semibold text-accent hover:text-accent-hover hover:underline disabled:opacity-50"
               >
                 {form.icon_url ? "Change icon" : "Upload icon"}
               </button>
@@ -261,15 +261,15 @@ export default function AppDetailPage() {
                   type="button"
                   onClick={handleRemoveIcon}
                   disabled={iconBusy}
-                  className="text-[13px] font-semibold text-fg-subtle hover:text-st-warn hover:underline disabled:opacity-50"
+                  className="text-[0.8125rem] font-semibold text-fg-subtle hover:text-st-warn hover:underline disabled:opacity-50"
                 >
                   Remove icon
                 </button>
               )}
-              <span className="inline-flex items-center gap-1.5 text-[12.5px] text-fg-muted">
+              <span className="inline-flex items-center gap-1.5 text-[0.78125rem] text-fg-muted">
                 <span
                   className={cn(
-                    "w-[7px] h-[7px] rounded-full",
+                    "w-[0.4375rem] h-[0.4375rem] rounded-full",
                     app.is_active ? "bg-st-ok" : "bg-st-idle",
                   )}
                 />
@@ -279,7 +279,7 @@ export default function AppDetailPage() {
           </div>
         </div>
         <div className="flex items-center gap-2.5 shrink-0">
-          <span className="text-[13px] text-fg-muted">Active</span>
+          <span className="text-[0.8125rem] text-fg-muted">Active</span>
           <Switch
             checked={form.is_active}
             onCheckedChange={(checked) => setForm((f) => ({ ...f, is_active: checked }))}
@@ -287,10 +287,10 @@ export default function AppDetailPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-[1.3fr_1fr] gap-[18px] items-start mb-[18px]">
+      <div className="grid grid-cols-1 lg:grid-cols-[1.3fr_1fr] gap-[1.125rem] items-start mb-[1.125rem]">
         <DetailsCard form={form} setForm={setForm} saving={saving} onSave={handleSave} />
 
-        <div className="flex flex-col gap-[18px]">
+        <div className="flex flex-col gap-[1.125rem]">
           <AutoApproveCard form={form} setForm={setForm} />
           <DangerZoneCard onDelete={() => setConfirmDeleteApp(true)} />
         </div>

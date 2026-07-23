@@ -134,7 +134,7 @@ export function LanguageRequestForm({
       </div>
       <ReCaptcha key={captchaEpoch} onChange={setCaptchaToken} />
       <div className="flex items-center justify-between gap-3.5 border-t border-line pt-5">
-        <span className="text-[11.5px] text-fg-subtle">Rate limited — 5 submissions per minute.</span>
+        <span className="text-[0.71875rem] text-fg-subtle">Rate limited — 5 submissions per minute.</span>
         <Button type="submit" disabled={!canSubmit}>
           {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
           {submitting ? "Submitting..." : "Submit request"}

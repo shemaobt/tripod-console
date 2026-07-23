@@ -37,7 +37,7 @@ export function MapPreview({ projects }: { projects: ProjectResponse[] }) {
   const tileUrl = resolvedTheme === "dark" ? DARK_TILES : LIGHT_TILES
 
   return (
-    <div className="relative overflow-hidden rounded-[18px] shadow-[var(--shadow-card)] h-[250px]">
+    <div className="relative overflow-hidden rounded-[1.125rem] shadow-[var(--shadow-card)] h-[15.625rem]">
       <MapContainer
         center={FALLBACK_CENTER}
         zoom={4}
@@ -61,8 +61,8 @@ export function MapPreview({ projects }: { projects: ProjectResponse[] }) {
           />
         ))}
       </MapContainer>
-      <div className="absolute left-3.5 bottom-3.5 z-[500] bg-elevated rounded-[12px] shadow-[var(--shadow-md)] px-3.5 py-2.5 flex items-center gap-3.5">
-        <span className="text-[12.5px] text-fg-muted">
+      <div className="absolute left-3.5 bottom-3.5 z-[500] bg-elevated rounded-[0.75rem] shadow-[var(--shadow-md)] px-3.5 py-2.5 flex items-center gap-3.5">
+        <span className="text-[0.78125rem] text-fg-muted">
           <strong className="text-fg-strong">{located.length}</strong> projects with field
           locations
         </span>

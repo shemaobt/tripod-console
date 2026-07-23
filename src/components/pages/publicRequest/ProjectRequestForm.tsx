@@ -158,7 +158,7 @@ export function ProjectRequestForm({
         </Label>
       </div>
       {wantsNewLanguage && (
-        <div className="grid grid-cols-1 sm:grid-cols-[1.4fr_1fr] gap-5 bg-muted rounded-[14px] p-[18px]">
+        <div className="grid grid-cols-1 sm:grid-cols-[1.4fr_1fr] gap-5 bg-muted rounded-[0.875rem] p-[1.125rem]">
           <div className="flex flex-col">
             <Label htmlFor="request-new-lang-name">Language name</Label>
             <Input
@@ -185,7 +185,7 @@ export function ProjectRequestForm({
               <p className="text-xs text-st-warn mt-1">This code is already registered.</p>
             )}
           </div>
-          <span className="sm:col-span-2 text-[11.5px] text-fg-subtle">
+          <span className="sm:col-span-2 text-[0.71875rem] text-fg-subtle">
             Code: exactly 3 letters (ISO 639-3 style). Checked against existing languages and
             pending requests.
           </span>
@@ -193,7 +193,7 @@ export function ProjectRequestForm({
       )}
       <ReCaptcha key={captchaEpoch} onChange={setCaptchaToken} />
       <div className="flex items-center justify-between gap-3.5 border-t border-line pt-5">
-        <span className="text-[11.5px] text-fg-subtle">Rate limited — 5 submissions per minute.</span>
+        <span className="text-[0.71875rem] text-fg-subtle">Rate limited — 5 submissions per minute.</span>
         <Button type="submit" disabled={!canSubmit}>
           {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
           {submitting ? "Submitting..." : "Submit request"}

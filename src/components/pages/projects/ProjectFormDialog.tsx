@@ -220,7 +220,7 @@ export function ProjectFormDialog({
             )}
           </div>
           {wantsNewLanguage && !isEditing && (
-            <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-3 rounded-[14px] border border-line bg-muted p-3">
+            <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-3 rounded-[0.875rem] border border-line bg-muted p-3">
               <div className="space-y-1.5">
                 <Label htmlFor="new-lang-name">New language name</Label>
                 <Input

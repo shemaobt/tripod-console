@@ -101,7 +101,7 @@ export function AccessRequestsSection({ users, apps, onReviewed }: AccessRequest
             type="button"
             onClick={() => setFilterStatus(chip.value)}
             className={cn(
-              "rounded-full px-3.5 py-1.5 text-[12.5px] font-semibold transition-colors",
+              "rounded-full px-3.5 py-1.5 text-[0.78125rem] font-semibold transition-colors",
               filterStatus === chip.value
                 ? "bg-inverse text-on-dark"
                 : "bg-muted text-fg-muted hover:text-fg-strong",
@@ -124,7 +124,7 @@ export function AccessRequestsSection({ users, apps, onReviewed }: AccessRequest
           description="Access requests from users will appear here. You can filter by app or status."
         />
       ) : (
-        <div className="bg-elevated rounded-[18px] shadow-[var(--shadow-card)] overflow-hidden">
+        <div className="bg-elevated rounded-[1.125rem] shadow-[var(--shadow-card)] overflow-hidden">
           {requests.map((req) => (
             <RequestCard
               key={req.id}
@@ -183,7 +183,7 @@ function RequestCard({ req, user, appName, onApprove, onReject }: RequestCardPro
           {timeAgo(req.requested_at)}
         </p>
         {req.note && (
-          <p className="font-serif italic text-[12.5px] text-fg-muted leading-relaxed">
+          <p className="font-serif italic text-[0.78125rem] text-fg-muted leading-relaxed">
             &ldquo;{req.note}&rdquo;
           </p>
         )}
@@ -198,12 +198,12 @@ function RequestCard({ req, user, appName, onApprove, onReject }: RequestCardPro
       </div>
 
       <div className="flex flex-col items-end gap-2 flex-none pt-0.5">
-        <span className="inline-flex items-center gap-2 text-[13px] text-fg-muted">
+        <span className="inline-flex items-center gap-2 text-[0.8125rem] text-fg-muted">
           <span className={cn("w-2 h-2 rounded-full", status.dot)} />
           {status.label}
         </span>
         {isPending && (
-          <div className="flex items-center gap-2.5 text-[13px] font-semibold">
+          <div className="flex items-center gap-2.5 text-[0.8125rem] font-semibold">
             <button type="button" onClick={onApprove} className="text-accent hover:underline">
               Approve
             </button>

@@ -37,13 +37,13 @@ export function ProjectPopupContent({
     .join(" · ")
 
   return (
-    <div className="min-w-[210px] max-w-[250px] font-sans">
-      <h3 className="text-[14px] font-semibold leading-snug text-fg-strong">{project.name}</h3>
+    <div className="min-w-[13.125rem] max-w-[15.625rem] font-sans">
+      <h3 className="text-[0.875rem] font-semibold leading-snug text-fg-strong">{project.name}</h3>
 
-      {locationLine && <p className="mt-0.5 text-[11px] text-fg-subtle">{locationLine}</p>}
+      {locationLine && <p className="mt-0.5 text-[0.6875rem] text-fg-subtle">{locationLine}</p>}
 
       {project.description && (
-        <p className="mt-1.5 line-clamp-3 text-[12px] leading-relaxed text-fg-muted">
+        <p className="mt-1.5 line-clamp-3 text-[0.75rem] leading-relaxed text-fg-muted">
           {project.description}
         </p>
       )}
@@ -57,7 +57,7 @@ export function ProjectPopupContent({
                 key={phase.phase_id}
                 title={status.label}
                 className={cn(
-                  "inline-flex items-center gap-1.5 rounded-full px-2 py-[3px] text-[10.5px] font-semibold",
+                  "inline-flex items-center gap-1.5 rounded-full px-2 py-[0.1875rem] text-[0.65625rem] font-semibold",
                   status.pill,
                 )}
               >
@@ -67,19 +67,19 @@ export function ProjectPopupContent({
             )
           })}
           {hiddenPhases > 0 && (
-            <span className="inline-flex items-center rounded-full bg-muted px-2 py-[3px] text-[10.5px] font-semibold text-fg-muted">
+            <span className="inline-flex items-center rounded-full bg-muted px-2 py-[0.1875rem] text-[0.65625rem] font-semibold text-fg-muted">
               +{hiddenPhases}
             </span>
           )}
         </div>
       )}
 
-      <p className="mt-2 text-[11px] text-fg-subtle">{meta}</p>
+      <p className="mt-2 text-[0.6875rem] text-fg-subtle">{meta}</p>
 
       <button
         type="button"
         onClick={() => navigate(`/app/projects/${project.id}`)}
-        className="mt-2.5 rounded-full bg-accent px-3.5 py-[7px] text-[12px] font-semibold text-white transition-colors hover:bg-accent-hover"
+        className="mt-2.5 rounded-full bg-accent px-3.5 py-[0.4375rem] text-[0.75rem] font-semibold text-white transition-colors hover:bg-accent-hover"
       >
         Open project
       </button>

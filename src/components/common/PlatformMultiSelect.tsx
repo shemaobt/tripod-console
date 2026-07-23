@@ -29,7 +29,7 @@ export function PlatformMultiSelect({ value, onChange, id }: PlatformMultiSelect
             aria-checked={active}
             onClick={() => toggle(opt.value)}
             className={cn(
-              "inline-flex items-center gap-2 rounded-full border-[1.5px] px-4 py-2 text-[13px] font-semibold text-fg-strong transition-colors active:scale-[0.98]",
+              "inline-flex items-center gap-2 rounded-full border-[0.09375rem] px-4 py-2 text-[0.8125rem] font-semibold text-fg-strong transition-colors active:scale-[0.98]",
               active
                 ? "border-accent bg-accent-soft"
                 : "border-input-border hover:bg-muted",
@@ -37,7 +37,7 @@ export function PlatformMultiSelect({ value, onChange, id }: PlatformMultiSelect
           >
             <span
               className={cn(
-                "grid h-[14px] w-[14px] place-items-center rounded-[4px] border-[1.5px]",
+                "grid h-[0.875rem] w-[0.875rem] place-items-center rounded-[0.25rem] border-[0.09375rem]",
                 active ? "border-accent" : "border-input-border",
               )}
             >

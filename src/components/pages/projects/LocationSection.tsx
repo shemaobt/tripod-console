@@ -106,7 +106,7 @@ export function LocationSection({ project, onSave }: LocationSectionProps) {
   return (
     <div className={`${card.base} p-5 sm:p-6 flex flex-col gap-4`}>
       <div className="flex items-center justify-between">
-        <h4 className="flex items-center text-[15.5px] font-semibold text-fg-strong">
+        <h4 className="flex items-center text-[0.96875rem] font-semibold text-fg-strong">
           Location
           <InfoTooltip content="Set the geographic location for this project. Search for a place or enter coordinates manually." />
         </h4>
@@ -114,7 +114,7 @@ export function LocationSection({ project, onSave }: LocationSectionProps) {
           <button
             type="button"
             onClick={handleClearLocation}
-            className="text-[12.5px] font-semibold text-accent hover:underline"
+            className="text-[0.78125rem] font-semibold text-accent hover:underline"
           >
             Clear location
           </button>
@@ -130,11 +130,11 @@ export function LocationSection({ project, onSave }: LocationSectionProps) {
                 {location.displayName}
               </span>
             )}
-            <span className="font-mono text-[11.5px] text-fg-subtle">
+            <span className="font-mono text-[0.71875rem] text-fg-subtle">
               {location.latitude.toFixed(4)}, {location.longitude.toFixed(4)}
             </span>
           </div>
-          <div className="h-[180px] rounded-[12px] overflow-hidden relative">
+          <div className="h-[11.25rem] rounded-[0.75rem] overflow-hidden relative">
             <MapContainer
               key={`${location.latitude},${location.longitude}`}
               center={[location.latitude, location.longitude]}
@@ -152,7 +152,7 @@ export function LocationSection({ project, onSave }: LocationSectionProps) {
           </div>
         </div>
       ) : (
-        <p className="text-[13px] text-fg-subtle">
+        <p className="text-[0.8125rem] text-fg-subtle">
           No location set. Search a place or enter coordinates manually.
         </p>
       )}

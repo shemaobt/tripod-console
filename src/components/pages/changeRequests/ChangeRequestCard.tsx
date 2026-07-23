@@ -100,7 +100,7 @@ export function ChangeRequestCard({ req, onApprove, onReject }: ChangeRequestCar
         )}
         {managerGranted && <p className="text-xs text-st-ok">Manager access granted</p>}
         {req.reviewReason && (
-          <p className="font-serif italic text-[12.5px] text-fg-muted leading-relaxed">
+          <p className="font-serif italic text-[0.78125rem] text-fg-muted leading-relaxed">
             &ldquo;{req.reviewReason}&rdquo;
           </p>
         )}
@@ -112,12 +112,12 @@ export function ChangeRequestCard({ req, onApprove, onReject }: ChangeRequestCar
       </div>
 
       <div className="flex flex-col items-end gap-2 flex-none pt-0.5">
-        <span className="inline-flex items-center gap-2 text-[13px] text-fg-muted">
+        <span className="inline-flex items-center gap-2 text-[0.8125rem] text-fg-muted">
           <span className={cn("w-2 h-2 rounded-full", status.dot)} />
           {status.label}
         </span>
         {canReview && (
-          <div className="flex items-center gap-2.5 text-[13px] font-semibold">
+          <div className="flex items-center gap-2.5 text-[0.8125rem] font-semibold">
             {onApprove && (
               <button type="button" onClick={onApprove} className="text-accent hover:underline">
                 Accept

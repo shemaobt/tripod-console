@@ -145,7 +145,7 @@ export function ChangeRequestsSection({ kinds, emptyLabel, onReviewed }: ChangeR
             type="button"
             onClick={() => setFilterStatus(chip.value)}
             className={cn(
-              "rounded-full px-3.5 py-1.5 text-[12.5px] font-semibold transition-colors",
+              "rounded-full px-3.5 py-1.5 text-[0.78125rem] font-semibold transition-colors",
               filterStatus === chip.value
                 ? "bg-inverse text-on-dark"
                 : "bg-muted text-fg-muted hover:text-fg-strong",
@@ -168,7 +168,7 @@ export function ChangeRequestsSection({ kinds, emptyLabel, onReviewed }: ChangeR
           description={emptyLabel}
         />
       ) : (
-        <div className="bg-elevated rounded-[18px] shadow-[var(--shadow-card)] overflow-hidden">
+        <div className="bg-elevated rounded-[1.125rem] shadow-[var(--shadow-card)] overflow-hidden">
           {requests.map((req) => (
             <ChangeRequestCard
               key={req.id}
@@ -199,7 +199,7 @@ export function ChangeRequestsSection({ kinds, emptyLabel, onReviewed }: ChangeR
           </DialogHeader>
           <div className="space-y-4 pt-2">
             {isApprove && isProjectReview && reviewTarget?.newLanguageName && (
-              <p className="text-xs text-fg-muted rounded-[10px] bg-muted p-2.5">
+              <p className="text-xs text-fg-muted rounded-[0.625rem] bg-muted p-2.5">
                 Accepting will also create the new language{" "}
                 <span className="font-semibold text-fg-strong">
                   {reviewTarget.newLanguageName}
@@ -209,7 +209,7 @@ export function ChangeRequestsSection({ kinds, emptyLabel, onReviewed }: ChangeR
               </p>
             )}
             {isApprove && canGrantManager && (
-              <div className="flex items-start justify-between gap-4 rounded-[10px] bg-muted p-3">
+              <div className="flex items-start justify-between gap-4 rounded-[0.625rem] bg-muted p-3">
                 <div>
                   <Label htmlFor="grant-manager" className="text-sm text-fg-strong">
                     Grant manager access

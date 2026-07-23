@@ -25,7 +25,7 @@ import { PhaseFlowGraph } from "./phases/PhaseFlowGraph"
 import { DependencyPanel } from "./phases/DependencyPanel"
 
 const th =
-  "px-5 py-3 text-left text-[11px] font-semibold tracking-[0.08em] uppercase text-fg-subtle border-b border-line"
+  "px-5 py-3 text-left text-[0.6875rem] font-semibold tracking-[0.08em] uppercase text-fg-subtle border-b border-line"
 const td = "px-5 py-3 border-b border-line"
 
 export default function PhasesPage() {
@@ -135,21 +135,21 @@ export default function PhasesPage() {
 
   if (error) {
     return (
-      <div className="max-w-[1240px] mx-auto px-6 sm:px-10 pt-8 pb-14">
+      <div className="max-w-[77.5rem] mx-auto px-6 sm:px-10 pt-8 pb-14">
         <div className={states.error}>{error}</div>
       </div>
     )
   }
 
   return (
-    <div className="max-w-[1240px] mx-auto px-6 sm:px-10 pt-8 pb-14">
+    <div className="max-w-[77.5rem] mx-auto px-6 sm:px-10 pt-8 pb-14">
       <div className="mb-5 flex items-end justify-between gap-4">
         <div className="flex flex-col gap-1">
-          <span className="text-[13px] font-semibold tracking-[0.14em] uppercase text-fg-muted">
+          <span className="text-[0.8125rem] font-semibold tracking-[0.14em] uppercase text-fg-muted">
             Content
           </span>
-          <h3 className="text-[25px] font-bold tracking-tight text-fg-strong">Phases</h3>
-          <span className="text-[12.5px] text-fg-subtle">
+          <h3 className="text-[1.5625rem] font-bold tracking-tight text-fg-strong">Phases</h3>
+          <span className="text-[0.78125rem] text-fg-subtle">
             Global catalog — changes affect every project. Editable by admins and managers.
           </span>
         </div>
@@ -159,7 +159,7 @@ export default function PhasesPage() {
       </div>
 
       {phases.length === 0 ? (
-        <div className="bg-elevated rounded-[18px] shadow-[var(--shadow-card)] p-5 sm:p-6">
+        <div className="bg-elevated rounded-[1.125rem] shadow-[var(--shadow-card)] p-5 sm:p-6">
           <EmptyState
             icon={GitBranch}
             title="No phases yet"
@@ -169,8 +169,8 @@ export default function PhasesPage() {
           />
         </div>
       ) : (
-        <div className="space-y-[18px]">
-          <div className="grid grid-cols-1 gap-[18px] lg:grid-cols-[1fr_300px] items-start">
+        <div className="space-y-[1.125rem]">
+          <div className="grid grid-cols-1 gap-[1.125rem] lg:grid-cols-[1fr_18.75rem] items-start">
             <PhaseFlowGraph
               phases={phases}
               dependencies={allDeps}
@@ -190,7 +190,7 @@ export default function PhasesPage() {
             />
           </div>
 
-          <div className="bg-elevated rounded-[18px] shadow-[var(--shadow-card)] overflow-hidden">
+          <div className="bg-elevated rounded-[1.125rem] shadow-[var(--shadow-card)] overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full border-collapse text-sm">
                 <thead>
@@ -221,10 +221,10 @@ export default function PhasesPage() {
                         <td className={cn(td, "whitespace-nowrap font-semibold text-fg-strong")}>
                           {phase.name}
                         </td>
-                        <td className={cn(td, "text-[13px] text-fg-muted")}>
+                        <td className={cn(td, "text-[0.8125rem] text-fg-muted")}>
                           {phase.description || "—"}
                         </td>
-                        <td className={cn(td, "text-[12.5px] text-fg-subtle")}>
+                        <td className={cn(td, "text-[0.78125rem] text-fg-subtle")}>
                           {depNames || "—"}
                         </td>
                         <td className={cn(td, "text-fg-muted")}>
@@ -239,9 +239,9 @@ export default function PhasesPage() {
                                 e.stopPropagation()
                                 openEditDialog(phase)
                               }}
-                              className="grid h-[30px] w-[30px] place-items-center rounded-[9px] text-fg-subtle transition-colors hover:bg-muted hover:text-fg-strong"
+                              className="grid h-[1.875rem] w-[1.875rem] place-items-center rounded-[0.5625rem] text-fg-subtle transition-colors hover:bg-muted hover:text-fg-strong"
                             >
-                              <Pencil className="h-[15px] w-[15px]" strokeWidth={1.75} />
+                              <Pencil className="h-[0.9375rem] w-[0.9375rem]" strokeWidth={1.75} />
                             </button>
                             <button
                               type="button"
@@ -250,9 +250,9 @@ export default function PhasesPage() {
                                 e.stopPropagation()
                                 setDeleteTarget(phase)
                               }}
-                              className="grid h-[30px] w-[30px] place-items-center rounded-[9px] text-fg-subtle transition-colors hover:bg-accent-soft hover:text-on-accent-soft"
+                              className="grid h-[1.875rem] w-[1.875rem] place-items-center rounded-[0.5625rem] text-fg-subtle transition-colors hover:bg-accent-soft hover:text-on-accent-soft"
                             >
-                              <Trash2 className="h-[15px] w-[15px]" strokeWidth={1.75} />
+                              <Trash2 className="h-[0.9375rem] w-[0.9375rem]" strokeWidth={1.75} />
                             </button>
                           </div>
                         </td>

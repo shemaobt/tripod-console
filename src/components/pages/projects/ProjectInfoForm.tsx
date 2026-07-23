@@ -53,7 +53,7 @@ export function ProjectInfoForm({
 
   return (
     <div className={`${card.base} p-5 sm:p-6 flex flex-col gap-5`}>
-      <h4 className="text-[15.5px] font-semibold text-fg-strong">
+      <h4 className="text-[0.96875rem] font-semibold text-fg-strong">
         Project information
       </h4>
       <div className="space-y-1.5">

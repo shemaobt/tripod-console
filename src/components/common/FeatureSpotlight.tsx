@@ -36,9 +36,9 @@ export function FeatureSpotlight({
           {children}
         </div>
       </PopoverTrigger>
-      <PopoverContent side={side} className="w-[270px] bg-inverse text-on-dark">
+      <PopoverContent side={side} className="w-[16.875rem] bg-inverse text-on-dark">
         <div className="flex flex-col gap-2">
-          <h4 className="text-[13px] font-semibold text-on-dark">{title}</h4>
+          <h4 className="text-[0.8125rem] font-semibold text-on-dark">{title}</h4>
           <p className="text-xs text-on-dark/80 leading-relaxed">{description}</p>
           <Button
             size="sm"

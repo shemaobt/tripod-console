@@ -59,7 +59,7 @@ export function MyChangeRequestsSection({ kinds, emptyLabel }: MyChangeRequestsS
             type="button"
             onClick={() => setFilterStatus(chip.value)}
             className={cn(
-              "rounded-full px-3.5 py-1.5 text-[12.5px] font-semibold transition-colors",
+              "rounded-full px-3.5 py-1.5 text-[0.78125rem] font-semibold transition-colors",
               filterStatus === chip.value
                 ? "bg-inverse text-on-dark"
                 : "bg-muted text-fg-muted hover:text-fg-strong",
@@ -85,7 +85,7 @@ export function MyChangeRequestsSection({ kinds, emptyLabel }: MyChangeRequestsS
           }
         />
       ) : (
-        <div className="bg-elevated rounded-[18px] shadow-[var(--shadow-card)] overflow-hidden">
+        <div className="bg-elevated rounded-[1.125rem] shadow-[var(--shadow-card)] overflow-hidden">
           {visible.map((req) => (
             <ChangeRequestCard key={req.id} req={fromChangeRequest(req)} />
           ))}

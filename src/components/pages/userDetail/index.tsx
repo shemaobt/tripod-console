@@ -306,7 +306,7 @@ export default function UserDetailPage() {
 
   if (!user) {
     return (
-      <div className="mx-auto max-w-[1240px] px-6 pt-8 sm:px-10">
+      <div className="mx-auto max-w-[77.5rem] px-6 pt-8 sm:px-10">
         <p className="text-fg-muted">User not found.</p>
       </div>
     )
@@ -315,13 +315,13 @@ export default function UserDetailPage() {
   const isSelf = currentUser?.id === userId
 
   return (
-    <div className="mx-auto max-w-[1240px] px-6 pb-14 pt-8 sm:px-10">
+    <div className="mx-auto max-w-[77.5rem] px-6 pb-14 pt-8 sm:px-10">
       <button
         type="button"
         onClick={() => navigate("/app/users")}
-        className="mb-4 inline-flex items-center gap-1.5 text-[13px] font-semibold text-fg-muted transition-colors hover:text-fg-strong"
+        className="mb-4 inline-flex items-center gap-1.5 text-[0.8125rem] font-semibold text-fg-muted transition-colors hover:text-fg-strong"
       >
-        <ArrowLeft className="h-[15px] w-[15px]" strokeWidth={1.75} />
+        <ArrowLeft className="h-[0.9375rem] w-[0.9375rem]" strokeWidth={1.75} />
         Users
       </button>
 
@@ -339,7 +339,7 @@ export default function UserDetailPage() {
         onChange={handleAvatarFile}
       />
 
-      <div className="mb-[18px] grid grid-cols-1 items-start gap-[18px] lg:grid-cols-[1fr_1.3fr]">
+      <div className="mb-[1.125rem] grid grid-cols-1 items-start gap-[1.125rem] lg:grid-cols-[1fr_1.3fr]">
         <AccountCard
           user={user}
           isSelf={isSelf}

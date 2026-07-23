@@ -23,15 +23,15 @@ export function AccountCard({
   onDelete: () => void
 }) {
   return (
-    <div className={cn(card.base, "flex flex-col gap-4 p-[22px]")}>
-      <h4 className="text-[15.5px] font-bold text-fg-strong">Account</h4>
+    <div className={cn(card.base, "flex flex-col gap-4 p-[1.375rem]")}>
+      <h4 className="text-[0.96875rem] font-bold text-fg-strong">Account</h4>
 
       <div className="flex items-center justify-between gap-3">
         <div className="flex flex-col gap-0.5">
-          <span className="text-[13.5px] font-semibold text-fg-strong">
+          <span className="text-[0.84375rem] font-semibold text-fg-strong">
             {user.is_active ? "Active" : "Inactive"}
           </span>
-          <span className="text-[11.5px] text-fg-subtle">
+          <span className="text-[0.71875rem] text-fg-subtle">
             Toggling has no confirmation. Auth cache may take up to 5 min to apply (I-05).
           </span>
         </div>
@@ -40,8 +40,8 @@ export function AccountCard({
 
       <div className="flex items-center justify-between gap-3 border-t border-line pt-3.5">
         <div className="flex flex-col gap-0.5">
-          <span className="text-[13.5px] font-semibold text-fg-strong">Profile photo</span>
-          <span className="text-[11.5px] text-fg-subtle">
+          <span className="text-[0.84375rem] font-semibold text-fg-strong">Profile photo</span>
+          <span className="text-[0.71875rem] text-fg-subtle">
             Helps tell people apart in lists and access tables.
           </span>
         </div>
@@ -50,7 +50,7 @@ export function AccountCard({
             type="button"
             disabled={avatarUploading}
             onClick={onPickPhoto}
-            className="text-[12.5px] font-semibold text-accent hover:underline disabled:opacity-50"
+            className="text-[0.78125rem] font-semibold text-accent hover:underline disabled:opacity-50"
           >
             {avatarUploading ? "Uploading…" : "Upload"}
           </button>
@@ -59,7 +59,7 @@ export function AccountCard({
               type="button"
               disabled={avatarUploading}
               onClick={onRemovePhoto}
-              className="text-[12.5px] font-semibold text-on-accent-soft hover:underline disabled:opacity-50"
+              className="text-[0.78125rem] font-semibold text-on-accent-soft hover:underline disabled:opacity-50"
             >
               Remove
             </button>
@@ -67,7 +67,7 @@ export function AccountCard({
         </div>
       </div>
 
-      <span className="border-t border-line pt-3.5 text-[12.5px] text-fg-subtle">
+      <span className="border-t border-line pt-3.5 text-[0.78125rem] text-fg-subtle">
         Created {formatDate(user.created_at)}
       </span>
 

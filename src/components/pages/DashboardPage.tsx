@@ -47,17 +47,17 @@ export default function DashboardPage() {
   })
 
   return (
-    <div className="max-w-[1240px] mx-auto px-6 sm:px-10 pt-8 pb-14 flex flex-col gap-[18px]">
+    <div className="max-w-[77.5rem] mx-auto px-6 sm:px-10 pt-8 pb-14 flex flex-col gap-[1.125rem]">
       <div className="flex items-end justify-between gap-4">
         <div className="flex flex-col gap-1">
-          <span className="text-[13px] font-semibold tracking-[0.14em] uppercase text-fg-muted">
+          <span className="text-[0.8125rem] font-semibold tracking-[0.14em] uppercase text-fg-muted">
             Overview
           </span>
-          <h3 className="text-[25px] font-bold text-fg-strong tracking-tight">
+          <h3 className="text-[1.5625rem] font-bold text-fg-strong tracking-tight">
             Welcome back{firstName ? `, ${firstName}` : ""}.
           </h3>
         </div>
-        <span className="hidden sm:block font-serif italic text-[13.5px] text-fg-subtle">{today}</span>
+        <span className="hidden sm:block font-serif italic text-[0.84375rem] text-fg-subtle">{today}</span>
       </div>
 
       {isPlatformAdmin && adminData && (
@@ -65,8 +65,8 @@ export default function DashboardPage() {
       )}
 
       {isPlatformAdmin ? (
-        <div className="grid grid-cols-1 lg:grid-cols-[1.65fr_1fr] gap-[18px] items-start">
-          <div className="flex flex-col gap-[18px] min-w-0">
+        <div className="grid grid-cols-1 lg:grid-cols-[1.65fr_1fr] gap-[1.125rem] items-start">
+          <div className="flex flex-col gap-[1.125rem] min-w-0">
             <MyAppsCard apps={apps} showManageLink />
             <MapPreview projects={projects} />
           </div>

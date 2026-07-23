@@ -40,38 +40,38 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen grid lg:grid-cols-[1.05fr_1fr] bg-canvas">
-      <div className="hidden lg:flex relative overflow-hidden bg-inverse text-[#F6F5EB] flex-col justify-between px-[52px] py-11">
+      <div className="hidden lg:flex relative overflow-hidden bg-inverse text-[#F6F5EB] flex-col justify-between px-[3.25rem] py-11">
         <img src="/assets/logo-branco.svg" alt="Shemá" className="h-7 w-auto self-start relative z-10" />
-        <div className="relative z-10 max-w-[470px] flex flex-col gap-[18px] pb-8">
-          <span className="text-[13px] font-semibold tracking-[0.14em] uppercase text-[#F6F5EB]/60">
+        <div className="relative z-10 max-w-[29.375rem] flex flex-col gap-[1.125rem] pb-8">
+          <span className="text-[0.8125rem] font-semibold tracking-[0.14em] uppercase text-[#F6F5EB]/60">
             Tripod Console
           </span>
-          <div className="font-black text-[50px] leading-[1.03] tracking-[-0.01em] uppercase">
+          <div className="font-black text-[3.125rem] leading-[1.03] tracking-[-0.01em] uppercase">
             Every mother tongue, heard.
           </div>
-          <p className="font-serif text-[16.5px] leading-[1.65] text-[#F6F5EB]/80">
+          <p className="font-serif text-[1.03125rem] leading-[1.65] text-[#F6F5EB]/80">
             Languages, projects, workflow phases and access — the governance console for the Shema oral
             Bible translation ecosystem.
           </p>
-          <p className="font-serif italic text-[15px] text-[#F6F5EB]/65 mt-1.5">
+          <p className="font-serif italic text-[0.9375rem] text-[#F6F5EB]/65 mt-1.5">
             “Assim na terra como no céu.”
           </p>
         </div>
         <img
           src="/assets/icon-branco.svg"
           alt=""
-          className="absolute -right-[70px] -bottom-20 w-[360px] opacity-10 pointer-events-none"
+          className="absolute -right-[4.375rem] -bottom-20 w-[22.5rem] opacity-10 pointer-events-none"
         />
       </div>
 
       <div className="flex flex-col items-center justify-center px-6 sm:px-10 py-12">
-        <form onSubmit={handleSubmit} className="w-full max-w-[360px] flex flex-col gap-6">
+        <form onSubmit={handleSubmit} className="w-full max-w-[22.5rem] flex flex-col gap-6">
           <div className="flex flex-col gap-1.5">
             <div className="lg:hidden mb-4">
               <img src="/assets/logo-verde.svg" alt="Shemá" className="h-6 w-auto dark:hidden" />
               <img src="/assets/logo-branco.svg" alt="Shemá" className="h-6 w-auto hidden dark:block" />
             </div>
-            <h3 className="text-[26px] font-bold text-fg-strong tracking-tight">Sign in</h3>
+            <h3 className="text-[1.625rem] font-bold text-fg-strong tracking-tight">Sign in</h3>
             <p className="text-sm text-fg-muted">Use your Shema account to manage the platform.</p>
           </div>
 
@@ -107,11 +107,11 @@ export default function LoginPage() {
             {submitting ? "Signing in…" : "Sign in"}
           </Button>
 
-          <div className="border-t border-line pt-[18px] flex flex-col gap-2">
-            <span className="text-[13px] text-fg-muted">Need access? Contact your administrator.</span>
+          <div className="border-t border-line pt-[1.125rem] flex flex-col gap-2">
+            <span className="text-[0.8125rem] text-fg-muted">Need access? Contact your administrator.</span>
             <Link
               to="/request"
-              className="text-[13.5px] font-semibold text-accent hover:text-accent-hover hover:underline self-start"
+              className="text-[0.84375rem] font-semibold text-accent hover:text-accent-hover hover:underline self-start"
             >
               Submit a public request →
             </Link>

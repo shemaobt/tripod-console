@@ -37,13 +37,13 @@ export function FilterBar({ filters, search, resultLabel, className }: FilterBar
   return (
     <div className={cn("flex flex-wrap items-center gap-3", className)}>
       {search && (
-        <div className="flex items-center gap-2 bg-muted rounded-full px-4 py-2.5 flex-1 min-w-0 sm:min-w-[240px] sm:max-w-[280px]">
-          <Search className="h-[15px] w-[15px] text-fg-subtle shrink-0" strokeWidth={2} />
+        <div className="flex items-center gap-2 bg-muted rounded-full px-4 py-2.5 flex-1 min-w-0 sm:min-w-[15rem] sm:max-w-[17.5rem]">
+          <Search className="h-[0.9375rem] w-[0.9375rem] text-fg-subtle shrink-0" strokeWidth={2} />
           <input
             placeholder={search.placeholder ?? "Search..."}
             value={search.value}
             onChange={(e) => search.onChange(e.target.value)}
-            className="bg-transparent border-0 outline-none text-[13.5px] text-fg-strong placeholder:text-fg-subtle w-full"
+            className="bg-transparent border-0 outline-none text-[0.84375rem] text-fg-strong placeholder:text-fg-subtle w-full"
           />
         </div>
       )}

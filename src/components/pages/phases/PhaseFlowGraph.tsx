@@ -227,11 +227,11 @@ export function PhaseFlowGraph({
   }
 
   const zoomBtn =
-    "w-8 h-8 rounded-[10px] bg-elevated shadow-[var(--shadow-md)] grid place-items-center text-fg-strong hover:bg-muted transition-colors"
+    "w-8 h-8 rounded-[0.625rem] bg-elevated shadow-[var(--shadow-md)] grid place-items-center text-fg-strong hover:bg-muted transition-colors"
 
   return (
     <div
-      className="relative bg-elevated rounded-[18px] shadow-[var(--shadow-card)] overflow-hidden"
+      className="relative bg-elevated rounded-[1.125rem] shadow-[var(--shadow-card)] overflow-hidden"
       style={{ height: minHeight }}
     >
       <div className="absolute top-3 right-3 z-10 flex flex-col gap-1.5">
@@ -241,7 +241,7 @@ export function PhaseFlowGraph({
           onClick={() => setZoom((z) => Math.min(MAX_ZOOM, z + ZOOM_STEP))}
           title="Zoom in"
         >
-          <ZoomIn className="w-[15px] h-[15px]" strokeWidth={2} />
+          <ZoomIn className="w-[0.9375rem] h-[0.9375rem]" strokeWidth={2} />
         </button>
         <button
           type="button"
@@ -249,10 +249,10 @@ export function PhaseFlowGraph({
           onClick={() => setZoom((z) => Math.max(MIN_ZOOM, z - ZOOM_STEP))}
           title="Zoom out"
         >
-          <ZoomOut className="w-[15px] h-[15px]" strokeWidth={2} />
+          <ZoomOut className="w-[0.9375rem] h-[0.9375rem]" strokeWidth={2} />
         </button>
         <button type="button" className={zoomBtn} onClick={handleFitView} title="Fit to view">
-          <Maximize2 className="w-[15px] h-[15px]" strokeWidth={2} />
+          <Maximize2 className="w-[0.9375rem] h-[0.9375rem]" strokeWidth={2} />
         </button>
       </div>
 
@@ -379,7 +379,7 @@ export function PhaseFlowGraph({
         </svg>
       </div>
 
-      <span className="absolute left-[14px] bottom-3 z-10 text-[11px] text-fg-subtle pointer-events-none select-none">
+      <span className="absolute left-[0.875rem] bottom-3 z-10 text-[0.6875rem] text-fg-subtle pointer-events-none select-none">
         Drag to pan &middot; scroll to zoom &middot; click a phase to inspect &middot; phases in the same column can run in parallel
       </span>
     </div>

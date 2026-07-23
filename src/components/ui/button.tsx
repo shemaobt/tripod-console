@@ -10,17 +10,17 @@ const buttonVariants = cva(
       variant: {
         default: "bg-accent text-white hover:bg-accent-hover",
         secondary:
-          "bg-transparent text-fg shadow-[inset_0_0_0_1.5px_var(--color-fg)] hover:bg-inverse hover:text-on-dark",
+          "bg-transparent text-fg shadow-[inset_0_0_0_0.09375rem_var(--color-fg)] hover:bg-inverse hover:text-on-dark",
         destructive: "bg-accent text-white hover:bg-accent-hover",
         outline:
-          "bg-elevated text-fg-strong shadow-[inset_0_0_0_1px_var(--color-line-strong)] hover:bg-muted",
+          "bg-elevated text-fg-strong shadow-[inset_0_0_0_0.0625rem_var(--color-line-strong)] hover:bg-muted",
         "outline-destructive": "text-on-accent-soft hover:bg-accent-soft",
         ghost: "text-fg-muted hover:bg-muted hover:text-fg-strong",
         link: "text-accent underline-offset-4 hover:underline rounded-none",
       },
       size: {
         default: "h-11 px-5 py-2",
-        sm: "h-9 px-4 text-[13px]",
+        sm: "h-9 px-4 text-[0.8125rem]",
         lg: "h-12 px-6 text-base",
         icon: "h-10 w-10",
       },

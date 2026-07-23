@@ -155,7 +155,7 @@ export function ImageUpload({
             Remove
           </Button>
         )}
-        {hint && <p className="text-[11px] text-fg-subtle leading-snug max-w-[190px]">{hint}</p>}
+        {hint && <p className="text-[0.6875rem] text-fg-subtle leading-snug max-w-[11.875rem]">{hint}</p>}
       </div>
     </div>
   )

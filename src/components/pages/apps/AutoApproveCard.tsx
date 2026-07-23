@@ -9,11 +9,11 @@ export function AutoApproveCard({
   setForm: React.Dispatch<React.SetStateAction<AppFormState>>
 }) {
   return (
-    <div className="bg-elevated rounded-[18px] shadow-[var(--shadow-card)] p-[22px] flex flex-col gap-3">
+    <div className="bg-elevated rounded-[1.125rem] shadow-[var(--shadow-card)] p-[1.375rem] flex flex-col gap-3">
       <div className="flex items-center justify-between gap-3">
         <div className="flex flex-col gap-0.5">
           <span className="text-sm font-semibold text-fg-strong">Auto-approve requests</span>
-          <span className="text-[11.5px] text-fg-subtle leading-relaxed">
+          <span className="text-[0.71875rem] text-fg-subtle leading-relaxed">
             Turning on approves all pending requests retroactively and grants the default role — one transaction with the toggle. Turning off undoes nothing.
           </span>
         </div>
@@ -24,7 +24,7 @@ export function AutoApproveCard({
         />
       </div>
       <div className="flex items-center justify-between border-t border-line pt-3">
-        <span className="text-[12.5px] text-fg-muted">
+        <span className="text-[0.78125rem] text-fg-muted">
           {form.auto_approve
             ? "New access requests are approved automatically."
             : "New access requests require manual review."}

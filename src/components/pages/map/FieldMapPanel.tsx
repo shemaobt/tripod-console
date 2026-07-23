@@ -33,25 +33,25 @@ export function FieldMapPanel({
     : rows
 
   return (
-    <div className="absolute left-4 top-4 bottom-4 z-[1000] flex w-[300px] max-w-[calc(100vw-2rem)] flex-col gap-3 rounded-[18px] bg-elevated p-4 shadow-[var(--shadow-lg)]">
+    <div className="absolute left-4 top-4 bottom-4 z-[1000] flex w-[18.75rem] max-w-[calc(100vw-2rem)] flex-col gap-3 rounded-[1.125rem] bg-elevated p-4 shadow-[var(--shadow-lg)]">
       <div className="flex flex-col gap-0.5">
-        <h4 className="text-[15.5px] font-semibold text-fg-strong">Field map</h4>
-        <span className="text-[11.5px] text-fg-subtle">{countLabel}</span>
+        <h4 className="text-[0.96875rem] font-semibold text-fg-strong">Field map</h4>
+        <span className="text-[0.71875rem] text-fg-subtle">{countLabel}</span>
       </div>
 
-      <div className="flex items-center gap-2 rounded-full bg-muted px-[14px] py-2">
+      <div className="flex items-center gap-2 rounded-full bg-muted px-[0.875rem] py-2">
         <Search className="h-3.5 w-3.5 flex-none text-fg-subtle" strokeWidth={2} />
         <input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search projects…"
-          className="w-full border-none bg-transparent text-[13px] text-fg-strong outline-none placeholder:text-fg-subtle"
+          className="w-full border-none bg-transparent text-[0.8125rem] text-fg-strong outline-none placeholder:text-fg-subtle"
         />
       </div>
 
       <div className="-mx-1.5 flex flex-1 flex-col overflow-y-auto">
         {filtered.length === 0 ? (
-          <p className="py-4 text-center text-[11.5px] text-fg-subtle">
+          <p className="py-4 text-center text-[0.71875rem] text-fg-subtle">
             No projects found
           </p>
         ) : (
@@ -64,17 +64,17 @@ export function FieldMapPanel({
                 activeId === r.project.id ? "bg-muted" : "hover:bg-muted",
               )}
             >
-              <span className="text-[13.5px] font-semibold text-fg-strong">
+              <span className="text-[0.84375rem] font-semibold text-fg-strong">
                 {r.name}
               </span>
-              <span className="text-[11.5px] text-fg-subtle">{r.locLine}</span>
-              <span className="text-[11.5px] text-fg-muted">{r.meta}</span>
+              <span className="text-[0.71875rem] text-fg-subtle">{r.locLine}</span>
+              <span className="text-[0.71875rem] text-fg-muted">{r.meta}</span>
             </button>
           ))
         )}
       </div>
 
-      <span className="text-[10.5px] text-fg-subtle">
+      <span className="text-[0.65625rem] text-fg-subtle">
         Tiles: CARTO · click a project to fly to it
       </span>
     </div>

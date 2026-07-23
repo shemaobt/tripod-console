@@ -147,19 +147,19 @@ function PhaseNode({
       <foreignObject x={node.x} y={node.y} width={NODE_WIDTH} height={NODE_HEIGHT}>
         <div
           className={cn(
-            "h-full rounded-[13px] border-[1.5px] border-input-border bg-elevated shadow-[var(--shadow-card)] ring-1 px-3 py-2 flex flex-col justify-center gap-1.5 cursor-pointer transition-all duration-200 hover:shadow-[var(--shadow-md)] hover:border-line-strong",
+            "h-full rounded-[0.8125rem] border-[0.09375rem] border-input-border bg-elevated shadow-[var(--shadow-card)] ring-1 px-3 py-2 flex flex-col justify-center gap-1.5 cursor-pointer transition-all duration-200 hover:shadow-[var(--shadow-md)] hover:border-line-strong",
             config.ring,
           )}
           onClick={() => onStatusClick(node)}
         >
-          <p className="text-[13px] font-semibold text-fg-strong truncate">{node.name}</p>
+          <p className="text-[0.8125rem] font-semibold text-fg-strong truncate">{node.name}</p>
           <span
             className={cn(
-              "inline-flex items-center gap-1.5 self-start rounded-full px-2 py-0.5 text-[11px] font-semibold",
+              "inline-flex items-center gap-1.5 self-start rounded-full px-2 py-0.5 text-[0.6875rem] font-semibold",
               config.pill,
             )}
           >
-            <span className={cn("w-[7px] h-[7px] rounded-full shrink-0", config.dot)} />
+            <span className={cn("w-[0.4375rem] h-[0.4375rem] rounded-full shrink-0", config.dot)} />
             {config.label}
           </span>
         </div>
@@ -202,7 +202,7 @@ function StatusPopover({
         <div ref={anchorRef} className="absolute" style={{ left: node.x, top: node.y, width: NODE_WIDTH, height: NODE_HEIGHT, pointerEvents: "none" }} />
       </PopoverTrigger>
       <PopoverContent side="right" className="w-48 p-2">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-fg-subtle mb-2 px-2">
+        <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-fg-subtle mb-2 px-2">
           Update Status
         </p>
         <div className="space-y-0.5">
@@ -216,7 +216,7 @@ function StatusPopover({
                 type="button"
                 onClick={() => onSelect(node.phaseId, status)}
                 className={cn(
-                  "w-full flex items-center gap-2 px-2 py-1.5 rounded-[10px] text-sm transition-colors text-left",
+                  "w-full flex items-center gap-2 px-2 py-1.5 rounded-[0.625rem] text-sm transition-colors text-left",
                   isActive
                     ? "bg-accent-soft text-on-accent-soft font-semibold"
                     : "hover:bg-muted text-fg",
@@ -280,7 +280,7 @@ export function ProjectPhasesTab({ projectId }: { projectId: string }) {
 
   return (
     <div className="space-y-4">
-      <h3 className="flex items-center text-[15.5px] font-semibold text-fg-strong">
+      <h3 className="flex items-center text-[0.96875rem] font-semibold text-fg-strong">
         Phases
         <InfoTooltip content="Every phase defined by a platform admin applies to all projects. Set each phase's status to track this project's progress." />
       </h3>
@@ -330,7 +330,7 @@ export function ProjectPhasesTab({ projectId }: { projectId: string }) {
               anchorRef={statusAnchorRef}
             />
           </div>
-          <p className="px-0.5 text-[11.5px] text-fg-subtle">
+          <p className="px-0.5 text-[0.71875rem] text-fg-subtle">
             Click a phase to update its status.
           </p>
         </div>

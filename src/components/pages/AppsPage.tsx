@@ -145,17 +145,17 @@ export default function AppsPage() {
   }
 
   return (
-    <div className="max-w-[1240px] mx-auto px-6 sm:px-10 pt-8 pb-14">
+    <div className="max-w-[77.5rem] mx-auto px-6 sm:px-10 pt-8 pb-14">
       <div className="flex items-end justify-between gap-4 mb-5">
         <div className="flex flex-col gap-1">
-          <span className="text-[13px] font-semibold tracking-[0.14em] uppercase text-fg-muted">
+          <span className="text-[0.8125rem] font-semibold tracking-[0.14em] uppercase text-fg-muted">
             Administration
           </span>
-          <h3 className="text-[25px] font-bold text-fg-strong tracking-tight flex items-center">
+          <h3 className="text-[1.5625rem] font-bold text-fg-strong tracking-tight flex items-center">
             Manage apps
             <InfoTooltip content="Apps are the software products users can access. Manage their metadata, platforms, roles and status here." />
           </h3>
-          <span className="text-[12.5px] text-fg-subtle">
+          <span className="text-[0.78125rem] text-fg-subtle">
             Catalog of ecosystem apps — platforms, roles and auto-approval.
           </span>
         </div>
@@ -165,7 +165,7 @@ export default function AppsPage() {
           description="Register and configure the apps in your platform. Each app can have roles assigned to users for access control."
         >
           <Button onClick={openCreateDialog}>
-            <Plus className="w-[17px] h-[17px]" strokeWidth={1.75} />
+            <Plus className="w-[1.0625rem] h-[1.0625rem]" strokeWidth={1.75} />
             New app
           </Button>
         </FeatureSpotlight>

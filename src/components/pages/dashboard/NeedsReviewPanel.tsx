@@ -74,10 +74,10 @@ export function NeedsReviewPanel({ data }: { data: AdminDashboardData }) {
     .slice(0, 5)
 
   return (
-    <div className="bg-elevated rounded-[18px] shadow-[var(--shadow-card)] p-5 min-w-0">
+    <div className="bg-elevated rounded-[1.125rem] shadow-[var(--shadow-card)] p-5 min-w-0">
       <div className="flex items-center justify-between mb-3">
-        <h4 className="text-[15.5px] font-semibold text-fg-strong">Needs review</h4>
-        <Link to="/app/users" className="text-[12.5px] font-semibold text-accent hover:underline">
+        <h4 className="text-[0.96875rem] font-semibold text-fg-strong">Needs review</h4>
+        <Link to="/app/users" className="text-[0.78125rem] font-semibold text-accent hover:underline">
           All requests →
         </Link>
       </div>
@@ -86,7 +86,7 @@ export function NeedsReviewPanel({ data }: { data: AdminDashboardData }) {
           {recent.map((item) => (
             <div
               key={item.id}
-              className="flex items-center gap-[11px] py-[11px] border-b border-line last:border-b-0"
+              className="flex items-center gap-[0.6875rem] py-[0.6875rem] border-b border-line last:border-b-0"
             >
               <UserAvatar
                 id={item.avatarId}
@@ -96,16 +96,16 @@ export function NeedsReviewPanel({ data }: { data: AdminDashboardData }) {
                 size="xs"
               />
               <div className="flex flex-col min-w-0 flex-1">
-                <span className="text-[13.5px] font-semibold text-fg-strong truncate">
+                <span className="text-[0.84375rem] font-semibold text-fg-strong truncate">
                   {item.title}
                 </span>
-                <span className="text-[11.5px] text-fg-subtle truncate">
+                <span className="text-[0.71875rem] text-fg-subtle truncate">
                   {item.subtitle} · {formatDate(item.requestedAt)}
                 </span>
               </div>
               <Link
                 to={item.to}
-                className="text-[12.5px] font-semibold text-accent hover:underline shrink-0"
+                className="text-[0.78125rem] font-semibold text-accent hover:underline shrink-0"
               >
                 Review →
               </Link>
@@ -113,7 +113,7 @@ export function NeedsReviewPanel({ data }: { data: AdminDashboardData }) {
           ))}
         </div>
       ) : (
-        <p className="text-[13px] text-fg-subtle">
+        <p className="text-[0.8125rem] text-fg-subtle">
           Nothing pending. New access, change and public requests will appear here.
         </p>
       )}

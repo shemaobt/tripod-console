@@ -227,11 +227,11 @@ export default function LanguagesPage() {
 
   const displayLanguages = showInactive ? allLanguages : languages.filter((lang) => lang.is_active)
   const thClass =
-    "text-left px-5 py-3 text-[11px] font-semibold tracking-[0.08em] uppercase text-fg-subtle border-b border-line"
+    "text-left px-5 py-3 text-[0.6875rem] font-semibold tracking-[0.08em] uppercase text-fg-subtle border-b border-line"
   const tdClass = "px-5 py-3 border-b border-line"
-  const segClass = "rounded-full px-4 py-1.5 text-[13px] font-semibold transition-colors"
+  const segClass = "rounded-full px-4 py-1.5 text-[0.8125rem] font-semibold transition-colors"
   const segActive = "bg-elevated text-fg-strong shadow-[var(--shadow-sm)]"
-  const iconBtn = "w-[30px] h-[30px] rounded-[9px] inline-grid place-items-center transition-colors"
+  const iconBtn = "w-[1.875rem] h-[1.875rem] rounded-[0.5625rem] inline-grid place-items-center transition-colors"
 
   const languagesView =
     languages.length === 0 ? (
@@ -243,7 +243,7 @@ export default function LanguagesPage() {
         onAction={openCreateDialog}
       />
     ) : (
-      <div className="bg-elevated rounded-[18px] shadow-[var(--shadow-card)] overflow-hidden">
+      <div className="bg-elevated rounded-[1.125rem] shadow-[var(--shadow-card)] overflow-hidden">
         <table className="w-full border-collapse text-sm">
           <thead>
             <tr>
@@ -274,12 +274,12 @@ export default function LanguagesPage() {
                   {projectsByLanguage.get(lang.id)?.length ?? 0}
                 </td>
                 <td className={tdClass}>
-                  <span className="inline-flex items-center gap-2 text-[13px] text-fg-muted">
+                  <span className="inline-flex items-center gap-2 text-[0.8125rem] text-fg-muted">
                     <span className={cn("w-2 h-2 rounded-full", lang.is_active ? "bg-st-ok" : "bg-st-idle")} />
                     {lang.is_active ? "Active" : "Inactive"}
                   </span>
                 </td>
-                <td className={cn(tdClass, "text-fg-subtle text-[12.5px]")}>
+                <td className={cn(tdClass, "text-fg-subtle text-[0.78125rem]")}>
                   {formatDate(lang.created_at)}
                   {lang.created_by === user?.id ? " · You" : ""}
                 </td>
@@ -292,7 +292,7 @@ export default function LanguagesPage() {
                       aria-label={`Edit ${lang.name}`}
                       className={cn(iconBtn, "text-fg-subtle hover:bg-muted hover:text-fg-strong")}
                     >
-                      <Pencil className="w-[15px] h-[15px]" strokeWidth={1.75} />
+                      <Pencil className="w-[0.9375rem] h-[0.9375rem]" strokeWidth={1.75} />
                     </button>
                   )}
                   {canDeactivate && lang.is_active && (
@@ -303,7 +303,7 @@ export default function LanguagesPage() {
                       aria-label={`Deactivate ${lang.name}`}
                       className={cn(iconBtn, "text-fg-subtle hover:bg-accent-soft hover:text-on-accent-soft")}
                     >
-                      <Trash2 className="w-[15px] h-[15px]" strokeWidth={1.75} />
+                      <Trash2 className="w-[0.9375rem] h-[0.9375rem]" strokeWidth={1.75} />
                     </button>
                   )}
                   {canDeactivate && !lang.is_active && (
@@ -318,7 +318,7 @@ export default function LanguagesPage() {
                         "text-fg-subtle hover:bg-st-ok/15 hover:text-st-ok disabled:opacity-50",
                       )}
                     >
-                      <RotateCcw className="w-[15px] h-[15px]" strokeWidth={1.75} />
+                      <RotateCcw className="w-[0.9375rem] h-[0.9375rem]" strokeWidth={1.75} />
                     </button>
                   )}
                 </td>
@@ -330,21 +330,21 @@ export default function LanguagesPage() {
     )
 
   return (
-    <div className="max-w-[1240px] mx-auto px-6 sm:px-10 pt-8 pb-14">
+    <div className="max-w-[77.5rem] mx-auto px-6 sm:px-10 pt-8 pb-14">
       <div className="flex items-end justify-between gap-4 mb-5">
         <div className="flex flex-col gap-1">
-          <span className="text-[13px] font-semibold tracking-[0.14em] uppercase text-fg-muted">Content</span>
-          <h3 className="text-[25px] font-bold text-fg-strong tracking-tight">Languages</h3>
-          <span className="text-[12.5px] text-fg-subtle">
+          <span className="text-[0.8125rem] font-semibold tracking-[0.14em] uppercase text-fg-muted">Content</span>
+          <h3 className="text-[1.5625rem] font-bold text-fg-strong tracking-tight">Languages</h3>
+          <span className="text-[0.78125rem] text-fg-subtle">
             {languages.length} language{languages.length !== 1 ? "s" : ""}
           </span>
         </div>
-        <div className="flex items-center gap-[18px]">
+        <div className="flex items-center gap-[1.125rem]">
           {isPlatformAdmin && (
-            <div className="flex items-center gap-[9px]">
+            <div className="flex items-center gap-[0.5625rem]">
               <Switch checked={showInactive} onCheckedChange={setShowInactive} aria-label="Include inactive" />
               <span
-                className="text-[13px] text-fg-muted cursor-pointer select-none"
+                className="text-[0.8125rem] text-fg-muted cursor-pointer select-none"
                 onClick={() => setShowInactive((v) => !v)}
               >
                 Include inactive
@@ -360,7 +360,7 @@ export default function LanguagesPage() {
 
       {isPlatformAdmin || canRequestEdit ? (
         <>
-          <div className="inline-flex bg-muted rounded-full p-[3px] mb-[18px]">
+          <div className="inline-flex bg-muted rounded-full p-[0.1875rem] mb-[1.125rem]">
             <button
               type="button"
               onClick={() => setActiveTab("languages")}
@@ -479,12 +479,12 @@ export default function LanguagesPage() {
             </DialogDescription>
           </DialogHeader>
           {usedByProjects && (
-            <div className="flex max-h-44 flex-col gap-1.5 overflow-y-auto rounded-[12px] bg-accent-soft px-4 py-3.5">
-              <span className="text-[12px] font-bold uppercase tracking-[0.04em] text-on-accent-soft">
+            <div className="flex max-h-44 flex-col gap-1.5 overflow-y-auto rounded-[0.75rem] bg-accent-soft px-4 py-3.5">
+              <span className="text-[0.75rem] font-bold uppercase tracking-[0.04em] text-on-accent-soft">
                 In use — {projectsInUse.length} project{projectsInUse.length !== 1 ? "s" : ""}
               </span>
               {projectsInUse.map((project) => (
-                <span key={project.id} className="text-[13px] text-fg-strong">
+                <span key={project.id} className="text-[0.8125rem] text-fg-strong">
                   · {project.name}
                 </span>
               ))}

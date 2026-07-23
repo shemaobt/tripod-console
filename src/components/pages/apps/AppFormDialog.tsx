@@ -32,7 +32,7 @@ export interface AppFormState {
 function FormSection({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="space-y-4">
-      <p className="text-[11px] font-semibold text-fg-subtle tracking-[0.1em] uppercase">{label}</p>
+      <p className="text-[0.6875rem] font-semibold text-fg-subtle tracking-[0.1em] uppercase">{label}</p>
       {children}
     </div>
   )
@@ -183,7 +183,7 @@ export function AppFormDialog({
 
           <div className="border-t border-line" />
 
-          <div className="flex items-center justify-between rounded-[14px] bg-muted px-4 py-3">
+          <div className="flex items-center justify-between rounded-[0.875rem] bg-muted px-4 py-3">
             <div>
               <Label htmlFor="app-is-active" className="mb-0">Active</Label>
               <p className="text-xs text-fg-subtle mt-0.5">Users can access this app when active</p>
