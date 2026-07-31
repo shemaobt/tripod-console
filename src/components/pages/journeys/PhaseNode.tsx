@@ -51,13 +51,13 @@ export function PhaseNode({
         STEP {step}
       </span>
       {selected && (
-        <span className="absolute left-[0.375rem] top-[4.75rem] h-[4.5rem] w-[10.25rem] rounded-full shadow-[0_0_0_0.15625rem_#BE4A01]" />
+        <span className="absolute left-[0.375rem] top-[4.75rem] h-[4.5rem] w-[10.25rem] rounded-[50%] shadow-[0_0_0_0.15625rem_#BE4A01]" />
       )}
-      <span className="absolute left-[1.25rem] top-[5.1875rem] h-[3.625rem] w-[8.5rem] rounded-full bg-[#ECEADD] shadow-[0_0.3125rem_0_#DBD9C7,0_1.125rem_1.625rem_-0.375rem_rgba(10,7,3,0.16)]" />
-      <span className="absolute left-[2.125rem] top-[5rem] h-[2.875rem] w-[6.75rem] rounded-full bg-[#F8F7EF] shadow-[0_0.3125rem_0_#E3E1D1]" />
-      <span className="absolute left-[2.9375rem] top-[4.875rem] h-[2.1875rem] w-[5.125rem] rounded-full bg-[#FDFCF7] shadow-[0_0.25rem_0_#EAE8D9]" />
+      <span className="absolute left-[1.25rem] top-[5.1875rem] h-[3.625rem] w-[8.5rem] rounded-[50%] bg-[#ECEADD] shadow-[0_0.3125rem_0_#DBD9C7,0_1.125rem_1.625rem_-0.375rem_rgba(10,7,3,0.16)]" />
+      <span className="absolute left-[2.125rem] top-[5rem] h-[2.875rem] w-[6.75rem] rounded-[50%] bg-[#F8F7EF] shadow-[0_0.3125rem_0_#E3E1D1]" />
+      <span className="absolute left-[2.9375rem] top-[4.875rem] h-[2.1875rem] w-[5.125rem] rounded-[50%] bg-[#FDFCF7] shadow-[0_0.25rem_0_#EAE8D9]" />
       <span
-        className="absolute left-[3.5rem] top-[5rem] h-[1.625rem] w-[4rem] rounded-full blur-[0.375rem]"
+        className="absolute left-[3.5rem] top-[5rem] h-[1.625rem] w-[4rem] rounded-[50%] blur-[0.375rem]"
         style={{ background: rgba(cat.color, 0.45) }}
       />
       <span
