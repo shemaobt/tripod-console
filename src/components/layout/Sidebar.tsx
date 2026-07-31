@@ -4,7 +4,7 @@ import {
   LayoutGrid,
   Languages,
   FolderOpen,
-  GitBranch,
+  Waypoints,
   Globe,
   Users,
   AppWindow,
@@ -308,6 +308,7 @@ export default function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
       items: [
         { to: "/app/languages", label: "Languages", icon: Languages, badge: counts.languageChanges },
         { to: "/app/projects", label: "Projects", icon: FolderOpen, badge: counts.projectChanges },
+        { to: "/app/journeys", label: "Journeys", icon: Waypoints },
         { to: "/app/map", label: "Map", icon: Globe },
       ],
     })
@@ -317,7 +318,6 @@ export default function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
     sections.push({
       label: "Administration",
       items: [
-        { to: "/app/phases", label: "Phases", icon: GitBranch },
         { to: "/app/users", label: "Users", icon: Users, badge: counts.access },
         { to: "/app/apps", label: "Manage Apps", icon: AppWindow },
       ],
