@@ -1,7 +1,8 @@
-import { useState } from "react"
+import { useRef, useState } from "react"
 import { Check, Folder, Search, Settings } from "lucide-react"
 import { Popover, PopoverAnchor, PopoverContent } from "@/components/ui/popover"
 import { ConfirmDialog } from "@/components/common/ConfirmDialog"
+import { cn } from "@/utils/cn"
 import type { Journey, ProjectResponse } from "@/types"
 
 interface SettingsPopoverProps {
@@ -36,6 +37,7 @@ export function SettingsPopover({
 }: SettingsPopoverProps) {
   const [query, setQuery] = useState("")
   const [confirmOpen, setConfirmOpen] = useState(false)
+  const anchorRef = useRef<HTMLDivElement>(null)
 
   const setOpen = (next: boolean) => {
     if (next) setQuery("")
@@ -62,7 +64,7 @@ export function SettingsPopover({
     <>
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverAnchor asChild>
-          <div className="flex items-center gap-2.5">
+          <div ref={anchorRef} className="flex items-center gap-2.5">
             <button
               onClick={() => setOpen(!open)}
               title="Journey settings — rename, description, assigned projects"
@@ -82,6 +84,9 @@ export function SettingsPopover({
         </PopoverAnchor>
         <PopoverContent
           align="start"
+          onInteractOutside={(e) => {
+            if (anchorRef.current?.contains(e.target as Node)) e.preventDefault()
+          }}
           className="flex max-h-[calc(100vh-8rem)] w-[22.5rem] flex-col gap-3.5 overflow-y-auto rounded-[1rem] p-[1.125rem]"
         >
           <div className="text-[0.625rem] font-bold uppercase tracking-[0.08em] text-fg-muted">
@@ -177,19 +182,22 @@ export function SettingsPopover({
               {projects.length} projects · {linkedCount} linked to this journey
             </div>
           </div>
-          {canDelete && (
-            <div className="flex items-center justify-between border-t border-line pt-3">
-              <span className="text-[0.6875rem] text-fg-subtle">
-                Phases and assignments are removed.
-              </span>
-              <button
-                onClick={() => setConfirmOpen(true)}
-                className="cursor-pointer rounded-full px-4 py-2 text-[0.78125rem] font-bold text-[#A63A2E] shadow-[inset_0_0_0_0.09375rem_#A63A2E66] transition-colors hover:bg-[#F0DCD8]"
-              >
-                Delete journey
-              </button>
-            </div>
-          )}
+          <div className="flex items-center justify-between border-t border-line pt-3">
+            <span className="text-[0.6875rem] text-fg-subtle">
+              Phases and assignments are removed.
+            </span>
+            <button
+              onClick={() => setConfirmOpen(true)}
+              disabled={!canDelete}
+              title={canDelete ? undefined : "The only journey cannot be deleted"}
+              className={cn(
+                "rounded-full px-4 py-2 text-[0.78125rem] font-bold text-[#A63A2E] shadow-[inset_0_0_0_0.09375rem_#A63A2E66] transition-colors",
+                canDelete ? "cursor-pointer hover:bg-[#F0DCD8]" : "cursor-default opacity-40",
+              )}
+            >
+              Delete journey
+            </button>
+          </div>
         </PopoverContent>
       </Popover>
       <ConfirmDialog

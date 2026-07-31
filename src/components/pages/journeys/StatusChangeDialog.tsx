@@ -100,10 +100,10 @@ export function StatusChangeDialog({
           </div>
         </div>
         <DialogFooter className="mt-2 border-t border-line pt-4">
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+          <Button variant="ghost" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button disabled={!valid} onClick={() => onSave(note)}>
+          <Button disabled={!valid} className="disabled:opacity-40" onClick={() => onSave(note)}>
             Save change
           </Button>
         </DialogFooter>

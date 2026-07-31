@@ -153,9 +153,9 @@ export function useCanvasView({
   }, [zoomAt, mainRef])
 
   useEffect(() => {
-    const onResize = () => {
-      const el = mainRef.current
-      if (!el) return
+    const el = mainRef.current
+    if (!el) return
+    const measure = () => {
       const r = el.getBoundingClientRect()
       setView((v) =>
         Math.abs(r.width - v.cw) > 1 || Math.abs(r.height - v.ch) > 1
@@ -163,8 +163,13 @@ export function useCanvasView({
           : v,
       )
     }
-    window.addEventListener("resize", onResize)
-    return () => window.removeEventListener("resize", onResize)
+    const observer = new ResizeObserver(measure)
+    observer.observe(el)
+    window.addEventListener("resize", measure)
+    return () => {
+      observer.disconnect()
+      window.removeEventListener("resize", measure)
+    }
   }, [mainRef])
 
   useEffect(() => {
