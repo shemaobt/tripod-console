@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { useAuth } from "@/contexts/AuthContext"
 import { LoadingSpinner } from "@/components/common/LoadingSpinner"
 import type { PhaseStatus } from "@/types"
@@ -41,9 +41,9 @@ export default function JourneysPage() {
     [sel, deps, kids],
   )
 
-  const mainRef = useRef<HTMLDivElement>(null)
+  const [container, setContainer] = useState<HTMLDivElement | null>(null)
   const canvas = useCanvasView({
-    mainRef,
+    container,
     worldW: layout.worldW,
     worldH: layout.worldH,
     fitPadding: 90 * scale,
@@ -137,7 +137,7 @@ export default function JourneysPage() {
         onOpenRegistry={() => setRegistryOpen(true)}
         onDeleteJourney={handleDeleteJourney}
       />
-      <div ref={mainRef} className="relative min-h-0 flex-1 overflow-hidden">
+      <div ref={setContainer} className="relative min-h-0 flex-1 overflow-hidden">
         <JourneyCanvas
           phases={phases}
           deps={deps}

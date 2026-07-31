@@ -13,7 +13,7 @@ export interface CanvasViewState {
 }
 
 interface UseCanvasViewOptions {
-  mainRef: React.RefObject<HTMLDivElement | null>
+  container: HTMLDivElement | null
   worldW: number
   worldH: number
   fitPadding: number
@@ -23,7 +23,7 @@ interface UseCanvasViewOptions {
 }
 
 export function useCanvasView({
-  mainRef,
+  container,
   worldW,
   worldH,
   fitPadding,
@@ -41,6 +41,7 @@ export function useCanvasView({
   })
 
   const viewRef = useRef(view)
+  const containerRef = useRef(container)
   const worldRef = useRef({ worldW, worldH, fitPadding })
   const clearRef = useRef(onClear)
   const escapeRef = useRef(onEscape)
@@ -48,6 +49,7 @@ export function useCanvasView({
 
   useEffect(() => {
     viewRef.current = view
+    containerRef.current = container
     worldRef.current = { worldW, worldH, fitPadding }
     clearRef.current = onClear
     escapeRef.current = onEscape
@@ -55,7 +57,7 @@ export function useCanvasView({
   })
 
   const fit = useCallback(() => {
-    const el = mainRef.current
+    const el = containerRef.current
     if (!el) return
     const r = el.getBoundingClientRect()
     const { worldW: ww, worldH: wh, fitPadding: pad } = worldRef.current
@@ -69,7 +71,7 @@ export function useCanvasView({
       tx: (r.width - ww * k) / 2,
       ty: (r.height - wh * k) / 2,
     }))
-  }, [mainRef])
+  }, [])
 
   const zoomAt = useCallback((px: number, py: number, f: number) => {
     setView((v) => {
@@ -137,26 +139,24 @@ export function useCanvasView({
   }, [])
 
   useEffect(() => {
-    const el = mainRef.current
-    if (!el) return
+    if (!container) return
     const onWheel = (e: WheelEvent) => {
       e.preventDefault()
-      const r = el.getBoundingClientRect()
+      const r = container.getBoundingClientRect()
       if (e.ctrlKey || e.metaKey) {
         zoomAt(e.clientX - r.left, e.clientY - r.top, Math.exp(-e.deltaY * 0.0022))
       } else {
         setView((v) => ({ ...v, tx: v.tx - e.deltaX, ty: v.ty - e.deltaY }))
       }
     }
-    el.addEventListener("wheel", onWheel, { passive: false })
-    return () => el.removeEventListener("wheel", onWheel)
-  }, [zoomAt, mainRef])
+    container.addEventListener("wheel", onWheel, { passive: false })
+    return () => container.removeEventListener("wheel", onWheel)
+  }, [container, zoomAt])
 
   useEffect(() => {
-    const el = mainRef.current
-    if (!el) return
+    if (!container) return
     const measure = () => {
-      const r = el.getBoundingClientRect()
+      const r = container.getBoundingClientRect()
       setView((v) =>
         Math.abs(r.width - v.cw) > 1 || Math.abs(r.height - v.ch) > 1
           ? { ...v, cw: r.width, ch: r.height }
@@ -164,13 +164,13 @@ export function useCanvasView({
       )
     }
     const observer = new ResizeObserver(measure)
-    observer.observe(el)
+    observer.observe(container)
     window.addEventListener("resize", measure)
     return () => {
       observer.disconnect()
       window.removeEventListener("resize", measure)
     }
-  }, [mainRef])
+  }, [container])
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
