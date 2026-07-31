@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { ChevronDown, ChevronUp, Circle, Image, Plus, Trash2 } from "lucide-react"
 import { ConfirmDialog } from "@/components/common/ConfirmDialog"
+import { phasesAPI } from "@/services/api"
 import type { PhaseCategory, PhaseResponse } from "@/types"
 import { CATEGORY_ICONS } from "@/constants/journeyStatus"
 import { orbGrad } from "@/utils/color"
@@ -36,8 +37,19 @@ export function RegistryPhasesTab({
   onAddPhase,
 }: RegistryPhasesTabProps) {
   const [deleteId, setDeleteId] = useState<string | null>(null)
+  const [usage, setUsage] = useState<{ id: string; count: number } | null>(null)
   const target = phases.find((p) => p.id === deleteId)
-  const usedBy = target?.project_ids?.length ?? 0
+  const usedBy =
+    usage && usage.id === deleteId ? usage.count : target?.project_ids?.length ?? 0
+
+  const requestDelete = (id: string) => {
+    setUsage(null)
+    setDeleteId(id)
+    phasesAPI
+      .get(id)
+      .then(({ data }) => setUsage({ id, count: data.project_ids?.length ?? 0 }))
+      .catch(() => undefined)
+  }
   const confirmDescription = target
     ? `Hard delete of "${target.name}" from this journey. This cannot be undone.${
         usedBy > 0
@@ -130,7 +142,7 @@ export function RegistryPhasesTab({
                 <ChevronDown className="h-3.5 w-3.5" strokeWidth={2.1} />
               </button>
               <button
-                onClick={() => setDeleteId(phase.id)}
+                onClick={() => requestDelete(phase.id)}
                 title="Delete phase"
                 aria-label="Delete phase"
                 className="flex h-7 w-7 flex-none cursor-pointer items-center justify-center rounded-[0.5rem] text-[#A63A2E] transition-colors hover:bg-[#F0DCD8]"

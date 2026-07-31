@@ -3,6 +3,7 @@ import { Check, ChevronDown, ChevronRight, Circle, Upload, X } from "lucide-reac
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { ConfirmDialog } from "@/components/common/ConfirmDialog"
+import { phasesAPI } from "@/services/api"
 import type {
   DerivedPhaseStatus,
   PhaseCategory,
@@ -70,6 +71,7 @@ export function PhaseInspector({
   onDelete,
 }: PhaseInspectorProps) {
   const [confirmOpen, setConfirmOpen] = useState(false)
+  const [usage, setUsage] = useState<{ id: string; count: number } | null>(null)
   const cat = categoryFor(phase.category_id)
   const CatIcon = CATEGORY_ICONS[cat.icon] ?? Circle
   const stored = storedStatus(phase.id)
@@ -81,7 +83,18 @@ export function PhaseInspector({
   const unlocks = kids[phase.id] ?? []
   const others = phases.filter((p) => p.id !== phase.id)
   const unmet = myDeps.filter((d) => storedStatus(d) !== "completed").length
-  const usedBy = phase.project_ids?.length ?? 0
+  const usedBy =
+    usage && usage.id === phase.id ? usage.count : phase.project_ids?.length ?? 0
+
+  const requestDelete = () => {
+    const id = phase.id
+    setUsage(null)
+    setConfirmOpen(true)
+    phasesAPI
+      .get(id)
+      .then(({ data }) => setUsage({ id, count: data.project_ids?.length ?? 0 }))
+      .catch(() => undefined)
+  }
 
   const confirmDescription = `Hard delete of "${phase.name}" from this journey. This cannot be undone.${
     usedBy > 0
@@ -405,7 +418,7 @@ export function PhaseInspector({
         {isAdmin && (
           <div className="flex justify-end border-t border-line pt-3.5">
             <button
-              onClick={() => setConfirmOpen(true)}
+              onClick={requestDelete}
               className="cursor-pointer rounded-full px-4 py-2 text-[0.78125rem] font-bold text-[#A63A2E] shadow-[inset_0_0_0_0.09375rem_#A63A2E66] transition-colors hover:bg-[#F0DCD8]"
             >
               Delete phase

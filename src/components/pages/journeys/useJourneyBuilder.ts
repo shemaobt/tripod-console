@@ -5,6 +5,7 @@ import type {
   DerivedPhaseStatus,
   Journey,
   JourneyUpdate,
+  PhaseCategory,
   PhaseCategoryUpdate,
   PhaseResponse,
   PhaseStatus,
@@ -31,9 +32,10 @@ export interface CategoryVisual {
   icon: string
 }
 
-interface PendingPatch<T> {
+interface PendingPatch<T, S> {
   timer: ReturnType<typeof setTimeout> | null
   fields: T
+  prev: S | undefined
 }
 
 interface PhaseData {
@@ -80,9 +82,9 @@ export function useJourneyBuilder(isAdmin: boolean, managedProjectIds: string[])
   const [statusData, setStatusData] = useState<StatusData>({ projectId: null, map: {} })
   const [logsData, setLogsData] = useState<LogsData>({ projectId: null, entries: {} })
 
-  const phasePatches = useRef<Record<string, PendingPatch<PhaseUpdate>>>({})
-  const journeyPatches = useRef<Record<string, PendingPatch<JourneyUpdate>>>({})
-  const categoryPatches = useRef<Record<string, PendingPatch<PhaseCategoryUpdate>>>({})
+  const phasePatches = useRef<Record<string, PendingPatch<PhaseUpdate, PhaseResponse>>>({})
+  const journeyPatches = useRef<Record<string, PendingPatch<JourneyUpdate, Journey>>>({})
+  const categoryPatches = useRef<Record<string, PendingPatch<PhaseCategoryUpdate, PhaseCategory>>>({})
 
   const journeyId =
     chosenJourneyId && journeys.some((j) => j.id === chosenJourneyId)
@@ -93,6 +95,12 @@ export function useJourneyBuilder(isAdmin: boolean, managedProjectIds: string[])
   const phases = phasesReady ? phaseData.phases : EMPTY_PHASES
   const deps = phasesReady ? phaseData.deps : EMPTY_DEPS
   const phasesLoading = journeyId !== null && !phasesReady
+
+  const phasesRef = useRef(phases)
+
+  useEffect(() => {
+    phasesRef.current = phases
+  })
 
   const assignedProjects = useMemo(
     () => projects.filter((p) => p.journey_id === journeyId),
@@ -217,14 +225,19 @@ export function useJourneyBuilder(isAdmin: boolean, managedProjectIds: string[])
       const store = useJourneysStore.getState()
       const discovery =
         store.categories.find((c) => c.name === "Discovery") ?? store.categories[0]
+      let phaseCount = 0
       try {
         await phasesAPI.create({
           name: "First phase",
           journey_id: created.id,
           category_id: discovery?.id ?? null,
         })
+        phaseCount = 1
       } catch {}
-      store.setJourneys([...store.journeys, { ...created, phase_count: 1, project_count: 0 }])
+      store.setJourneys([
+        ...store.journeys,
+        { ...created, phase_count: phaseCount, project_count: 0 },
+      ])
       store.invalidate()
       setChosenJourneyId(created.id)
       return created.id
@@ -238,18 +251,28 @@ export function useJourneyBuilder(isAdmin: boolean, managedProjectIds: string[])
     (fields: JourneyUpdate) => {
       if (!journeyId) return
       const store = useJourneysStore.getState()
+      const pending = journeyPatches.current[journeyId] ?? {
+        timer: null,
+        fields: {},
+        prev: store.journeys.find((j) => j.id === journeyId),
+      }
       store.setJourneys(
         store.journeys.map((j) => (j.id === journeyId ? { ...j, ...fields } : j)),
       )
       store.invalidate()
-      const pending = journeyPatches.current[journeyId] ?? { timer: null, fields: {} }
       pending.fields = { ...pending.fields, ...fields }
       if (pending.timer) clearTimeout(pending.timer)
       pending.timer = setTimeout(() => {
-        const payload = journeyPatches.current[journeyId]?.fields
+        const rec = journeyPatches.current[journeyId]
         delete journeyPatches.current[journeyId]
-        if (!payload) return
-        journeysAPI.update(journeyId, payload).catch(() => {
+        if (!rec) return
+        const prev = rec.prev
+        journeysAPI.update(journeyId, rec.fields).catch(() => {
+          if (prev) {
+            const s = useJourneysStore.getState()
+            s.setJourneys(s.journeys.map((j) => (j.id === journeyId ? prev : j)))
+            s.invalidate()
+          }
           toast.error("Failed to save journey")
         })
       }, PATCH_DELAY)
@@ -297,15 +320,21 @@ export function useJourneyBuilder(isAdmin: boolean, managedProjectIds: string[])
 
   const updatePhaseField = useCallback(
     (id: string, fields: PhaseUpdate, immediate = false) => {
+      const pending = phasePatches.current[id] ?? {
+        timer: null,
+        fields: {},
+        prev: phasesRef.current.find((p) => p.id === id),
+      }
       mutPhases((ps) => ps.map((p) => (p.id === id ? { ...p, ...fields } : p)))
-      const pending = phasePatches.current[id] ?? { timer: null, fields: {} }
       pending.fields = { ...pending.fields, ...fields }
       if (pending.timer) clearTimeout(pending.timer)
       const flush = () => {
-        const payload = phasePatches.current[id]?.fields
+        const rec = phasePatches.current[id]
         delete phasePatches.current[id]
-        if (!payload) return
-        phasesAPI.update(id, payload).catch(() => {
+        if (!rec) return
+        const prev = rec.prev
+        phasesAPI.update(id, rec.fields).catch(() => {
+          if (prev) mutPhases((ps) => ps.map((p) => (p.id === id ? prev : p)))
           toast.error("Failed to save phase")
         })
       }
@@ -479,17 +508,26 @@ export function useJourneyBuilder(isAdmin: boolean, managedProjectIds: string[])
   const updateCategory = useCallback(
     (id: string, fields: PhaseCategoryUpdate, immediate = false) => {
       const store = useJourneysStore.getState()
+      const pending = categoryPatches.current[id] ?? {
+        timer: null,
+        fields: {},
+        prev: store.categories.find((c) => c.id === id),
+      }
       store.setCategories(
         store.categories.map((c) => (c.id === id ? { ...c, ...fields } : c)),
       )
-      const pending = categoryPatches.current[id] ?? { timer: null, fields: {} }
       pending.fields = { ...pending.fields, ...fields }
       if (pending.timer) clearTimeout(pending.timer)
       const flush = () => {
-        const payload = categoryPatches.current[id]?.fields
+        const rec = categoryPatches.current[id]
         delete categoryPatches.current[id]
-        if (!payload) return
-        phaseCategoriesAPI.update(id, payload).catch(() => {
+        if (!rec) return
+        const prev = rec.prev
+        phaseCategoriesAPI.update(id, rec.fields).catch(() => {
+          if (prev) {
+            const s = useJourneysStore.getState()
+            s.setCategories(s.categories.map((c) => (c.id === id ? prev : c)))
+          }
           toast.error("Failed to save category")
         })
       }
