@@ -181,6 +181,8 @@ export default function JourneysPage() {
             phase={selPhase}
             isAdmin={isAdmin}
             hasProject={builder.hasProject}
+            hasLinkedProjects={builder.assignedProjects.length > 0}
+            projectName={builder.project?.name ?? null}
             phases={phases}
             deps={deps}
             kids={kids}

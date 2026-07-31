@@ -34,7 +34,11 @@ export function JourneyHeader({
   const { journey, journeys, phases } = builder
   const assignedCount = journey ? builder.projectCountFor(journey.id) : 0
   const subtitle = journey
-    ? `${journey.name} · ${phases.length} phases · assigned to ${assignedCount} ${assignedCount === 1 ? "project" : "projects"}`
+    ? `${journey.name} · ${phases.length} phases · ${
+        builder.project
+          ? `tracking ${builder.project.name}`
+          : `assigned to ${assignedCount} ${assignedCount === 1 ? "project" : "projects"}`
+      }`
     : "No journeys yet"
 
   const togglePop = (kind: PopoverKind) => (open: boolean) => setPop(open ? kind : null)
@@ -61,6 +65,22 @@ export function JourneyHeader({
           setPop(null)
         }}
         onNew={onNewJourney}
+      />
+      <ProjectPill
+        open={pop === "project"}
+        onOpenChange={togglePop("project")}
+        projects={builder.eligibleProjects}
+        currentId={builder.projectId}
+        phasesTotal={phases.length}
+        showTemplate={isAdmin}
+        onPick={(id) => {
+          builder.selectProject(id)
+          setPop(null)
+        }}
+        onPickTemplate={() => {
+          builder.selectTemplate()
+          setPop(null)
+        }}
       />
       {isAdmin && (
         <>
@@ -95,16 +115,6 @@ export function JourneyHeader({
             Manager view · status updates only
           </span>
         )}
-        <ProjectPill
-          open={pop === "project"}
-          onOpenChange={togglePop("project")}
-          projects={builder.eligibleProjects}
-          currentId={builder.projectId}
-          onPick={(id) => {
-            builder.selectProject(id)
-            setPop(null)
-          }}
-        />
         <LegendPopover
           open={pop === "legend"}
           onOpenChange={togglePop("legend")}

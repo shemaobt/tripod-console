@@ -79,6 +79,7 @@ export function useJourneyBuilder(isAdmin: boolean, managedProjectIds: string[])
   })
   const [projects, setProjects] = useState<ProjectResponse[]>([])
   const [chosenProjectId, setChosenProjectId] = useState<string | null>(null)
+  const [templateView, setTemplateView] = useState(false)
   const [statusData, setStatusData] = useState<StatusData>({ projectId: null, map: {} })
   const [logsData, setLogsData] = useState<LogsData>({ projectId: null, entries: {} })
 
@@ -115,8 +116,9 @@ export function useJourneyBuilder(isAdmin: boolean, managedProjectIds: string[])
     [assignedProjects, isAdmin, managedProjectIds],
   )
 
-  const projectId =
-    chosenProjectId && eligibleProjects.some((p) => p.id === chosenProjectId)
+  const projectId = templateView
+    ? null
+    : chosenProjectId && eligibleProjects.some((p) => p.id === chosenProjectId)
       ? chosenProjectId
       : eligibleProjects[0]?.id ?? null
 
@@ -133,7 +135,9 @@ export function useJourneyBuilder(isAdmin: boolean, managedProjectIds: string[])
       .then(({ data }) => {
         if (!cancelled) setProjects(data)
       })
-      .catch(() => undefined)
+      .catch(() => {
+        if (!cancelled) toast.error("Failed to load projects")
+      })
     return () => {
       cancelled = true
     }
@@ -213,10 +217,16 @@ export function useJourneyBuilder(isAdmin: boolean, managedProjectIds: string[])
 
   const selectJourney = useCallback((id: string) => {
     setChosenJourneyId(id)
+    setTemplateView(false)
   }, [])
 
   const selectProject = useCallback((id: string) => {
     setChosenProjectId(id)
+    setTemplateView(false)
+  }, [])
+
+  const selectTemplate = useCallback(() => {
+    setTemplateView(true)
   }, [])
 
   const createJourney = useCallback(async () => {
@@ -240,6 +250,7 @@ export function useJourneyBuilder(isAdmin: boolean, managedProjectIds: string[])
       ])
       store.invalidate()
       setChosenJourneyId(created.id)
+      setTemplateView(false)
       return created.id
     } catch {
       toast.error("Failed to create journey")
@@ -294,6 +305,7 @@ export function useJourneyBuilder(isAdmin: boolean, managedProjectIds: string[])
         ps.map((p) => (p.journey_id === journeyId ? { ...p, journey_id: null } : p)),
       )
       setChosenJourneyId(rest[0]?.id ?? null)
+      setTemplateView(false)
     } catch {
       toast.error("Failed to delete journey")
     }
@@ -624,8 +636,10 @@ export function useJourneyBuilder(isAdmin: boolean, managedProjectIds: string[])
     statuses,
     logs,
     hasProject: projectId !== null,
+    templateView,
     selectJourney,
     selectProject,
+    selectTemplate,
     createJourney,
     updateJourney,
     deleteJourney,

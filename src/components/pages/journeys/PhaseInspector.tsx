@@ -23,6 +23,8 @@ interface PhaseInspectorProps {
   phase: PhaseResponse
   isAdmin: boolean
   hasProject: boolean
+  hasLinkedProjects: boolean
+  projectName: string | null
   phases: PhaseResponse[]
   deps: Record<string, string[]>
   kids: Record<string, string[]>
@@ -50,6 +52,8 @@ export function PhaseInspector({
   phase,
   isAdmin,
   hasProject,
+  hasLinkedProjects,
+  projectName,
   phases,
   deps,
   kids,
@@ -150,9 +154,22 @@ export function PhaseInspector({
           </h2>
         )}
 
-        {hasProject && (
+        {isAdmin && !hasProject && (
           <div>
             <div className={cn(EYEBROW, "mb-[0.4375rem]")}>Status</div>
+            <div className="rounded-[0.75rem] bg-muted px-3.5 py-3 text-[0.71875rem] leading-[1.6] text-fg-muted">
+              {hasLinkedProjects
+                ? "Structure only — no project statuses. Pick a project to track its phases."
+                : "Statuses are tracked per project. Link a project in Journey settings to record them here."}
+            </div>
+          </div>
+        )}
+
+        {hasProject && (
+          <div>
+            <div className={cn(EYEBROW, "mb-[0.4375rem]")}>
+              {projectName ? `Status · ${projectName}` : "Status"}
+            </div>
             <span className="relative flex items-center">
               <span
                 className="pointer-events-none absolute left-3 h-2.5 w-2.5 rounded-full"
