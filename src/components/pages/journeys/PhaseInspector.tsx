@@ -109,6 +109,7 @@ export function PhaseInspector({
   return (
     <aside
       aria-label="Phase details"
+      data-canvas-ui
       onMouseDown={(e) => e.stopPropagation()}
       className="animate-pop-in absolute bottom-3 right-3 top-3 z-30 flex w-[25rem] max-w-[calc(100%-1.5rem)] flex-col overflow-hidden rounded-[1.25rem] border border-line bg-elevated shadow-[var(--shadow-lg)]"
     >

@@ -141,6 +141,7 @@ export function useCanvasView({
   useEffect(() => {
     if (!container) return
     const onWheel = (e: WheelEvent) => {
+      if (e.target instanceof Element && e.target.closest("[data-canvas-ui]")) return
       e.preventDefault()
       const r = container.getBoundingClientRect()
       if (e.ctrlKey || e.metaKey) {
