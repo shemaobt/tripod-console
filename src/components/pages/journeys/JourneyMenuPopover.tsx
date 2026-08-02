@@ -9,7 +9,6 @@ interface JourneyMenuPopoverProps {
   journeys: Journey[]
   currentId: string | null
   currentName: string
-  isAdmin: boolean
   phaseCountFor: (j: Journey) => number
   projectCountFor: (jid: string) => number
   onPick: (id: string) => void
@@ -22,7 +21,6 @@ export function JourneyMenuPopover({
   journeys,
   currentId,
   currentName,
-  isAdmin,
   phaseCountFor,
   projectCountFor,
   onPick,
@@ -68,17 +66,15 @@ export function JourneyMenuPopover({
             </button>
           )
         })}
-        {isAdmin && (
-          <div className="mx-1 mb-0.5 mt-1.5 border-t border-line pt-1.5">
-            <button
-              onClick={onNew}
-              className="flex w-full cursor-pointer items-center gap-2 rounded-[0.625rem] px-3 py-[0.5625rem] text-[0.8125rem] font-bold text-accent transition-colors hover:bg-accent-soft"
-            >
-              <Plus className="h-3.5 w-3.5" strokeWidth={2.2} />
-              New journey
-            </button>
-          </div>
-        )}
+        <div className="mx-1 mb-0.5 mt-1.5 border-t border-line pt-1.5">
+          <button
+            onClick={onNew}
+            className="flex w-full cursor-pointer items-center gap-2 rounded-[0.625rem] px-3 py-[0.5625rem] text-[0.8125rem] font-bold text-accent transition-colors hover:bg-accent-soft"
+          >
+            <Plus className="h-3.5 w-3.5" strokeWidth={2.2} />
+            New journey
+          </button>
+        </div>
       </PopoverContent>
     </Popover>
   )

@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from "react"
+import { Route } from "lucide-react"
 import { useAuth } from "@/contexts/AuthContext"
+import { EmptyState } from "@/components/common/EmptyState"
 import { LoadingSpinner } from "@/components/common/LoadingSpinner"
 import type { PhaseStatus } from "@/types"
 import { uiScale } from "@/utils/uiScale"
@@ -123,6 +125,15 @@ export default function JourneysPage() {
   }
 
   if (builder.initialLoading) return <LoadingSpinner size="lg" />
+
+  if (!isAdmin && builder.eligibleProjects.length === 0)
+    return (
+      <EmptyState
+        icon={Route}
+        title="No journeys to track"
+        description="None of the projects you manage are linked to a journey yet. Ask a platform administrator to assign one."
+      />
+    )
 
   return (
     <div className="flex h-full w-full flex-col">

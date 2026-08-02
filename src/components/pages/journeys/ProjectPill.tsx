@@ -8,6 +8,7 @@ interface ProjectPillProps {
   onOpenChange: (open: boolean) => void
   projects: ProjectResponse[]
   currentId: string | null
+  journeyId: string | null
   phasesTotal: number
   showTemplate: boolean
   onPick: (id: string) => void
@@ -23,6 +24,7 @@ export function ProjectPill({
   onOpenChange,
   projects,
   currentId,
+  journeyId,
   phasesTotal,
   showTemplate,
   onPick,
@@ -31,8 +33,10 @@ export function ProjectPill({
   if (projects.length === 0) return null
   const current = projects.find((p) => p.id === currentId)
 
-  const completedLabel = (p: ProjectResponse) =>
-    `${p.phases_completed ?? 0} of ${phasesTotal} ${phasesTotal === 1 ? "phase" : "phases"} completed`
+  const completedLabel = (p: ProjectResponse) => {
+    const total = p.journey_id === journeyId ? phasesTotal : p.phases_total ?? 0
+    return `${p.phases_completed ?? 0} of ${total} ${total === 1 ? "phase" : "phases"} completed`
+  }
 
   return (
     <Popover open={open} onOpenChange={onOpenChange}>

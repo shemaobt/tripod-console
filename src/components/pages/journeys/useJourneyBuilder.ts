@@ -78,6 +78,7 @@ export function useJourneyBuilder(isAdmin: boolean, managedProjectIds: string[])
     deps: {},
   })
   const [projects, setProjects] = useState<ProjectResponse[]>([])
+  const [projectsLoading, setProjectsLoading] = useState(true)
   const [chosenProjectId, setChosenProjectId] = useState<string | null>(null)
   const [templateView, setTemplateView] = useState(false)
   const [statusData, setStatusData] = useState<StatusData>({ projectId: null, map: {} })
@@ -87,10 +88,21 @@ export function useJourneyBuilder(isAdmin: boolean, managedProjectIds: string[])
   const journeyPatches = useRef<Record<string, PendingPatch<JourneyUpdate, Journey>>>({})
   const categoryPatches = useRef<Record<string, PendingPatch<PhaseCategoryUpdate, PhaseCategory>>>({})
 
-  const journeyId =
-    chosenJourneyId && journeys.some((j) => j.id === chosenJourneyId)
+  const managedProjects = useMemo(
+    () => projects.filter((p) => p.journey_id != null && managedProjectIds.includes(p.id)),
+    [projects, managedProjectIds],
+  )
+
+  const managerProjectId =
+    chosenProjectId && managedProjects.some((p) => p.id === chosenProjectId)
+      ? chosenProjectId
+      : managedProjects[0]?.id ?? null
+
+  const journeyId = isAdmin
+    ? chosenJourneyId && journeys.some((j) => j.id === chosenJourneyId)
       ? chosenJourneyId
       : journeys[0]?.id ?? null
+    : managedProjects.find((p) => p.id === managerProjectId)?.journey_id ?? null
 
   const phasesReady = phaseData.journeyId === journeyId && journeyId !== null
   const phases = phasesReady ? phaseData.phases : EMPTY_PHASES
@@ -108,19 +120,15 @@ export function useJourneyBuilder(isAdmin: boolean, managedProjectIds: string[])
     [projects, journeyId],
   )
 
-  const eligibleProjects = useMemo(
-    () =>
-      isAdmin
-        ? assignedProjects
-        : assignedProjects.filter((p) => managedProjectIds.includes(p.id)),
-    [assignedProjects, isAdmin, managedProjectIds],
-  )
+  const eligibleProjects = isAdmin ? assignedProjects : managedProjects
 
-  const projectId = templateView
-    ? null
-    : chosenProjectId && eligibleProjects.some((p) => p.id === chosenProjectId)
-      ? chosenProjectId
-      : eligibleProjects[0]?.id ?? null
+  const projectId = isAdmin
+    ? templateView
+      ? null
+      : chosenProjectId && eligibleProjects.some((p) => p.id === chosenProjectId)
+        ? chosenProjectId
+        : eligibleProjects[0]?.id ?? null
+    : managerProjectId
 
   const statuses =
     statusData.projectId === projectId && projectId !== null ? statusData.map : EMPTY_STATUSES
@@ -137,6 +145,9 @@ export function useJourneyBuilder(isAdmin: boolean, managedProjectIds: string[])
       })
       .catch(() => {
         if (!cancelled) toast.error("Failed to load projects")
+      })
+      .finally(() => {
+        if (!cancelled) setProjectsLoading(false)
       })
     return () => {
       cancelled = true
@@ -627,7 +638,7 @@ export function useJourneyBuilder(isAdmin: boolean, managedProjectIds: string[])
     phases,
     deps,
     phasesLoading,
-    initialLoading: storeLoading && journeys.length === 0,
+    initialLoading: (storeLoading && journeys.length === 0) || (!isAdmin && projectsLoading),
     projects,
     assignedProjects,
     eligibleProjects,

@@ -51,26 +51,33 @@ export function JourneyHeader({
         </h1>
         <span className="text-[0.71875rem] text-fg-subtle">{subtitle}</span>
       </div>
-      <JourneyMenuPopover
-        open={pop === "menu"}
-        onOpenChange={togglePop("menu")}
-        journeys={journeys}
-        currentId={builder.journeyId}
-        currentName={journey?.name ?? "—"}
-        isAdmin={isAdmin}
-        phaseCountFor={builder.journeyPhaseCount}
-        projectCountFor={builder.projectCountFor}
-        onPick={(id) => {
-          onPickJourney(id)
-          setPop(null)
-        }}
-        onNew={onNewJourney}
-      />
+      {isAdmin ? (
+        <JourneyMenuPopover
+          open={pop === "menu"}
+          onOpenChange={togglePop("menu")}
+          journeys={journeys}
+          currentId={builder.journeyId}
+          currentName={journey?.name ?? "—"}
+          phaseCountFor={builder.journeyPhaseCount}
+          projectCountFor={builder.projectCountFor}
+          onPick={(id) => {
+            onPickJourney(id)
+            setPop(null)
+          }}
+          onNew={onNewJourney}
+        />
+      ) : (
+        <span className="flex h-9 items-center gap-2 rounded-full bg-elevated px-3.5 text-[0.78125rem] font-semibold text-fg-strong shadow-[inset_0_0_0_0.0625rem_var(--color-line-strong)]">
+          <span className="font-medium text-fg-subtle">Journey:</span>
+          <span className="max-w-[11rem] truncate">{journey?.name ?? "—"}</span>
+        </span>
+      )}
       <ProjectPill
         open={pop === "project"}
         onOpenChange={togglePop("project")}
         projects={builder.eligibleProjects}
         currentId={builder.projectId}
+        journeyId={builder.journeyId}
         phasesTotal={phases.length}
         showTemplate={isAdmin}
         onPick={(id) => {
