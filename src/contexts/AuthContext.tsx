@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom"
 import { authAPI } from "@/services/api"
 import { ACCESS_TOKEN_KEY, REFRESH_TOKEN_KEY } from "@/constants/app"
 import { useLanguagesStore } from "@/stores/languagesStore"
-import { usePhasesStore } from "@/stores/phasesStore"
+import { useJourneysStore } from "@/stores/journeysStore"
 import { useRequestCountsStore } from "@/stores/requestCountsStore"
 import type { User, MyRoleResponse } from "@/types"
 
@@ -114,7 +114,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     clearTokens()
     setSession(null)
     useLanguagesStore.getState().reset()
-    usePhasesStore.getState().reset()
+    useJourneysStore.getState().reset()
     useRequestCountsStore.getState().reset()
     navigate("/login")
   }, [navigate])

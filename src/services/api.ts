@@ -51,6 +51,13 @@ import type {
   PhaseDependencyResponse,
   ProjectPhaseResponse,
   PhaseStatus,
+  Journey,
+  JourneyCreate,
+  JourneyUpdate,
+  PhaseCategory,
+  PhaseCategoryCreate,
+  PhaseCategoryUpdate,
+  PhaseStatusLogEntry,
   PublicLanguageOption,
   PublicLanguageRequestCreate,
   PublicProjectRequestCreate,
@@ -276,10 +283,14 @@ export const projectsAPI = {
     api.delete(`/projects/${projectId}/access/organizations/${orgId}`),
   listPhases: (projectId: string) =>
     api.get<ProjectPhaseResponse[]>(`/projects/${projectId}/phases`),
-  updatePhaseStatus: (projectId: string, phaseId: string, status: PhaseStatus) =>
-    api.patch<ProjectPhaseResponse>(`/projects/${projectId}/phases/${phaseId}`, { status }),
+  updatePhaseStatus: (projectId: string, phaseId: string, data: { status: PhaseStatus; note?: string }) =>
+    api.patch<ProjectPhaseResponse>(`/projects/${projectId}/phases/${phaseId}`, data),
   listPhasesWithDeps: (projectId: string) =>
     api.get<{ phases: ProjectPhaseResponse[]; dependencies: Record<string, string[]> }>(`/projects/${projectId}/phases-with-deps`),
+  assignJourney: (projectId: string, journeyId: string | null) =>
+    api.put<ProjectResponse>(`/projects/${projectId}/journey`, { journey_id: journeyId }),
+  phaseStatusLog: (projectId: string, phaseId: string) =>
+    api.get<PhaseStatusLogEntry[]>(`/projects/${projectId}/phases/status-log`, { params: { phase_id: phaseId } }),
 }
 
 export const phasesAPI = {
@@ -301,6 +312,28 @@ export const phasesAPI = {
     api.delete(`/phases/${phaseId}/dependencies/${dependsOnId}`),
   listWithDependencies: () =>
     api.get<{ phases: PhaseResponse[]; dependencies: Record<string, string[]> }>("/phases/with-dependencies"),
+  listByJourney: (journeyId: string) =>
+    api.get<PhaseResponse[]>("/phases", { params: { journey_id: journeyId } }),
+  reorder: (journeyId: string, phaseIds: string[]) =>
+    api.post<void>("/phases/reorder", { journey_id: journeyId, phase_ids: phaseIds }),
+}
+
+export const journeysAPI = {
+  list: () => api.get<Journey[]>("/journeys"),
+  get: (journeyId: string) => api.get<Journey>(`/journeys/${journeyId}`),
+  create: (data: JourneyCreate) => api.post<Journey>("/journeys", data),
+  update: (journeyId: string, data: JourneyUpdate) =>
+    api.patch<Journey>(`/journeys/${journeyId}`, data),
+  remove: (journeyId: string) => api.delete(`/journeys/${journeyId}`),
+}
+
+export const phaseCategoriesAPI = {
+  list: () => api.get<PhaseCategory[]>("/phase-categories"),
+  create: (data: PhaseCategoryCreate) =>
+    api.post<PhaseCategory>("/phase-categories", data),
+  update: (categoryId: string, data: PhaseCategoryUpdate) =>
+    api.patch<PhaseCategory>(`/phase-categories/${categoryId}`, data),
+  remove: (categoryId: string) => api.delete(`/phase-categories/${categoryId}`),
 }
 
 export const accessRequestsAPI = {
