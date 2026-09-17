@@ -24,3 +24,6 @@ jobs:
 
       - name: Run TypeScript type check
         run: npx tsc -b
+
+      - name: Run dependency-cruiser (architecture — cycles + layers + forbidden imports)
+        run: npm run deps
