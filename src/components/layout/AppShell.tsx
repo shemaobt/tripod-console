@@ -27,7 +27,7 @@ export default function AppShell() {
   }
 
   return (
-    <div className="min-h-screen bg-canvas flex">
+    <div className="h-screen overflow-hidden bg-canvas flex">
       <Sidebar
         mobileOpen={mobileOpen}
         onMobileClose={() => setMobileOpen(false)}
