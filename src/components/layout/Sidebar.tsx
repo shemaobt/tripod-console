@@ -59,7 +59,7 @@ function NavItem({
       className={({ isActive }) =>
         cn(
           "relative flex items-center rounded-[0.625rem] text-sm font-medium transition-colors",
-          collapsed ? "justify-center w-11 h-11 mx-auto" : "gap-[0.6875rem] w-full px-2.5 py-2.5",
+          collapsed ? "justify-center w-10 h-10 mx-auto" : "gap-[0.6875rem] w-full px-2.5 py-2.5",
           isActive
             ? "bg-[var(--shell-active)] text-shell-fg"
             : "text-[var(--shell-dim)] hover:bg-[var(--shell-active)] hover:text-shell-fg",
@@ -165,7 +165,7 @@ function SidebarContent({
             onClick={onToggleCollapse}
             title="Expand sidebar"
             aria-label="Expand sidebar"
-            className="w-11 h-11 rounded-[0.625rem] grid place-items-center text-[var(--shell-dim)] hover:bg-[var(--shell-active)] hover:text-shell-fg transition-colors"
+            className="w-10 h-10 rounded-[0.625rem] grid place-items-center text-[var(--shell-dim)] hover:bg-[var(--shell-active)] hover:text-shell-fg transition-colors"
           >
             <PanelLeftOpen className="w-[1.125rem] h-[1.125rem]" strokeWidth={1.75} />
           </button>
@@ -189,16 +189,19 @@ function SidebarContent({
         </div>
       )}
 
-      <nav className="flex-1 overflow-y-auto">
+      <nav className="flex-1 overflow-y-auto shell-scroll">
         {sections.map((section, i) => (
           <div
             key={section.label}
-            className={cn("flex flex-col gap-0.5", collapsed ? "mt-3" : "mt-[1.375rem]")}
+            className={cn(
+              "flex flex-col gap-0.5",
+              i === 0 ? "" : collapsed ? "mt-3" : "mt-[0.875rem]",
+            )}
           >
             {collapsed
-              ? i > 0 && <div className="mx-auto mb-2 h-px w-7 bg-[var(--shell-line)]" />
+              ? i > 0 && <div className="mx-auto mb-1.5 h-px w-7 bg-[var(--shell-line)]" />
               : (
-                <span className="px-2.5 pb-1.5 text-[0.65625rem] font-semibold tracking-[0.14em] uppercase text-[var(--shell-dim)]">
+                <span className="px-2.5 pb-1 text-[0.65625rem] font-semibold tracking-[0.14em] uppercase text-[var(--shell-dim)]">
                   {section.label}
                 </span>
               )}
@@ -209,7 +212,7 @@ function SidebarContent({
         ))}
       </nav>
 
-      <div className="mt-auto pt-[1.125rem]">
+      <div className="mt-auto pt-[0.875rem]">
         {collapsed ? (
           <div className="border-t border-[var(--shell-line)] pt-3 flex flex-col items-center gap-1.5">
             <ThemeToggleIcon />
