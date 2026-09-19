@@ -3,11 +3,15 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  --breakpoint-sm: 55rem;
-  --breakpoint-md: 66rem;
-  --breakpoint-lg: 72rem;
-  --breakpoint-xl: 110rem;
-  --breakpoint-2xl: 132rem;
+  /* Padrao do Tailwind. Dentro de media query o rem vale SEMPRE 16px, nunca o
+     font-size da raiz abaixo, entao estes sao 640 / 768 / 1024 / 1280 / 1536 px
+     de verdade. Era por isso que multiplica-los pela escala da interface nao
+     "mantinha a troca na mesma largura fisica": so empurrava tudo para cima. */
+  --breakpoint-sm: 40rem;
+  --breakpoint-md: 48rem;
+  --breakpoint-lg: 64rem;
+  --breakpoint-xl: 80rem;
+  --breakpoint-2xl: 96rem;
 
   --color-branco: #F6F5EB;
   --color-areia: #C5C29F;
@@ -122,8 +126,12 @@
   }
 }
 
+/* A escala da interface inteira: tudo no console esta em rem, entao este numero
+   multiplica a interface toda. 100% = padrao do navegador (1rem = 16px).
+   92% reproduz, com o zoom em 100%, o tamanho que os 137.5% anteriores davam
+   com o zoom em 67%. Para calibrar: escala desejada = 137.5 x (zoom que ficou bom). */
 html {
-  font-size: 137.5%;
+  font-size: 92%;
 }
 
 body {
