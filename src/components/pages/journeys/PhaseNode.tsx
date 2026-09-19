@@ -1,7 +1,7 @@
 import { Circle } from "lucide-react"
 import type { DerivedPhaseStatus, PhaseResponse } from "@/types"
 import { CATEGORY_ICONS, JOURNEY_STATUS_CONFIG } from "@/constants/journeyStatus"
-import { orbGrad, rgba } from "@/utils/color"
+import { orbGrad, rgba, soft } from "@/utils/color"
 import { cn } from "@/utils/cn"
 import type { CategoryVisual } from "./useJourneyBuilder"
 
@@ -34,6 +34,18 @@ export function PhaseNode({
 }: PhaseNodeProps) {
   const status = JOURNEY_STATUS_CONFIG[derived]
   const BadgeIcon = status.icon
+  //: A base da fase e tingida pelo status, e nao mais um creme fixo. Sao tres elipses
+  //: empilhadas e, em cada uma, o topo e a espessura sao a cor do status diluida no
+  //: branco da marca em graus diferentes -- mais forte na de fora, quase branca na de
+  //: dentro, para a base parecer iluminada por baixo pelo proprio status.
+  const base = {
+    outerTop: soft(status.solid, 0.3),
+    outerSide: soft(status.solid, 0.46),
+    midTop: soft(status.solid, 0.17),
+    midSide: soft(status.solid, 0.32),
+    innerTop: soft(status.solid, 0.08),
+    innerSide: soft(status.solid, 0.2),
+  }
   const CatIcon = CATEGORY_ICONS[cat.icon] ?? Circle
   const lift = selected || hovered
   const z = 10 + Math.round(y / 8) + (selected ? 400 : hovered ? 200 : 0)
@@ -53,9 +65,21 @@ export function PhaseNode({
       {selected && (
         <span className="absolute left-[0.375rem] top-[4.75rem] h-[4.5rem] w-[10.25rem] rounded-[50%] shadow-[0_0_0_0.15625rem_#BE4A01]" />
       )}
-      <span className="absolute left-[1.25rem] top-[5.1875rem] h-[3.625rem] w-[8.5rem] rounded-[50%] bg-[#ECEADD] shadow-[0_0.3125rem_0_#DBD9C7,0_1.125rem_1.625rem_-0.375rem_rgba(10,7,3,0.16)]" />
-      <span className="absolute left-[2.125rem] top-[5rem] h-[2.875rem] w-[6.75rem] rounded-[50%] bg-[#F8F7EF] shadow-[0_0.3125rem_0_#E3E1D1]" />
-      <span className="absolute left-[2.9375rem] top-[4.875rem] h-[2.1875rem] w-[5.125rem] rounded-[50%] bg-[#FDFCF7] shadow-[0_0.25rem_0_#EAE8D9]" />
+      <span
+        className="absolute left-[1.25rem] top-[5.1875rem] h-[3.625rem] w-[8.5rem] rounded-[50%] transition-[background,box-shadow] duration-[220ms] ease-[var(--ease-out)]"
+        style={{
+          background: base.outerTop,
+          boxShadow: `0 0.3125rem 0 ${base.outerSide}, 0 1.125rem 1.625rem -0.375rem rgba(10,7,3,0.16)`,
+        }}
+      />
+      <span
+        className="absolute left-[2.125rem] top-[5rem] h-[2.875rem] w-[6.75rem] rounded-[50%] transition-[background,box-shadow] duration-[220ms] ease-[var(--ease-out)]"
+        style={{ background: base.midTop, boxShadow: `0 0.3125rem 0 ${base.midSide}` }}
+      />
+      <span
+        className="absolute left-[2.9375rem] top-[4.875rem] h-[2.1875rem] w-[5.125rem] rounded-[50%] transition-[background,box-shadow] duration-[220ms] ease-[var(--ease-out)]"
+        style={{ background: base.innerTop, boxShadow: `0 0.25rem 0 ${base.innerSide}` }}
+      />
       <span
         className="absolute left-[3.5rem] top-[5rem] h-[1.625rem] w-[4rem] rounded-[50%] blur-[0.375rem]"
         style={{ background: rgba(cat.color, 0.45) }}
