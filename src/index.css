@@ -128,10 +128,11 @@
 
 /* A escala da interface inteira: tudo no console esta em rem, entao este numero
    multiplica a interface toda. 100% = padrao do navegador (1rem = 16px).
-   92% reproduz, com o zoom em 100%, o tamanho que os 137.5% anteriores davam
-   com o zoom em 67%. Para calibrar: escala desejada = 137.5 x (zoom que ficou bom). */
+   Calibrado em duas passadas com o usuario: 137.5% -> 92% (o zoom bom era 67%)
+   -> 82.8% (o zoom bom era 90%). Para calibrar de novo: escala nova = escala
+   atual x (o zoom em que a tela ficou boa). */
 html {
-  font-size: 92%;
+  font-size: 82.8%;
 }
 
 body {
