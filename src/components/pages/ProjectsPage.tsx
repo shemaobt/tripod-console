@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { useNavigate } from "react-router"
-import { FolderOpen, Search } from "lucide-react"
+import { FolderOpen } from "lucide-react"
 import { toast } from "sonner"
 import { projectsAPI } from "@/services/api"
 import { useAuth } from "@/contexts/AuthContext"
@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { LoadingSpinner } from "@/components/common/LoadingSpinner"
 import { EmptyState } from "@/components/common/EmptyState"
+import { FilterBar } from "@/components/common/FilterBar"
 
 export default function ProjectsPage() {
   const navigate = useNavigate()
@@ -98,25 +99,38 @@ export default function ProjectsPage() {
         actionLabel="Create Project"
         onAction={openCreateDialog}
       />
-    ) : filtered.length === 0 ? (
-      <div className="rounded-[1.125rem] bg-elevated px-6 py-16 text-center text-sm text-fg-subtle shadow-[var(--shadow-card)]">
-        No projects match “{query}”.
-      </div>
     ) : (
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-        {filtered.map((project) => {
-          const lang = langOf(project.language_id)
-          return (
-            <ProjectCard
-              key={project.id}
-              project={project}
-              langName={lang?.name}
-              langCode={lang?.code}
-              onOpen={() => navigate(`/app/projects/${project.id}`)}
-              onEdit={(e) => openEditDialog(e, project)}
-            />
-          )
-        })}
+      <div className="space-y-4">
+        <FilterBar
+          search={{
+            value: query,
+            onChange: setQuery,
+            placeholder: "Search projects…",
+          }}
+          resultLabel={`${filtered.length} result${filtered.length !== 1 ? "s" : ""}`}
+        />
+
+        {filtered.length === 0 ? (
+          <div className="rounded-[1.125rem] bg-elevated px-6 py-16 text-center text-sm text-fg-subtle shadow-[var(--shadow-card)]">
+            No projects match “{query}”.
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {filtered.map((project) => {
+              const lang = langOf(project.language_id)
+              return (
+                <ProjectCard
+                  key={project.id}
+                  project={project}
+                  langName={lang?.name}
+                  langCode={lang?.code}
+                  onOpen={() => navigate(`/app/projects/${project.id}`)}
+                  onEdit={(e) => openEditDialog(e, project)}
+                />
+              )
+            })}
+          </div>
+        )}
       </div>
     )
 
@@ -132,19 +146,10 @@ export default function ProjectsPage() {
           </span>
           <h3 className="text-[1.5625rem] font-bold tracking-tight text-fg-strong">Projects</h3>
           <span className="text-[0.78125rem] text-fg-subtle">
-            {projects.length} project{projects.length !== 1 ? "s" : ""}
+            {projects.length} project{projects.length !== 1 ? "s" : ""} total
           </span>
         </div>
-        <div className="flex items-center gap-3.5">
-          <div className="flex flex-1 items-center gap-2 rounded-full bg-muted px-4 py-2.5 sm:w-[15rem] sm:flex-none">
-            <Search className="h-[0.9375rem] w-[0.9375rem] flex-none text-fg-subtle" strokeWidth={2} />
-            <input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search projects…"
-              className="w-full bg-transparent text-[0.84375rem] text-fg-strong outline-none placeholder:text-fg-subtle"
-            />
-          </div>
+        <div className="flex items-center">
           <Button onClick={openCreateDialog}>
             {isPlatformAdmin ? "New project" : "Request project"}
           </Button>
@@ -158,7 +163,7 @@ export default function ProjectsPage() {
             <TabsTrigger value="requests">
               {isPlatformAdmin ? "Requests" : "My Requests"}
               {requestBadgeCount > 0 && (
-                <span className="rounded-full bg-telha px-1.5 py-px text-[0.625rem] font-bold text-on-dark">
+                <span className="rounded-full bg-telha px-1.5 py-px text-xs font-bold text-on-dark">
                   {requestBadgeCount}
                 </span>
               )}
