@@ -1,12 +1,11 @@
 import { useEffect, useMemo } from "react"
 import { Link } from "react-router-dom"
-import { MapContainer, TileLayer, CircleMarker, useMap } from "react-leaflet"
+import { AttributionControl, MapContainer, TileLayer, CircleMarker, useMap } from "react-leaflet"
 import "leaflet/dist/leaflet.css"
 import { useTheme } from "@/contexts/ThemeContext"
+import { MAP_ATTRIBUTION, TELHA, tileUrlForTheme } from "@/constants/map"
 import type { ProjectResponse } from "@/types"
 
-const LIGHT_TILES = "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
-const DARK_TILES = "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
 const FALLBACK_CENTER: [number, number] = [-14.2, -51.9]
 
 function FitToMarkers({ points }: { points: [number, number][] }) {
@@ -34,7 +33,7 @@ export function MapPreview({ projects }: { projects: ProjectResponse[] }) {
     () => located.map((p) => [p.latitude!, p.longitude!] as [number, number]),
     [located],
   )
-  const tileUrl = resolvedTheme === "dark" ? DARK_TILES : LIGHT_TILES
+  const tileUrl = tileUrlForTheme(resolvedTheme)
 
   return (
     <div className="relative overflow-hidden rounded-[1.125rem] shadow-[var(--shadow-card)] h-[15.625rem]">
@@ -50,14 +49,15 @@ export function MapPreview({ projects }: { projects: ProjectResponse[] }) {
         keyboard={false}
         attributionControl={false}
       >
-        <TileLayer key={tileUrl} url={tileUrl} maxZoom={19} />
+        <AttributionControl position="topright" prefix={false} />
+        <TileLayer key={tileUrl} url={tileUrl} attribution={MAP_ATTRIBUTION} maxZoom={19} />
         <FitToMarkers points={points} />
         {located.map((p) => (
           <CircleMarker
             key={p.id}
             center={[p.latitude!, p.longitude!]}
             radius={6}
-            pathOptions={{ color: "#F6F5EB", weight: 2, fillColor: "#BE4A01", fillOpacity: 1 }}
+            pathOptions={{ color: "#F6F5EB", weight: 2, fillColor: TELHA, fillOpacity: 1 }}
           />
         ))}
       </MapContainer>

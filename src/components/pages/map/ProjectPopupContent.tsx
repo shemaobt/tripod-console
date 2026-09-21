@@ -3,8 +3,6 @@ import type { ProjectResponse, ProjectPhaseResponse } from "@/types"
 import { PHASE_STATUS_CONFIG } from "@/constants/phaseStatus"
 import { cn } from "@/utils/cn"
 
-export const TELHA = "#BE4A01"
-
 const MAX_CHIPS = 4
 
 export function ProjectPopupContent({

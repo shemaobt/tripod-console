@@ -1,6 +1,5 @@
 import { useState } from "react"
-import { MapContainer, TileLayer, Marker } from "react-leaflet"
-import L from "leaflet"
+import { AttributionControl, MapContainer, TileLayer, Marker } from "react-leaflet"
 import "leaflet/dist/leaflet.css"
 import { MapPin } from "lucide-react"
 import { toast } from "sonner"
@@ -12,21 +11,9 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { LocationSearchInput } from "@/components/common/LocationSearchInput"
 import { InfoTooltip } from "@/components/common/InfoTooltip"
+import { MAP_ATTRIBUTION, createProjectPinIcon, tileUrlForTheme } from "@/constants/map"
 
-const LIGHT_TILES = "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
-const DARK_TILES = "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-
-const locationMarkerSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="42" viewBox="0 0 32 42" fill="none">
-  <path d="M16 2C9.373 2 4 7.373 4 14c0 8.5 12 24 12 24s12-15.5 12-24c0-6.627-5.373-12-12-12z" fill="#BE4A01"/>
-  <circle cx="16" cy="14" r="5" fill="white"/>
-</svg>`
-
-const locationIcon = L.divIcon({
-  html: locationMarkerSvg,
-  className: "",
-  iconSize: [32, 42],
-  iconAnchor: [16, 42],
-})
+const locationIcon = createProjectPinIcon({ shadow: false })
 
 interface LocationSectionProps {
   project: ProjectResponse
@@ -39,7 +26,7 @@ interface LocationSectionProps {
 
 export function LocationSection({ project, onSave }: LocationSectionProps) {
   const { resolvedTheme } = useTheme()
-  const tileUrl = resolvedTheme === "dark" ? DARK_TILES : LIGHT_TILES
+  const tileUrl = tileUrlForTheme(resolvedTheme)
   const [location, setLocation] = useState<{
     displayName: string
     latitude: number
@@ -146,7 +133,8 @@ export function LocationSection({ project, onSave }: LocationSectionProps) {
               dragging={false}
               attributionControl={false}
             >
-              <TileLayer key={tileUrl} url={tileUrl} maxZoom={20} />
+              <AttributionControl prefix={false} />
+              <TileLayer key={tileUrl} url={tileUrl} attribution={MAP_ATTRIBUTION} maxZoom={20} />
               <Marker position={[location.latitude, location.longitude]} icon={locationIcon} />
             </MapContainer>
           </div>
