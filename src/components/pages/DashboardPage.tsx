@@ -2,6 +2,7 @@ import { useEffect, useState } from "react"
 import { useAuth } from "@/contexts/AuthContext"
 import { appsAPI, projectsAPI } from "@/services/api"
 import type { UserAppResponse, ProjectResponse } from "@/types"
+import { states } from "@/styles"
 import { LoadingSpinner } from "@/components/common/LoadingSpinner"
 import { MyAppsCard } from "@/components/pages/dashboard/MyAppsCard"
 import { MapPreview } from "@/components/pages/dashboard/MapPreview"
@@ -14,7 +15,13 @@ export default function DashboardPage() {
   const [apps, setApps] = useState<UserAppResponse[]>([])
   const [projects, setProjects] = useState<ProjectResponse[]>([])
   const [loading, setLoading] = useState(true)
-  const { data: adminData, languages } = useAdminDashboardData(isPlatformAdmin)
+  const {
+    data: adminData,
+    languages,
+    loading: adminLoading,
+    failed: adminFailed,
+    pendingFailed,
+  } = useAdminDashboardData(isPlatformAdmin)
 
   useEffect(() => {
     async function fetchData() {
@@ -60,9 +67,21 @@ export default function DashboardPage() {
         <span className="hidden sm:block font-serif italic text-[0.84375rem] text-fg-subtle">{today}</span>
       </div>
 
-      {isPlatformAdmin && adminData && (
-        <AdminStatsRow data={adminData} projects={projects} languages={languages} />
-      )}
+      {isPlatformAdmin &&
+        (adminFailed ? (
+          <div className={states.error}>
+            Platform overview could not be loaded. Reload the page to try again.
+          </div>
+        ) : adminData ? (
+          <AdminStatsRow
+            data={adminData}
+            projects={projects}
+            languages={languages}
+            pendingFailed={pendingFailed}
+          />
+        ) : (
+          <LoadingSpinner size="sm" />
+        ))}
 
       {isPlatformAdmin ? (
         <div className="grid grid-cols-1 lg:grid-cols-[1.65fr_1fr] gap-[1.125rem] items-start">
@@ -70,7 +89,11 @@ export default function DashboardPage() {
             <MyAppsCard apps={apps} showManageLink />
             <MapPreview projects={projects} />
           </div>
-          {adminData && <NeedsReviewPanel data={adminData} />}
+          <NeedsReviewPanel
+            data={adminData}
+            loading={adminLoading}
+            failed={adminFailed || pendingFailed}
+          />
         </div>
       ) : (
         <>

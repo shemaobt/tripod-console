@@ -25,6 +25,8 @@ export interface AdminDashboardData {
 
 export function useAdminDashboardData(enabled: boolean) {
   const [data, setData] = useState<AdminDashboardData | null>(null)
+  const [failed, setFailed] = useState(false)
+  const [pendingFailed, setPendingFailed] = useState(false)
   const languages = useLanguagesStore((s) => s.languages)
   const fetchLanguages = useLanguagesStore((s) => s.fetch)
 
@@ -32,32 +34,34 @@ export function useAdminDashboardData(enabled: boolean) {
     if (!enabled) return
     let cancelled = false
     async function fetchData() {
-      try {
-        const [usersRes, appsRes, accessRes, changeRes, publicRes] = await Promise.all([
-          usersAPI.list(),
-          appsAPI.list().catch(() => ({ data: [] as AppResponse[] })),
-          accessRequestsAPI
-            .list({ status: "pending" })
-            .catch(() => ({ data: [] as AccessRequestResponse[] })),
-          changeRequestsAPI
-            .list({ status: "pending" })
-            .catch(() => ({ data: [] as ChangeRequestResponse[] })),
-          publicRequestsAPI
-            .list({ status: "pending" })
-            .catch(() => ({ data: [] as PublicRequestAdminResponse[] })),
-        ])
-        if (!cancelled) {
-          setData({
-            users: usersRes.data,
-            apps: appsRes.data,
-            pendingAccess: accessRes.data,
-            pendingChange: changeRes.data,
-            pendingPublic: publicRes.data,
-          })
-        }
-      } catch {
-        if (!cancelled) setData(null)
+      const [usersRes, appsRes, accessRes, changeRes, publicRes] = await Promise.allSettled([
+        usersAPI.list(),
+        appsAPI.list(),
+        accessRequestsAPI.list({ status: "pending" }),
+        changeRequestsAPI.list({ status: "pending" }),
+        publicRequestsAPI.list({ status: "pending" }),
+      ])
+      if (cancelled) return
+
+      setPendingFailed(
+        accessRes.status === "rejected" ||
+          changeRes.status === "rejected" ||
+          publicRes.status === "rejected",
+      )
+
+      if (usersRes.status === "rejected") {
+        setData(null)
+        setFailed(true)
+        return
       }
+      setData({
+        users: usersRes.value.data,
+        apps: appsRes.status === "fulfilled" ? appsRes.value.data : [],
+        pendingAccess: accessRes.status === "fulfilled" ? accessRes.value.data : [],
+        pendingChange: changeRes.status === "fulfilled" ? changeRes.value.data : [],
+        pendingPublic: publicRes.status === "fulfilled" ? publicRes.value.data : [],
+      })
+      setFailed(false)
     }
     fetchData()
     fetchLanguages()
@@ -66,5 +70,5 @@ export function useAdminDashboardData(enabled: boolean) {
     }
   }, [enabled, fetchLanguages])
 
-  return { data, languages }
+  return { data, languages, loading: enabled && !data && !failed, failed, pendingFailed }
 }

@@ -1,4 +1,5 @@
 import { create } from "zustand"
+import { toast } from "sonner"
 import { accessRequestsAPI, changeRequestsAPI, publicRequestsAPI } from "@/services/api"
 
 export interface PendingRequestCounts {
@@ -10,6 +11,7 @@ export interface PendingRequestCounts {
 interface RequestCountsStore {
   counts: PendingRequestCounts
   loading: boolean
+  failed: boolean
   lastFetched: number | null
   fetch: () => Promise<void>
   refresh: () => Promise<void>
@@ -22,6 +24,7 @@ const EMPTY: PendingRequestCounts = { access: 0, languageChanges: 0, projectChan
 export const useRequestCountsStore = create<RequestCountsStore>((set, get) => ({
   counts: EMPTY,
   loading: false,
+  failed: false,
   lastFetched: null,
 
   fetch: async () => {
@@ -33,36 +36,40 @@ export const useRequestCountsStore = create<RequestCountsStore>((set, get) => ({
 
   refresh: async () => {
     set({ loading: true })
-    const [access, changes, publics] = await Promise.all([
-      accessRequestsAPI
-        .list({ status: "pending" })
-        .then((r) => r.data)
-        .catch(() => []),
-      changeRequestsAPI
-        .list({ status: "pending" })
-        .then((r) => r.data)
-        .catch(() => []),
-      publicRequestsAPI
-        .list({ status: "pending" })
-        .then((r) => r.data)
-        .catch(() => []),
+    const [access, changes, publics] = await Promise.allSettled([
+      accessRequestsAPI.list({ status: "pending" }),
+      changeRequestsAPI.list({ status: "pending" }),
+      publicRequestsAPI.list({ status: "pending" }),
     ])
+
+    if (
+      access.status === "rejected" ||
+      changes.status === "rejected" ||
+      publics.status === "rejected"
+    ) {
+      const wasFailed = get().failed
+      set({ loading: false, failed: true })
+      if (!wasFailed) toast.error("Failed to load pending request counts")
+      return
+    }
+
     const merged = [
-      ...changes.map((r) => r.kind),
-      ...publics.map((r) => r.kind),
+      ...changes.value.data.map((r) => r.kind),
+      ...publics.value.data.map((r) => r.kind),
     ]
     set({
       counts: {
-        access: access.length,
+        access: access.value.data.length,
         languageChanges: merged.filter((kind) => kind !== "create_project").length,
         projectChanges: merged.filter((kind) => kind === "create_project").length,
       },
       loading: false,
+      failed: false,
       lastFetched: Date.now(),
     })
   },
 
   reset: () => {
-    set({ counts: EMPTY, loading: false, lastFetched: null })
+    set({ counts: EMPTY, loading: false, failed: false, lastFetched: null })
   },
 }))
