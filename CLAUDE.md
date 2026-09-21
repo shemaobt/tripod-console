@@ -100,9 +100,10 @@ src/
 ├── services/                    # api.ts — Single Axios client with namespaced APIs
 ├── types/                       # TS interfaces (auth, user, app, language, organization, project,
 │                                #   role, phase, accessRequest, changeRequest, publicRequest; index barrel)
-├── constants/                   # app.ts (token keys), platforms.ts (PLATFORM_OPTIONS, platformLabel)
+├── constants/                   # app.ts (token keys), platforms.ts (PLATFORM_OPTIONS, platformLabel),
+│                                #   phaseStatus.ts, map.ts (tile URLs, OSM/CARTO attribution, pin icon)
 ├── utils/                       # cn.ts (class merging), format.ts (formatDate, timeAgo)
-└── styles/                      # Centralized style constants (cards, badges, layout, states; index barrel)
+└── styles/                      # Centralized style constants (cards, layout, states; index barrel)
 ```
 
 ### Functional components only
@@ -182,7 +183,7 @@ Use `isPlatformAdmin`, `isManager`, `managedProjectIds` / `managedOrgIds`, and `
 
 ### Global focus-visible
 
-- `index.css` defines `*:focus-visible { outline: 2.5px solid var(--focus-ring); outline-offset: 2px }` (`--focus-ring` is telha; lighter in dark mode).
+- `index.css` defines `*:focus-visible { outline: 0.15625rem solid var(--focus-ring); outline-offset: 0.125rem }` (`--focus-ring` is telha; lighter in dark mode).
 - Components should **not** add ring utilities (`focus:ring-*` / `focus-visible:ring-*`) — the global outline handles keyboard focus.
 - Input-like components (Input, Textarea) are underline-style and use `focus:outline-none focus:border-accent` so the underline shifts to accent on focus.
 
@@ -195,9 +196,8 @@ Use `isPlatformAdmin`, `isManager`, `managedProjectIds` / `managedOrgIds`, and `
 ### Centralized style constants
 
 - **Use `src/styles/`** for reusable style constants. This directory contains TypeScript objects with Tailwind class strings organized by purpose:
-  - `cards.ts` — `card.base` (`bg-elevated rounded-[18px] shadow-[var(--shadow-card)]`), `card.hover` (lift + shadow), `card.interactive` (base + hover + cursor), `card.padded` (base + `p-5 sm:p-6`)
-  - `badges.ts` — `badge.base` (pill) + status variants (success, pending, error, active, inactive) built on `st-ok` / `muted` / `accent-soft` tokens
-  - `layout.ts` — `page` (`min-h-screen bg-canvas`), `container` (`max-w-[1240px] mx-auto px-6 sm:px-10 py-8 sm:py-9`), `grid`, `main`
+  - `cards.ts` — `card.base` (`bg-elevated rounded-[1.125rem] shadow-[var(--shadow-card)]`), `card.hover` (lift + shadow), `card.interactive` (base + hover + cursor), `card.padded` (base + `p-5 sm:p-6`)
+  - `layout.ts` — `page` (`min-h-screen bg-canvas`), `container` (`max-w-[77.5rem] mx-auto px-6 sm:px-10 py-8 sm:py-9`), `grid`, `main`
   - `states.ts` — `empty`, `loading`, `error` (`accent-soft` banner), `warning` (`muted` banner)
 - **Import from `@/styles`** when using these constants
 - **Prefer centralized styles** over repeating the same class strings across components
@@ -208,7 +208,7 @@ Use `isPlatformAdmin`, `isManager`, `managedProjectIds` / `managedOrgIds`, and `
 - `<div className={cn(card.base, card.hover)}>` — uses centralized card styles
 - `<div className={card.padded}>` — card with base styles + responsive padding (standalone, no need to combine with card.base)
 - `<div className={states.empty}>` — consistent empty state styling
-- `<span className={cn(badge.base, badge.success)}>Active</span>` — badge with base + variant
+- **Badges are not here** — they are a `cva` component, `components/ui/badge.tsx`. Use `<Badge variant="success">Active</Badge>`; see Section 9.6 for the variant list.
 - **Class merging**: Always use `cn()` when combining conditional or overridden classes. Use `cva` for variant-based components (see `components/ui/button.tsx`).
 
 ---
@@ -374,6 +374,8 @@ interface AuthContextValue {
 All UI, styling, layout, spacing, colors, typography, and visual decisions MUST strictly follow these rules.
 Do not override, reinterpret, or invent visual rules.
 
+**Units and the interface scale.** `src/index.css` sets `html { font-size: 82.8% }`, so `1rem` renders as **13.248px**. Every size in this codebase is authored in `rem`, and the px figures named in this section and in Section 10 are **authoring values at 1rem = 16px** — what reaches the screen is 82.8% of them (the `w-[16.125rem]` sidebar rail is 258px authored, 213.6px rendered). Copy the `rem` form quoted here; never mix a raw `px` size in beside it, or your component will not line up with its neighbours. The single exception is the breakpoints in `@theme`: inside a media query `1rem` is always 16px, so those are declared in px and already carry the scale.
+
 ### 9.1 Typography
 - **Montserrat**: Entire interface (UI, buttons, navigation, labels, headings).
 - **Merriweather**: Long-form texts only (if any).
@@ -406,9 +408,9 @@ Do not override, reinterpret, or invent visual rules.
 - Do NOT use generic neutral greys. Use the Shema earthy palette.
 
 ### 9.3 Spacing & Layout
-- **Base unit**: 4px (Tailwind default)
-- **Page wrapper**: `max-w-[1240px] mx-auto px-6 sm:px-10 pt-8 pb-14` (or `layout.container` from `@/styles`)
-- **Page header row**: left = eyebrow (`text-[13px] font-semibold tracking-[0.14em] uppercase text-fg-muted`) above an `h3` title (`text-[25px] font-bold text-fg-strong tracking-tight`), optional subtitle/count (`text-[12.5px] text-fg-subtle`); right = actions
+- **Base unit**: Tailwind's default spacing scale — `1` = `0.25rem` (4px authored)
+- **Page wrapper**: `max-w-[77.5rem] mx-auto px-6 sm:px-10 pt-8 pb-14` (or `layout.container` from `@/styles`)
+- **Page header row**: left = eyebrow (`text-[0.8125rem] font-semibold tracking-[0.14em] uppercase text-fg-muted`) above an `h3` title (`text-[1.5625rem] font-bold text-fg-strong tracking-tight`), optional subtitle/count (`text-[0.78125rem] text-fg-subtle`); right = actions
 - **Card padding**: `p-5` (or `p-5 sm:p-6`)
 - **Section gaps**: `space-y-6` or `space-y-8` for vertical rhythm
 - **Form spacing**: `space-y-4` between form groups, `space-y-2` between label and input
@@ -417,8 +419,8 @@ Do not override, reinterpret, or invent visual rules.
 - **Background**: `bg-elevated`
 - **Borders**: NONE — cards have no borders; depth comes from shadow only
 - **Shadows**: `shadow-[var(--shadow-card)]` base, `shadow-[var(--shadow-md)]` on hover
-- **Radius**: `rounded-[18px]` cards, `rounded-2xl`/`rounded-[16px]` small cards, `rounded-[20px]` dialogs
-- **Card Base Classes**: `bg-elevated rounded-[18px] shadow-[var(--shadow-card)]` (= `card.base`)
+- **Radius**: `rounded-[1.125rem]` cards, `rounded-2xl`/`rounded-[1rem]` small cards, `rounded-[1.25rem]` dialogs
+- **Card Base Classes**: `bg-elevated rounded-[1.125rem] shadow-[var(--shadow-card)]` (= `card.base`)
 - **Card Hover Classes**: `transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[var(--shadow-md)]` (= `card.hover`, lift effect)
 
 ### 9.5 Buttons & Interactive Elements
@@ -438,6 +440,7 @@ Do not override, reinterpret, or invent visual rules.
 - **Member**: `bg-secondary-strong text-on-dark` (solid #6F7440 pill)
 - **Admin**: `bg-inverse text-on-dark`
 - **Status dots**: `<span className="w-2 h-2 rounded-full bg-st-...">`
+- **Owner**: these live in one `cva` component, `components/ui/badge.tsx` — use `<Badge variant="...">`, never a hand-rolled pill. Variants: `default`, `success`, `error`, `active`, `inactive`, `admin`, `manager`, `member`. Add a variant there rather than restyling a Badge at the call site.
 
 ### 9.7 Animations & Transitions
 - **Hover**: `transition-all duration-200`
@@ -446,24 +449,24 @@ Do not override, reinterpret, or invent visual rules.
 - **Easing**: `--ease-out` = `cubic-bezier(0.2, 0.8, 0.25, 1)`
 
 ### 9.8 Forms
-- **Inputs are underline-style**: transparent background, `border-0 border-b-[1.5px] border-input-border px-0`, no box, no ring
-- **Textareas are boxed**: `rounded-[10px] border-[1.5px] border-input-border bg-transparent`
+- **Inputs are underline-style**: transparent background, `border-0 border-b-[0.09375rem] border-input-border px-0`, no box, no ring
+- **Textareas are boxed**: `rounded-[0.625rem] border-[0.09375rem] border-input-border bg-transparent`
 - **Placeholders**: `placeholder:text-fg-subtle`
 - **Focus**: `focus:outline-none focus:border-accent` (underline/border shifts to accent)
-- **Labels**: `text-[13px] font-semibold text-fg-strong mb-1.5`
+- **Labels**: `text-[0.8125rem] font-semibold text-fg-strong mb-1.5`
 
 ### 9.9 Tables
-- **Container**: `bg-elevated rounded-[18px] shadow-[var(--shadow-card)] overflow-hidden` (no border)
-- **Header cells**: `text-left px-5 py-3 text-[11px] font-semibold tracking-[0.08em] uppercase text-fg-subtle border-b border-line`
+- **Container**: `bg-elevated rounded-[1.125rem] shadow-[var(--shadow-card)] overflow-hidden` (no border)
+- **Header cells**: `text-left px-5 py-3 text-[0.6875rem] font-semibold tracking-[0.08em] uppercase text-fg-subtle border-b border-line`
 - **Body cells**: `px-5 py-3 border-b border-line`; row hover `hover:bg-muted`; first-column names `font-semibold text-fg-strong`
 - **Code chips**: `font-mono text-xs bg-muted rounded-md px-2 py-0.5 text-fg-muted`
-- **Action buttons**: `w-[30px] h-[30px] rounded-[9px] grid place-items-center text-fg-subtle` icon buttons — `hover:bg-muted hover:text-fg-strong` (edit) or `hover:bg-accent-soft hover:text-on-accent-soft` (delete)
+- **Action buttons**: `w-[1.875rem] h-[1.875rem] rounded-[0.5625rem] grid place-items-center text-fg-subtle` icon buttons — `hover:bg-muted hover:text-fg-strong` (edit) or `hover:bg-accent-soft hover:text-on-accent-soft` (delete)
 
 ---
 
 ## 10. Sidebar
 
-The sidebar is a fixed dark rail — `bg-shell text-shell-fg w-[258px]`, sticky full height — with navigation organized into labeled sections:
+The sidebar is a fixed dark rail — `bg-shell text-shell-fg w-[16.125rem]`, sticky full height — with navigation organized into labeled sections:
 
 ```
 [logo-branco.svg]        [light/dark pill toggle]
@@ -482,11 +485,11 @@ ADMINISTRATION                            [admin only]
 ```
 
 - **Top row**: `logo-branco.svg` + theme pill toggle (Sun/Moon segmented pill, sets light/dark via ThemeContext)
-- **Section labels**: uppercase micro — `text-[10.5px] font-semibold tracking-[0.14em] uppercase text-[var(--shell-dim)]`
-- **Nav items**: `rounded-[10px]` rows; active = `bg-[var(--shell-active)] text-shell-fg`; inactive = `text-[var(--shell-dim)]`, hover gets the active treatment
+- **Section labels**: uppercase micro — `text-[0.65625rem] font-semibold tracking-[0.14em] uppercase text-[var(--shell-dim)]`
+- **Nav items**: `rounded-[0.625rem]` rows; active = `bg-[var(--shell-active)] text-shell-fg`; inactive = `text-[var(--shell-dim)]`, hover gets the active treatment
 - **Footer**: `border-t border-[var(--shell-line)]` with profile button (avatar + display name + role label, opens ProfileDialog) and a sign-out icon button
 - **RBAC**: "Main" for all console users; "Content" shown to platform admins + managers; "Administration" only when `isPlatformAdmin`
-- **Collapsible icon rail (desktop).** A collapse toggle (PanelLeftClose/PanelLeftOpen) shrinks the rail to `w-[72px]` icon-only mode — icons stay, section captions become hairline dividers, nav badges render as a numeric corner bubble, labels surface via `title` tooltips, and the theme pill collapses to a single icon. State persists in the `sidebarStore` (Zustand + localStorage `tc_sidebar`). Collapse is desktop-only. Mobile (`lg:hidden`): overlay drawer with dark backdrop and close button, always expanded
+- **Collapsible icon rail (desktop).** A collapse toggle (PanelLeftClose/PanelLeftOpen) shrinks the rail to `w-[4.5rem]` icon-only mode — icons stay, section captions become hairline dividers, nav badges render as a numeric corner bubble, labels surface via `title` tooltips, and the theme pill collapses to a single icon. State persists in the `sidebarStore` (Zustand + localStorage `tc_sidebar`). Collapse is desktop-only. Mobile (`lg:hidden`): overlay drawer with dark backdrop and close button, always expanded
 
 ---
 
@@ -610,7 +613,7 @@ Use `gh` CLI for all GitHub operations. Never force-push or amend published comm
 - [ ] **React**: Functional components only; modularize; reuse `components/ui/` primitives.
 - [ ] **Component size**: Keep components under 300 lines; split if over 400 lines.
 - [ ] **Styling**: Tailwind only; use `cn()` and design tokens; avoid inline styles except when necessary.
-- [ ] **Centralized styles**: Use `src/styles/` for reusable patterns (cards, badges, states, layout); avoid repeating className strings.
+- [ ] **Centralized styles**: Use `src/styles/` for reusable patterns (cards, states, layout) and `components/ui/badge.tsx` for badges; avoid repeating className strings.
 - [ ] **`bg-elevated` not `bg-white`**: Always use `bg-elevated` for elevated surfaces (cards, modals, selects), `bg-canvas` for page backgrounds, `bg-muted` for subtle fills. Never hardcode `bg-white`.
 - [ ] **Dark mode**: Use `dark:` variants where tokens alone don't adapt. Test with `.dark` class.
 - [ ] **Focus**: Rely on the global `*:focus-visible` outline in `index.css`; do not add ring utilities. Inputs use `focus:border-accent`.

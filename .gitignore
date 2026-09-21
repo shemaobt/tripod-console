@@ -25,6 +25,3 @@ dist-ssr
 
 # Local environment overrides (copy from .env.example)
 .env
-
-pr-us*.md
-decisoes-front.md
