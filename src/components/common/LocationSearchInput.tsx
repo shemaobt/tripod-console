@@ -99,6 +99,7 @@ export function LocationSearchInput({
         setSuggestions([])
       }
     } catch {
+      // A failed lookup leaves the typed query and the previous pin in place.
     } finally {
       setResolving(false)
     }
