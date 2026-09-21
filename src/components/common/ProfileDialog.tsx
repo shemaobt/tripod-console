@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react"
-import { User as UserIcon } from "lucide-react"
 import { toast } from "sonner"
 import { authAPI } from "@/services/api"
 import { useAuth } from "@/contexts/AuthContext"
+import { avatarColors, initialsOf } from "@/utils/avatar"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -64,30 +64,44 @@ export function ProfileDialog({ open, onOpenChange }: ProfileDialogProps) {
     }
   }
 
+  const avatarName = user?.display_name || user?.email || ""
+  const colors = avatarColors(user?.id ?? "", avatarName)
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Edit Profile</DialogTitle>
+          <DialogTitle>Your profile</DialogTitle>
           <DialogDescription>
-            Update your display name and profile photo.
+            Only changed fields are sent. Email cannot be changed.
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-5 pt-1">
-          <div className="flex justify-center py-2">
+          <div className="pt-1">
             <ImageUpload
               value={avatarUrl}
               onChange={setAvatarUrl}
               folder="avatars"
               shape="circle"
-              size="lg"
-              placeholder={<UserIcon className="h-8 w-8 text-verde/30" />}
+              size="xl"
+              actions="links"
+              uploadLabel="Upload photo"
+              changeLabel="Change photo"
+              removeLabel="Remove"
+              placeholder={
+                <span
+                  className="flex h-full w-full items-center justify-center text-[2.5rem] font-bold"
+                  style={{ backgroundColor: colors.bg, color: colors.fg }}
+                >
+                  {initialsOf(displayName || avatarName)}
+                </span>
+              }
             />
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="profile-display-name">Display Name</Label>
+            <Label htmlFor="profile-display-name">Display name</Label>
             <Input
               id="profile-display-name"
               value={displayName}
@@ -100,13 +114,13 @@ export function ProfileDialog({ open, onOpenChange }: ProfileDialogProps) {
           <div className="space-y-1.5">
             <Label>Email</Label>
             <Input value={user?.email || ""} disabled />
-            <p className="text-xs text-verde/50 mt-1.5">
-              Email cannot be changed
+            <p className="text-xs text-fg-subtle mt-1.5">
+              Email cannot be changed.
             </p>
           </div>
         </div>
 
-        <DialogFooter className="border-t border-areia/10 pt-4 mt-2">
+        <DialogFooter className="border-t border-line pt-4 mt-2">
           <Button
             variant="outline"
             onClick={() => onOpenChange(false)}
@@ -115,7 +129,7 @@ export function ProfileDialog({ open, onOpenChange }: ProfileDialogProps) {
             Cancel
           </Button>
           <Button onClick={handleSave} disabled={saving}>
-            {saving ? "Saving..." : "Save"}
+            {saving ? "Saving..." : "Save profile"}
           </Button>
         </DialogFooter>
       </DialogContent>

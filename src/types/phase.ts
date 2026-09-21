@@ -23,10 +23,19 @@ export interface PhaseDependencyResponse {
   depends_on_id: string
 }
 
+export type PhaseStatus = "not_started" | "in_progress" | "completed" | "blocked"
+
+export const PHASE_STATUSES: PhaseStatus[] = [
+  "not_started",
+  "in_progress",
+  "completed",
+  "blocked",
+]
+
 export interface ProjectPhaseResponse {
   id: string
   phase_id: string
   phase_name: string
   phase_description: string | null
-  status: string
+  status: PhaseStatus
 }

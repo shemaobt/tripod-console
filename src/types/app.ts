@@ -7,7 +7,7 @@ export interface AppResponse {
   app_url: string | null
   ios_url: string | null
   android_url: string | null
-  platform: string | null
+  platforms: string[]
   is_active: boolean
   auto_approve: boolean
   created_at: string
@@ -21,7 +21,7 @@ export interface AppCreate {
   app_url?: string | null
   ios_url?: string | null
   android_url?: string | null
-  platform?: string | null
+  platforms?: string[]
   is_active?: boolean
   auto_approve?: boolean
 }
@@ -33,7 +33,7 @@ export interface AppUpdate {
   app_url?: string | null
   ios_url?: string | null
   android_url?: string | null
-  platform?: string | null
+  platforms?: string[]
   is_active?: boolean
   auto_approve?: boolean
 }
@@ -47,7 +47,7 @@ export interface UserAppResponse {
   app_url: string | null
   ios_url: string | null
   android_url: string | null
-  platform: string | null
+  platforms: string[]
   is_active: boolean
   created_at: string
   roles: string[]

@@ -1,13 +1,16 @@
 import { useState } from "react"
 import { cn } from "@/utils/cn"
+import { avatarColors, initialsOf } from "@/utils/avatar"
 
 const sizeClasses = {
+  xs: "h-8 w-8 text-[0.6875rem]",
   sm: "h-9 w-9 text-xs",
   md: "h-11 w-11 text-sm",
   lg: "h-14 w-14 text-base",
 } as const
 
 interface UserAvatarProps {
+  id?: string
   name: string | null
   email: string
   avatarUrl: string | null
@@ -15,35 +18,30 @@ interface UserAvatarProps {
   className?: string
 }
 
-export function UserAvatar({ name, email, avatarUrl, size = "md", className }: UserAvatarProps) {
+export function UserAvatar({ id, name, email, avatarUrl, size = "md", className }: UserAvatarProps) {
   const [imgError, setImgError] = useState(false)
   const displayName = name || email
-  const initials = displayName
-    .split(/[\s@]+/)
-    .slice(0, 2)
-    .map((s) => s[0]?.toUpperCase())
-    .join("")
-
-  const showImage = avatarUrl && !imgError
+  const showImage = Boolean(avatarUrl) && !imgError
+  const colors = avatarColors(id ?? "", displayName)
 
   return (
     <div
       className={cn(
-        "rounded-full shrink-0 overflow-hidden ring-2 ring-areia/15 ring-offset-1 ring-offset-branco dark:ring-offset-surface",
-        !showImage && "bg-gradient-to-br from-azul/30 to-azul/10 flex items-center justify-center",
+        "rounded-full shrink-0 overflow-hidden grid place-items-center font-bold",
         sizeClasses[size],
         className,
       )}
+      style={showImage ? undefined : { backgroundColor: colors.bg, color: colors.fg }}
     >
       {showImage ? (
         <img
-          src={avatarUrl}
+          src={avatarUrl ?? undefined}
           alt={displayName}
           className="h-full w-full object-cover"
           onError={() => setImgError(true)}
         />
       ) : (
-        <span className="font-semibold text-azul">{initials}</span>
+        <span>{initialsOf(displayName)}</span>
       )}
     </div>
   )

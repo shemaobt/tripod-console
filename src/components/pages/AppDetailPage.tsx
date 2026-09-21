@@ -1,258 +1,24 @@
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useParams, useNavigate } from "react-router"
-import {
-  ArrowLeft,
-  AppWindow,
-  ExternalLink,
-  KeyRound,
-  Pencil,
-  Plus,
-  Trash2,
-} from "lucide-react"
+import { ArrowLeft } from "lucide-react"
 import { toast } from "sonner"
-import { appsAPI } from "@/services/api"
+import { appsAPI, uploadsAPI } from "@/services/api"
 import type { AppResponse, AppRoleResponse } from "@/types"
-import { card } from "@/styles"
 import { cn } from "@/utils/cn"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
-import { LoadingSpinner } from "@/components/common/LoadingSpinner"
-import { EmptyState } from "@/components/common/EmptyState"
-import { InfoTooltip } from "@/components/common/InfoTooltip"
-import { ImageUpload } from "@/components/common/ImageUpload"
-import { ConfirmDialog } from "@/components/common/ConfirmDialog"
+import { avatarColors, initialsOf } from "@/utils/avatar"
 import { Switch } from "@/components/ui/switch"
-
-import { formatDate } from "@/utils/format"
-
-function AppInfoCard({
-  app,
-  onEdit,
-}: {
-  app: AppResponse
-  onEdit: () => void
-}) {
-  return (
-    <div className={`${card.base} p-4 sm:p-6`}>
-      <div className="flex items-start justify-between mb-4">
-        <div className="flex items-center gap-3">
-          {app.icon_url ? (
-            <img
-              src={app.icon_url}
-              alt={`${app.name} icon`}
-              className="h-10 w-10 rounded-lg object-cover"
-            />
-          ) : (
-            <div className="h-10 w-10 rounded-lg bg-azul/20 flex items-center justify-center">
-              <AppWindow className="h-5 w-5 text-azul" />
-            </div>
-          )}
-          <div>
-            <h2 className="text-lg font-semibold text-preto">{app.name}</h2>
-            <p className="text-sm text-verde font-mono">{app.app_key}</p>
-          </div>
-        </div>
-        <Button variant="ghost" size="sm" onClick={onEdit}>
-          <Pencil className="h-4 w-4" />
-        </Button>
-      </div>
-
-      {app.description && (
-        <p className="text-sm text-verde mb-4">{app.description}</p>
-      )}
-
-      <div className="flex flex-wrap gap-3 mb-4">
-        <Badge variant="default">{app.platform ?? "web"}</Badge>
-        <Badge variant={app.is_active ? "active" : "inactive"}>
-          {app.is_active ? "Active" : "Inactive"}
-        </Badge>
-        <Badge variant={app.auto_approve ? "active" : "inactive"}>
-          {app.auto_approve ? "Auto-approve: on" : "Auto-approve: off"}
-        </Badge>
-      </div>
-
-      <div className="flex flex-wrap gap-4 text-sm text-verde">
-        {app.app_url && (
-          <a
-            href={app.app_url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 hover:text-telha transition-colors"
-          >
-            <ExternalLink className="h-3.5 w-3.5" />
-            Web App
-          </a>
-        )}
-        {app.ios_url && (
-          <a
-            href={app.ios_url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 hover:text-telha transition-colors"
-          >
-            <ExternalLink className="h-3.5 w-3.5" />
-            iOS
-          </a>
-        )}
-        {app.android_url && (
-          <a
-            href={app.android_url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 hover:text-telha transition-colors"
-          >
-            <ExternalLink className="h-3.5 w-3.5" />
-            Android
-          </a>
-        )}
-      </div>
-
-      <div className="mt-3 text-sm text-verde">
-        Created {formatDate(app.created_at)}
-      </div>
-    </div>
-  )
-}
-
-function AppRolesTable({
-  roles,
-  loading,
-  onAddRole,
-  onDeleteRole,
-}: {
-  roles: AppRoleResponse[]
-  loading: boolean
-  onAddRole: () => void
-  onDeleteRole: (role: AppRoleResponse) => void
-}) {
-  if (loading) {
-    return <LoadingSpinner />
-  }
-
-  return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-preto tracking-tight flex items-center">
-          Roles
-          <InfoTooltip content="Roles define permission levels within this app. System roles are built-in and cannot be removed." />
-        </h3>
-        <Button size="sm" onClick={onAddRole}>
-          <Plus className="h-4 w-4" />
-          Add Role
-        </Button>
-      </div>
-
-      {roles.length === 0 ? (
-        <EmptyState
-          icon={KeyRound}
-          title="No roles defined"
-          description="This app has no roles configured yet. Add a role to define permission levels for users."
-          actionLabel="Add Role"
-          onAction={onAddRole}
-        />
-      ) : (
-        <div className={`${card.base} overflow-hidden`}>
-          <table className="w-full">
-            <thead>
-              <tr className="bg-surface-alt/40">
-                <th className="px-3 sm:px-6 py-3 sm:py-4 text-left text-verde/70 text-xs font-medium tracking-wider uppercase">
-                  Role Key
-                </th>
-                <th className="px-3 sm:px-6 py-3 sm:py-4 text-left text-verde/70 text-xs font-medium tracking-wider uppercase">
-                  Label
-                </th>
-                <th className="px-3 sm:px-6 py-3 sm:py-4 text-left text-verde/70 text-xs font-medium tracking-wider uppercase hidden md:table-cell">
-                  Description
-                </th>
-                <th className="px-3 sm:px-6 py-3 sm:py-4 text-left text-verde/70 text-xs font-medium tracking-wider uppercase hidden sm:table-cell">
-                  <span className="inline-flex items-center">
-                    Type
-                    <InfoTooltip content="System roles are built-in and managed by the platform. They cannot be deleted." />
-                  </span>
-                </th>
-                <th className="px-3 sm:px-6 py-3 sm:py-4 text-right text-verde/70 text-xs font-medium tracking-wider uppercase">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {roles.map((role) => (
-                <tr
-                  key={role.id}
-                  className="border-t border-areia/10 hover:bg-surface-alt/30"
-                >
-                  <td className="px-3 sm:px-6 py-3 sm:py-4 text-sm text-preto font-mono">
-                    {role.role_key}
-                  </td>
-                  <td className="px-3 sm:px-6 py-3 sm:py-4 text-sm text-preto">
-                    {role.label}
-                  </td>
-                  <td className="px-3 sm:px-6 py-3 sm:py-4 text-sm text-verde hidden md:table-cell">
-                    {role.description || "\u2014"}
-                  </td>
-                  <td className="px-3 sm:px-6 py-3 sm:py-4 text-sm hidden sm:table-cell">
-                    {role.is_system ? (
-                      <Badge variant="default">System</Badge>
-                    ) : (
-                      <Badge variant="active">Custom</Badge>
-                    )}
-                  </td>
-                  <td className="px-3 sm:px-6 py-3 sm:py-4 text-right">
-                    {!role.is_system && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => onDeleteRole(role)}
-                      >
-                        <Trash2 className="h-4 w-4 text-red-600 dark:text-red-400" />
-                      </Button>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-    </div>
-  )
-}
-
-interface AppFormState {
-  name: string
-  description: string
-  platform: string
-  icon_url: string
-  app_url: string
-  ios_url: string
-  android_url: string
-  is_active: boolean
-  auto_approve: boolean
-}
+import { LoadingSpinner } from "@/components/common/LoadingSpinner"
+import { ConfirmDialog } from "@/components/common/ConfirmDialog"
+import { DetailsCard, type AppFormState } from "./apps/DetailsCard"
+import { AutoApproveCard } from "./apps/AutoApproveCard"
+import { DangerZoneCard } from "./apps/DangerZoneCard"
+import { RolesCard } from "./apps/RolesCard"
 
 function formFromApp(app: AppResponse): AppFormState {
   return {
     name: app.name,
     description: app.description ?? "",
-    platform: app.platform ?? "web",
+    platforms: app.platforms,
     icon_url: app.icon_url ?? "",
     app_url: app.app_url ?? "",
     ios_url: app.ios_url ?? "",
@@ -271,11 +37,10 @@ export default function AppDetailPage() {
   const [roles, setRoles] = useState<AppRoleResponse[]>([])
   const [rolesLoading, setRolesLoading] = useState(true)
 
-  const [editDialogOpen, setEditDialogOpen] = useState(false)
   const [form, setForm] = useState<AppFormState>({
     name: "",
     description: "",
-    platform: "web",
+    platforms: ["web"],
     icon_url: "",
     app_url: "",
     ios_url: "",
@@ -284,17 +49,48 @@ export default function AppDetailPage() {
     auto_approve: false,
   })
   const [saving, setSaving] = useState(false)
+  const [iconBusy, setIconBusy] = useState(false)
+  const iconInputRef = useRef<HTMLInputElement>(null)
 
-  const [addRoleDialogOpen, setAddRoleDialogOpen] = useState(false)
+  async function handleIconFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    try {
+      if (!["image/jpeg", "image/png", "image/webp", "image/svg+xml"].includes(file.type)) {
+        toast.error("Please upload a JPG, PNG, WebP, or SVG image")
+        return
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error("Image must be under 5 MB")
+        return
+      }
+      setIconBusy(true)
+      const { data } = await uploadsAPI.image(file, "app-icons")
+      setForm((f) => ({ ...f, icon_url: data.url }))
+      toast.success("Icon uploaded — Save changes to apply")
+    } catch {
+      toast.error("Failed to upload icon")
+    } finally {
+      setIconBusy(false)
+      if (iconInputRef.current) iconInputRef.current.value = ""
+    }
+  }
+
+  function handleRemoveIcon() {
+    setForm((f) => ({ ...f, icon_url: "" }))
+  }
+
   const [roleForm, setRoleForm] = useState({ role_key: "", label: "", description: "" })
   const [addingRole, setAddingRole] = useState(false)
   const [deletingRole, setDeletingRole] = useState<AppRoleResponse | null>(null)
+  const [confirmDeleteApp, setConfirmDeleteApp] = useState(false)
 
   async function fetchApp() {
     if (!appId) return
     try {
       const { data } = await appsAPI.get(appId)
       setApp(data)
+      setForm(formFromApp(data))
     } catch {
       toast.error("Failed to load app")
     } finally {
@@ -320,20 +116,18 @@ export default function AppDetailPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [appId])
 
-  function openEditDialog() {
-    if (!app) return
-    setForm(formFromApp(app))
-    setEditDialogOpen(true)
-  }
-
   async function handleSave() {
     if (!appId || !form.name.trim()) return
+    if (form.platforms.length === 0) {
+      toast.error("Select at least one platform")
+      return
+    }
     setSaving(true)
     try {
       const { data } = await appsAPI.update(appId, {
         name: form.name.trim(),
         description: form.description.trim() || null,
-        platform: form.platform,
+        platforms: form.platforms,
         icon_url: form.icon_url.trim() || null,
         app_url: form.app_url.trim() || null,
         ios_url: form.ios_url.trim() || null,
@@ -343,7 +137,6 @@ export default function AppDetailPage() {
       })
       setApp(data)
       toast.success("App updated")
-      setEditDialogOpen(false)
     } catch {
       toast.error("Failed to update app")
     } finally {
@@ -361,7 +154,6 @@ export default function AppDetailPage() {
         description: roleForm.description.trim() || null,
       })
       toast.success("Role created")
-      setAddRoleDialogOpen(false)
       setRoleForm({ role_key: "", label: "", description: "" })
       await fetchRoles()
     } catch (err: unknown) {
@@ -389,280 +181,130 @@ export default function AppDetailPage() {
     }
   }
 
+  async function handleDeleteApp() {
+    if (!appId) return
+    try {
+      await appsAPI.delete(appId)
+      toast.success("App deleted")
+      setConfirmDeleteApp(false)
+      navigate("/app/apps")
+    } catch {
+      toast.error("Failed to delete app")
+    }
+  }
+
   if (appLoading) {
     return <LoadingSpinner />
   }
 
   if (!app) {
     return (
-      <div className="p-6 md:p-8">
-        <p className="text-verde">App not found.</p>
+      <div className="max-w-[77.5rem] mx-auto px-6 sm:px-10 pt-8">
+        <p className="text-fg-muted">App not found.</p>
       </div>
     )
   }
 
+  const initials = initialsOf(app.name)
+  const tile = avatarColors(app.id, app.name)
+
   return (
-    <div className="p-6 md:p-8 lg:p-10 space-y-6">
-      <div>
-        <button
-          onClick={() => navigate("/app/apps")}
-          className="inline-flex items-center gap-1 text-sm text-verde/60 hover:text-preto transition-colors mb-4"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back to Apps
-        </button>
-        <h1 className="text-2xl font-semibold text-preto tracking-tight flex items-center">
-          {app.name}
-          <InfoTooltip content="View app details, metadata, and the roles defined for this app." />
-        </h1>
+    <div className="max-w-[77.5rem] mx-auto px-6 sm:px-10 pt-7 pb-14">
+      <button
+        onClick={() => navigate("/app/apps")}
+        className="inline-flex items-center gap-[0.4375rem] text-[0.8125rem] font-semibold text-fg-muted hover:text-fg-strong transition-colors mb-4"
+      >
+        <ArrowLeft className="w-[0.9375rem] h-[0.9375rem]" strokeWidth={1.75} />
+        Manage apps
+      </button>
+
+      <div className="flex items-center justify-between gap-4 mb-6">
+        <div className="flex items-center gap-3.5">
+          <button
+            type="button"
+            onClick={() => iconInputRef.current?.click()}
+            disabled={iconBusy}
+            title={form.icon_url ? "Change app icon" : "Upload app icon"}
+            className="w-[3.25rem] h-[3.25rem] rounded-[0.875rem] overflow-hidden grid place-items-center text-base font-bold shrink-0 cursor-pointer transition-shadow hover:shadow-[0_0_0_0.1875rem_var(--color-accent-soft)]"
+            style={form.icon_url ? undefined : { backgroundColor: tile.bg, color: tile.fg }}
+          >
+            {form.icon_url ? (
+              <img src={form.icon_url} alt="" className="h-full w-full object-cover" />
+            ) : (
+              initials
+            )}
+          </button>
+          <input
+            ref={iconInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp,image/svg+xml"
+            className="hidden"
+            onChange={handleIconFile}
+          />
+          <div className="flex flex-col gap-[0.1875rem] min-w-0">
+            <h3 className="text-[1.4375rem] font-bold text-fg-strong tracking-tight truncate">{app.name}</h3>
+            <div className="flex items-center gap-2.5 flex-wrap">
+              <span className="font-mono text-[0.71875rem] bg-muted rounded-md px-2 py-[0.1875rem] text-fg-muted">
+                {app.app_key}
+              </span>
+              <span className="text-[0.6875rem] text-fg-subtle">app_key is immutable</span>
+              <button
+                type="button"
+                onClick={() => iconInputRef.current?.click()}
+                disabled={iconBusy}
+                className="text-[0.8125rem] font-semibold text-accent hover:text-accent-hover hover:underline disabled:opacity-50"
+              >
+                {form.icon_url ? "Change icon" : "Upload icon"}
+              </button>
+              {form.icon_url && (
+                <button
+                  type="button"
+                  onClick={handleRemoveIcon}
+                  disabled={iconBusy}
+                  className="text-[0.8125rem] font-semibold text-fg-subtle hover:text-st-warn hover:underline disabled:opacity-50"
+                >
+                  Remove icon
+                </button>
+              )}
+              <span className="inline-flex items-center gap-1.5 text-[0.78125rem] text-fg-muted">
+                <span
+                  className={cn(
+                    "w-[0.4375rem] h-[0.4375rem] rounded-full",
+                    app.is_active ? "bg-st-ok" : "bg-st-idle",
+                  )}
+                />
+                {app.is_active ? "Active" : "Inactive"}
+              </span>
+            </div>
+          </div>
+        </div>
+        <div className="flex items-center gap-2.5 shrink-0">
+          <span className="text-[0.8125rem] text-fg-muted">Active</span>
+          <Switch
+            checked={form.is_active}
+            onCheckedChange={(checked) => setForm((f) => ({ ...f, is_active: checked }))}
+          />
+        </div>
       </div>
 
-      <AppInfoCard app={app} onEdit={openEditDialog} />
+      <div className="grid grid-cols-1 lg:grid-cols-[1.3fr_1fr] gap-[1.125rem] items-start mb-[1.125rem]">
+        <DetailsCard form={form} setForm={setForm} saving={saving} onSave={handleSave} />
 
-      <AppRolesTable
+        <div className="flex flex-col gap-[1.125rem]">
+          <AutoApproveCard form={form} setForm={setForm} />
+          <DangerZoneCard onDelete={() => setConfirmDeleteApp(true)} />
+        </div>
+      </div>
+
+      <RolesCard
         roles={roles}
         loading={rolesLoading}
-        onAddRole={() => { setRoleForm({ role_key: "", label: "", description: "" }); setAddRoleDialogOpen(true) }}
-        onDeleteRole={setDeletingRole}
+        roleForm={roleForm}
+        setRoleForm={setRoleForm}
+        adding={addingRole}
+        onAdd={handleAddRole}
+        onDelete={setDeletingRole}
       />
-
-      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-        <DialogContent className="sm:max-w-lg">
-          <DialogHeader>
-            <DialogTitle>Edit App</DialogTitle>
-            <DialogDescription>
-              Update this app's configuration and metadata.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-6 pt-1">
-            {/* Identity */}
-            <div className="space-y-4">
-              <p className="text-xs font-medium text-verde/60 tracking-wider uppercase">Identity</p>
-              <div className="space-y-1.5">
-                <Label htmlFor="edit-app-key">
-                  <span className="inline-flex items-center">
-                    App Key
-                    <InfoTooltip content="The app key cannot be changed after creation." />
-                  </span>
-                </Label>
-                <Input
-                  id="edit-app-key"
-                  value={app.app_key}
-                  disabled
-                  className={cn("opacity-60")}
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="edit-name">Name</Label>
-                <Input
-                  id="edit-name"
-                  value={form.name}
-                  onChange={(e) =>
-                    setForm((f) => ({ ...f, name: e.target.value }))
-                  }
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="edit-description">Description</Label>
-                <Textarea
-                  id="edit-description"
-                  value={form.description}
-                  onChange={(e) =>
-                    setForm((f) => ({ ...f, description: e.target.value }))
-                  }
-                  rows={2}
-                />
-              </div>
-            </div>
-
-            <div className="border-t border-areia/10" />
-
-            {/* Platform & Icon */}
-            <div className="space-y-4">
-              <p className="text-xs font-medium text-verde/60 tracking-wider uppercase">Platform & Icon</p>
-              <div className="space-y-1.5">
-                <Label htmlFor="edit-platform">
-                  <span className="inline-flex items-center">
-                    Platform
-                    <InfoTooltip content="The platform this app targets: web, mobile, or both." />
-                  </span>
-                </Label>
-                <Select
-                  value={form.platform}
-                  onValueChange={(v) => setForm((f) => ({ ...f, platform: v }))}
-                >
-                  <SelectTrigger id="edit-platform">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="web">Web</SelectItem>
-                    <SelectItem value="mobile">Mobile</SelectItem>
-                    <SelectItem value="both">Both</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-1.5">
-                <Label>App Icon</Label>
-                <ImageUpload
-                  value={form.icon_url || null}
-                  onChange={(url) => setForm((f) => ({ ...f, icon_url: url ?? "" }))}
-                  folder="app-icons"
-                  shape="square"
-                  size="md"
-                />
-              </div>
-            </div>
-
-            <div className="border-t border-areia/10" />
-
-            {/* Links */}
-            <div className="space-y-4">
-              <p className="text-xs font-medium text-verde/60 tracking-wider uppercase">Links</p>
-              <div className="space-y-1.5">
-                <Label htmlFor="edit-app-url">App URL (Web)</Label>
-                <Input
-                  id="edit-app-url"
-                  placeholder="https://..."
-                  value={form.app_url}
-                  onChange={(e) =>
-                    setForm((f) => ({ ...f, app_url: e.target.value }))
-                  }
-                />
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <Label htmlFor="edit-ios-url">iOS URL</Label>
-                  <Input
-                    id="edit-ios-url"
-                    placeholder="apps.apple.com/..."
-                    value={form.ios_url}
-                    onChange={(e) =>
-                      setForm((f) => ({ ...f, ios_url: e.target.value }))
-                    }
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="edit-android-url">Android URL</Label>
-                  <Input
-                    id="edit-android-url"
-                    placeholder="play.google.com/..."
-                    value={form.android_url}
-                    onChange={(e) =>
-                      setForm((f) => ({ ...f, android_url: e.target.value }))
-                    }
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div className="border-t border-areia/10" />
-
-            {/* Status */}
-            <div className="space-y-3">
-              <div className="flex items-center justify-between rounded-xl bg-surface-alt/40 px-4 py-3">
-                <div>
-                  <Label htmlFor="edit-is-active" className="mb-0">Active</Label>
-                  <p className="text-xs text-verde/50 mt-0.5">Users can access this app when active</p>
-                </div>
-                <Switch
-                  id="edit-is-active"
-                  checked={form.is_active}
-                  onCheckedChange={(checked) =>
-                    setForm((f) => ({ ...f, is_active: checked }))
-                  }
-                />
-              </div>
-              <div className="flex items-center justify-between rounded-xl bg-surface-alt/40 px-4 py-3">
-                <div className="pr-4">
-                  <Label htmlFor="edit-auto-approve" className="mb-0">Auto-approve access requests</Label>
-                  <p className="text-xs text-verde/50 mt-0.5">
-                    When enabled, new signups skip manual review and are granted the default role immediately. Currently pending requests are approved when you turn this on.
-                  </p>
-                </div>
-                <Switch
-                  id="edit-auto-approve"
-                  checked={form.auto_approve}
-                  onCheckedChange={(checked) =>
-                    setForm((f) => ({ ...f, auto_approve: checked }))
-                  }
-                />
-              </div>
-            </div>
-          </div>
-          <DialogFooter className="border-t border-areia/10 pt-4 mt-2">
-            <Button
-              variant="outline"
-              onClick={() => setEditDialogOpen(false)}
-              disabled={saving}
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleSave}
-              disabled={saving || !form.name.trim()}
-            >
-              {saving ? "Saving..." : "Save"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={addRoleDialogOpen} onOpenChange={setAddRoleDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Add Role</DialogTitle>
-            <DialogDescription>
-              Create a new custom role for this app.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 pt-1">
-            <div className="space-y-1.5">
-              <Label htmlFor="role-key">
-                <span className="inline-flex items-center">
-                  Role Key
-                  <InfoTooltip content="A unique identifier for this role (e.g. editor, reviewer). Use snake_case." />
-                </span>
-              </Label>
-              <Input
-                id="role-key"
-                placeholder="e.g. editor"
-                value={roleForm.role_key}
-                onChange={(e) => setRoleForm((f) => ({ ...f, role_key: e.target.value }))}
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="role-label">Label</Label>
-              <Input
-                id="role-label"
-                placeholder="e.g. Editor"
-                value={roleForm.label}
-                onChange={(e) => setRoleForm((f) => ({ ...f, label: e.target.value }))}
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="role-description">Description (optional)</Label>
-              <Textarea
-                id="role-description"
-                placeholder="What this role can do..."
-                value={roleForm.description}
-                onChange={(e) => setRoleForm((f) => ({ ...f, description: e.target.value }))}
-                rows={2}
-              />
-            </div>
-          </div>
-          <DialogFooter className="border-t border-areia/10 pt-4 mt-2">
-            <Button variant="outline" onClick={() => setAddRoleDialogOpen(false)} disabled={addingRole}>
-              Cancel
-            </Button>
-            <Button
-              onClick={handleAddRole}
-              disabled={addingRole || !roleForm.role_key.trim() || !roleForm.label.trim()}
-            >
-              {addingRole ? "Creating..." : "Create Role"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
 
       <ConfirmDialog
         open={deletingRole !== null}
@@ -672,6 +314,16 @@ export default function AppDetailPage() {
         confirmLabel="Delete Role"
         variant="destructive"
         onConfirm={handleDeleteRole}
+      />
+
+      <ConfirmDialog
+        open={confirmDeleteApp}
+        onOpenChange={setConfirmDeleteApp}
+        title="Delete App"
+        description={`Are you sure you want to delete "${app.name}"? This will permanently remove the app and all associated roles and access. This action cannot be undone.`}
+        confirmLabel="Delete"
+        variant="destructive"
+        onConfirm={handleDeleteApp}
       />
     </div>
   )
