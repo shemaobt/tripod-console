@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { LoadingSpinner } from "@/components/common/LoadingSpinner"
 import { InfoTooltip } from "@/components/common/InfoTooltip"
 import { formatDate } from "@/utils/format"
-import { initialsOf } from "./initials"
+import { initialsOf } from "@/utils/avatar"
 import { RevokeButton } from "./RevokeButton"
 
 export function OrgAccessSection({

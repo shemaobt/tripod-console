@@ -23,6 +23,8 @@ const TH =
 const ROLE_PILL =
   "h-8 w-auto gap-1.5 rounded-[0.5rem] border-0 px-3 text-[0.8125rem] font-semibold lowercase shadow-none"
 
+const PROJECT_ROLES = ["member", "manager"]
+
 const roleTone = (role: string) =>
   role === "manager"
     ? "bg-telha text-on-dark [&_svg]:text-on-dark"
@@ -50,8 +52,9 @@ export function UserAccessSection({
   }
 
   const canGrant = isPlatformAdmin || isProjectManager
-  const canManageUser = (role: string) =>
+  const canManageRole = (role: string) =>
     isPlatformAdmin || (isProjectManager && role === "member")
+  const assignableRoles = PROJECT_ROLES.filter(canManageRole)
 
   return (
     <div className={cn(card.base, "overflow-hidden")}>
@@ -107,7 +110,7 @@ export function UserAccessSection({
                   </div>
                 </td>
                 <td className="px-5 py-3 border-b border-line">
-                  {canManageUser(user.role) ? (
+                  {canManageRole(user.role) && assignableRoles.length > 1 ? (
                     <Select
                       value={user.role}
                       onValueChange={(value) => onRoleChange(user.user_id, value)}
@@ -116,8 +119,11 @@ export function UserAccessSection({
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="member">member</SelectItem>
-                        <SelectItem value="manager">manager</SelectItem>
+                        {assignableRoles.map((role) => (
+                          <SelectItem key={role} value={role}>
+                            {role}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   ) : (
@@ -130,7 +136,7 @@ export function UserAccessSection({
                   {formatDate(user.granted_at)}
                 </td>
                 <td className="px-5 py-3 border-b border-line text-right">
-                  {canManageUser(user.role) && (
+                  {canManageRole(user.role) && (
                     <RevokeButton
                       onClick={() => onRevoke(user)}
                       title="Revoke access"

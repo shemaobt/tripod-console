@@ -16,7 +16,7 @@ import { GrantUserDialog } from "./projectAccess/GrantUserDialog"
 import { GrantOrgDialog } from "./projectAccess/GrantOrgDialog"
 
 export function ProjectAccessTab({ projectId }: { projectId: string }) {
-  const { user, isPlatformAdmin } = useAuth()
+  const { isPlatformAdmin, managedProjectIds } = useAuth()
   const [userAccess, setUserAccess] = useState<
     ProjectUserAccessDetailResponse[]
   >([])
@@ -173,9 +173,7 @@ export function ProjectAccessTab({ projectId }: { projectId: string }) {
     }
   }
 
-  const isProjectManager = userAccess.some(
-    (u) => u.user_id === user?.id && u.role === "manager",
-  )
+  const isProjectManager = managedProjectIds.includes(projectId)
 
   return (
     <FeatureSpotlight
@@ -209,6 +207,7 @@ export function ProjectAccessTab({ projectId }: { projectId: string }) {
           excludeIds={userAccess.map((u) => u.user_id)}
           grantRole={grantRole}
           onGrantRoleChange={setGrantRole}
+          canGrantManagerRole={isPlatformAdmin}
           granting={grantingUser}
           onGrant={handleGrantUser}
         />
