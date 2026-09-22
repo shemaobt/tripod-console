@@ -1,4 +1,4 @@
-import { AlertTriangle, Check, Circle, Loader2 } from "lucide-react"
+import { AlertTriangle, Check, Circle, Clock, Loader2, X } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 import type { PhaseStatus } from "@/types"
 
@@ -25,6 +25,13 @@ export const PHASE_STATUS_CONFIG: Record<PhaseStatus, PhaseStatusConfig> = {
     ring: "ring-st-info/40",
     icon: Loader2,
   },
+  delayed: {
+    label: "Delayed",
+    pill: "bg-accent-soft text-on-accent-soft",
+    dot: "bg-st-warn",
+    ring: "ring-st-warn/40",
+    icon: Clock,
+  },
   completed: {
     label: "Completed",
     pill: "bg-st-ok/15 text-st-ok",
@@ -38,5 +45,12 @@ export const PHASE_STATUS_CONFIG: Record<PhaseStatus, PhaseStatusConfig> = {
     dot: "bg-st-warn",
     ring: "ring-st-warn/40",
     icon: AlertTriangle,
+  },
+  cancelled: {
+    label: "Cancelled",
+    pill: "bg-muted text-fg-subtle",
+    dot: "bg-st-idle",
+    ring: "ring-line",
+    icon: X,
   },
 }

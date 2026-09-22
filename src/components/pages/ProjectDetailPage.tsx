@@ -19,7 +19,6 @@ import { InfoTooltip } from "@/components/common/InfoTooltip"
 import { ProjectInfoForm } from "./projects/ProjectInfoForm"
 import { LocationSection } from "./projects/LocationSection"
 import { ProjectAccessTab } from "./ProjectAccessTab"
-import { ProjectPhasesTab } from "./ProjectPhasesTab"
 
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/svg+xml"]
 
@@ -255,7 +254,6 @@ export default function ProjectDetailPage() {
 
           <TabsList className="self-start sm:self-auto">
             <TabsTrigger value="info">Info</TabsTrigger>
-            <TabsTrigger value="phases">Phases</TabsTrigger>
             <TabsTrigger value="access">Access</TabsTrigger>
           </TabsList>
         </div>
@@ -274,10 +272,6 @@ export default function ProjectDetailPage() {
               onSave={handleLocationSave}
             />
           </div>
-        </TabsContent>
-
-        <TabsContent value="phases">
-          <ProjectPhasesTab projectId={projectId!} />
         </TabsContent>
 
         <TabsContent value="access">

@@ -13,7 +13,7 @@ import UsersPage from "@/components/pages/UsersPage"
 import UserDetailPage from "@/components/pages/userDetail"
 import AppsPage from "@/components/pages/AppsPage"
 import AppDetailPage from "@/components/pages/AppDetailPage"
-import PhasesPage from "@/components/pages/PhasesPage"
+import JourneysPage from "@/components/pages/journeys"
 import MapPage from "@/components/pages/MapPage"
 import NotFoundPage from "@/components/pages/NotFoundPage"
 import AccessDeniedPage from "@/components/pages/AccessDeniedPage"
@@ -52,7 +52,8 @@ function App() {
               <Route path="users/:userId" element={<AdminRoute><UserDetailPage /></AdminRoute>} />
               <Route path="apps" element={<AdminRoute><AppsPage /></AdminRoute>} />
               <Route path="apps/:appId" element={<AdminRoute><AppDetailPage /></AdminRoute>} />
-              <Route path="phases" element={<AdminRoute><PhasesPage /></AdminRoute>} />
+              <Route path="journeys" element={<JourneysPage />} />
+              <Route path="phases" element={<Navigate to="/app/journeys" replace />} />
               <Route path="map" element={<MapPage />} />
             </Route>
 

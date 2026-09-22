@@ -84,6 +84,17 @@ export type {
 } from "./phase"
 
 export type {
+  Journey,
+  JourneyCreate,
+  JourneyUpdate,
+  PhaseCategory,
+  PhaseCategoryCreate,
+  PhaseCategoryUpdate,
+  DerivedPhaseStatus,
+  PhaseStatusLogEntry,
+} from "./journey"
+
+export type {
   PublicLanguageOption,
   PublicLanguageRequestCreate,
   PublicProjectRequestCreate,
