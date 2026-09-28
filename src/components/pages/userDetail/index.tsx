@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react"
+import { useRef, useState } from "react"
 import { useParams, useNavigate } from "react-router"
 import { ArrowLeft } from "lucide-react"
 import { toast } from "sonner"
@@ -11,7 +11,6 @@ import {
 } from "@/services/api"
 import { useAuth } from "@/contexts/AuthContext"
 import type {
-  UserListResponse,
   UserRole,
   UserRoleUpdate,
   UserRoleResponse,
@@ -35,16 +34,15 @@ import { UserHeader } from "./UserHeader"
 import { AccountCard } from "./AccountCard"
 import { GlobalRoleCard } from "./GlobalRoleCard"
 import { AppRolesCard } from "./AppRolesCard"
+import { useUserRecord } from "./useUserRecord"
 
 export default function UserDetailPage() {
   const { userId } = useParams<{ userId: string }>()
   const navigate = useNavigate()
   const { user: currentUser } = useAuth()
 
-  const [user, setUser] = useState<UserListResponse | null>(null)
-  const [userLoading, setUserLoading] = useState(true)
-  const [roles, setRoles] = useState<UserRoleResponse[]>([])
-  const [rolesLoading, setRolesLoading] = useState(true)
+  const { user, setUser, userLoading, roles, rolesLoading, fetchUser, fetchRoles } =
+    useUserRecord(userId)
 
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [avatarUploading, setAvatarUploading] = useState(false)
@@ -67,36 +65,6 @@ export default function UserDetailPage() {
   const [selectedProjectIds, setSelectedProjectIds] = useState<string[]>([])
   const [roleSaving, setRoleSaving] = useState(false)
   const [memberConfirmOpen, setMemberConfirmOpen] = useState(false)
-
-  async function fetchUser() {
-    if (!userId) return
-    try {
-      const { data } = await usersAPI.get(userId)
-      setUser(data)
-    } catch {
-      toast.error("Failed to load user")
-    } finally {
-      setUserLoading(false)
-    }
-  }
-
-  async function fetchRoles() {
-    if (!userId) return
-    try {
-      const { data } = await usersAPI.listRoles(userId)
-      setRoles(data)
-    } catch {
-      toast.error("Failed to load roles")
-    } finally {
-      setRolesLoading(false)
-    }
-  }
-
-  useEffect(() => {
-    fetchUser()
-    fetchRoles()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userId])
 
   async function handleToggleActive() {
     if (!userId || !user) return
