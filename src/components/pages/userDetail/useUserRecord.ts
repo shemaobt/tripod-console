@@ -3,10 +3,7 @@ import { toast } from "sonner"
 import { usersAPI } from "@/services/api"
 import type { UserListResponse, UserRoleResponse } from "@/types"
 
-// A rota reaproveita a página ao trocar de :userId, então tudo que chega do
-// servidor passa por aqui e só é aplicado se ainda for do usuário da URL:
-// resposta atrasada do usuário anterior (leitura ou escrita) é descartada, e
-// a troca zera usuário e papéis para a tela não agir sobre o registro velho.
+// The route reuses the page across :userId, so a late response for the previous user is dropped.
 export function useUserRecord(userId: string | undefined) {
   const currentId = useRef(userId)
   const [user, setUserState] = useState<UserListResponse | null>(null)

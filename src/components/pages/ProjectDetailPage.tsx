@@ -30,9 +30,7 @@ export default function ProjectDetailPage() {
 
   const [project, setProject] = useState<ProjectResponse | null>(null)
   const [loading, setLoading] = useState(true)
-  // Conta os saves de localizacao: a secao remonta a cada um a partir do que o
-  // servidor devolveu, mesmo quando o valor volta igual (ex.: o back ignorou
-  // um campo) e a chave de lat/lng/nome sozinha nao mudaria.
+  // Remount after every save, even when the server echoes the same values back.
   const [locationSaves, setLocationSaves] = useState(0)
   const [fallbackLanguage, setFallbackLanguage] = useState<LanguageResponse | null>(null)
   const [failedLanguageId, setFailedLanguageId] = useState<string | null>(null)

@@ -14,9 +14,7 @@ interface PhasesStore {
 
 const CACHE_TTL = 2 * 60 * 1000
 
-// reset() roda no logout; uma busca que ainda estava no ar voltaria depois e
-// repovoaria o cache com as fases da sessao anterior, com TTL novo. Cada
-// reset abre uma geracao, e resposta de geracao velha e jogada fora.
+// Bumped by reset() so a fetch still in flight at logout cannot repopulate the cache.
 let generation = 0
 
 export const usePhasesStore = create<PhasesStore>((set, get) => ({

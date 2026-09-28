@@ -18,9 +18,7 @@ function fieldError(field: CoordinateField, text: string): string | null {
   return null
 }
 
-// Coordenada e opcional: a localizacao pode existir so com o nome. O que se
-// recusa e metade do par, texto que nao e numero ("12abc", que o parseFloat
-// aceitaria como 12) e ponto fora do mundo.
+// Coordinates are optional (a location may be just a name), but never half a pair.
 export function parseCoordinates(latText: string, lngText: string): ParsedCoordinates {
   const text: Record<CoordinateField, string> = {
     latitude: latText.trim(),
