@@ -74,8 +74,7 @@ src/
 │   │                            #   ProjectsPage, ProjectDetailPage
 │   │                            #     ProjectAccessTab, ProjectPhasesTab
 │   │                            #     projects/      ProjectFormDialog
-│   │                            #     projectAccess/ UserAccessSection, OrgAccessSection,
-│   │                            #                    GrantUserDialog, GrantOrgDialog, RevokeButton, initials
+│   │                            #     projectAccess/ UserAccessSection, GrantUserDialog, RevokeButton
 │   │                            #   UsersPage/    index, UserCard, UserAvatar      [admin only]
 │   │                            #   userDetail/   index (UserDetailPage), UserHeader, AccountCard,
 │   │                            #                 GlobalRoleCard, AppRolesCard, roles [admin only]
@@ -101,7 +100,7 @@ src/
 │                                #   phasesStore     — phases + dependencies cache (2-min TTL)
 ├── services/                    # api.ts — Single Axios client with namespaced APIs
 │                                #   logApiFailure.ts — the one place API failures reach the console
-├── types/                       # TS interfaces (auth, user, app, language, organization, project,
+├── types/                       # TS interfaces (auth, user, app, language, project,
 │                                #   role, phase, accessRequest, changeRequest, publicRequest; index barrel)
 ├── constants/                   # app.ts (token keys), platforms.ts (PLATFORM_OPTIONS, platformLabel, platformsError),
 │                                #   phaseStatus.ts, map.ts (tile URLs, OSM/CARTO attribution, pin icon)
@@ -154,7 +153,7 @@ Routes are defined in `App.tsx` under the `/app` shell (`AppShell`):
 
 **Role-aware views**:
 - **Console access gate**: the `/app` shell requires **platform admin or manager**. A signed-in user who is neither gets `AccessDeniedPage` (variant `logout`) — see `AppShell.tsx`. Plain members have no console access.
-- **Platform admin + manager** see: My Apps (dashboard), Languages, Projects, Map. (Organizations was removed from the console.)
+- **Platform admin + manager** see: My Apps (dashboard), Languages, Projects, Map. (Organizations was removed from the console. Project access is granted to people only — the org grant/revoke section was removed too, OBT-258, 2026-09-28, levigft; `tripod-api` still grants access through organizations and stays as it is.)
 - **Admin-only routes** (`/app/users`, `/app/apps`, `/app/phases`): wrapped in `AdminRoute`, hidden from the sidebar, and return AccessDeniedPage for non-platform-admins.
 - **Managers** are scoped to the projects/orgs they manage (`managedProjectIds` / `managedOrgIds`) and can manage member roles on those projects.
 - **App admins** can manage roles for their specific app only. When viewing role assignment, the app dropdown is filtered to apps they admin.
@@ -240,9 +239,8 @@ authAPI      — login, logout, refresh, me, myRoles
 usersAPI     — list, get, update, listRoles
 appsAPI      — list, myApps, create, get, update, listRoles
 languagesAPI — list, create, get, getByCode
-orgsAPI      — list, create, get, update, listMembers, addMember, removeMember
 projectsAPI  — list, create, get, update, updateLocation,
-               listUserAccess, listOrgAccess, grantUser, grantOrg, revokeUser, revokeOrg
+               listUserAccess, grantUser, updateUserRole, revokeUser
 rolesAPI     — assign, revoke, check
 ```
 

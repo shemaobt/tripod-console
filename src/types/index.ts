@@ -34,24 +34,13 @@ export type {
 } from "./language"
 
 export type {
-  OrganizationResponse,
-  OrganizationCreate,
-  OrganizationUpdate,
-  OrganizationMemberAdd,
-  OrganizationMemberResponse,
-} from "./organization"
-
-export type {
   ProjectResponse,
   ProjectCreate,
   ProjectUpdate,
   ProjectLocationUpdate,
   ProjectUserAccessResponse,
-  ProjectOrganizationAccessResponse,
   ProjectGrantUserAccess,
-  ProjectGrantOrganizationAccess,
   ProjectUserAccessDetailResponse,
-  ProjectOrganizationAccessDetailResponse,
   ProjectUserAccessRoleUpdate,
 } from "./project"
 

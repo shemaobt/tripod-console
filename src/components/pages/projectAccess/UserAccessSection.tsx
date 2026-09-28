@@ -75,7 +75,7 @@ export function UserAccessSection({
         <EmptyState
           icon={Users}
           title="No people with direct access"
-          description="Grant individual users access to this project. Users can also gain access through their organization membership."
+          description="Grant individual users access to this project."
         />
       ) : (
         <table className="w-full text-sm">

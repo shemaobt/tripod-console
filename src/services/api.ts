@@ -21,21 +21,13 @@ import type {
   LanguageCreate,
   LanguageUpdate,
   LanguageStatsResponse,
-  OrganizationResponse,
-  OrganizationCreate,
-  OrganizationUpdate,
-  OrganizationMemberAdd,
-  OrganizationMemberResponse,
   ProjectResponse,
   ProjectCreate,
   ProjectUpdate,
   ProjectLocationUpdate,
   ProjectUserAccessResponse,
-  ProjectOrganizationAccessResponse,
   ProjectGrantUserAccess,
-  ProjectGrantOrganizationAccess,
   ProjectUserAccessDetailResponse,
-  ProjectOrganizationAccessDetailResponse,
   ProjectUserAccessRoleUpdate,
   RoleAssignRequest,
   RoleRevokeRequest,
@@ -220,25 +212,6 @@ export const languagesAPI = {
     api.get<LanguageResponse>(`/languages/code/${code}`),
 }
 
-export const orgsAPI = {
-  list: () => api.get<OrganizationResponse[]>("/organizations"),
-  create: (data: OrganizationCreate) =>
-    api.post<OrganizationResponse>("/organizations", data),
-  get: (orgId: string) =>
-    api.get<OrganizationResponse>(`/organizations/${orgId}`),
-  update: (orgId: string, data: OrganizationUpdate) =>
-    api.patch<OrganizationResponse>(`/organizations/${orgId}`, data),
-  listMembers: (orgId: string) =>
-    api.get<OrganizationMemberResponse[]>(`/organizations/${orgId}/members`),
-  addMember: (orgId: string, data: OrganizationMemberAdd) =>
-    api.post<OrganizationMemberResponse>(
-      `/organizations/${orgId}/members`,
-      data,
-    ),
-  removeMember: (orgId: string, userId: string) =>
-    api.delete(`/organizations/${orgId}/members/${userId}`),
-}
-
 export const projectsAPI = {
   list: (params?: { organization_id?: string }) =>
     api.get<ProjectResponse[]>("/projects", { params }),
@@ -254,18 +227,9 @@ export const projectsAPI = {
     api.get<ProjectUserAccessDetailResponse[]>(
       `/projects/${projectId}/access/users`,
     ),
-  listOrgAccess: (projectId: string) =>
-    api.get<ProjectOrganizationAccessDetailResponse[]>(
-      `/projects/${projectId}/access/organizations`,
-    ),
   grantUser: (projectId: string, data: ProjectGrantUserAccess) =>
     api.post<ProjectUserAccessResponse>(
       `/projects/${projectId}/access/users`,
-      data,
-    ),
-  grantOrg: (projectId: string, data: ProjectGrantOrganizationAccess) =>
-    api.post<ProjectOrganizationAccessResponse>(
-      `/projects/${projectId}/access/organizations`,
       data,
     ),
   updateUserRole: (projectId: string, userId: string, data: ProjectUserAccessRoleUpdate) =>
@@ -275,8 +239,6 @@ export const projectsAPI = {
     ),
   revokeUser: (projectId: string, userId: string) =>
     api.delete(`/projects/${projectId}/access/users/${userId}`),
-  revokeOrg: (projectId: string, orgId: string) =>
-    api.delete(`/projects/${projectId}/access/organizations/${orgId}`),
   listPhases: (projectId: string) =>
     api.get<ProjectPhaseResponse[]>(`/projects/${projectId}/phases`),
   updatePhaseStatus: (projectId: string, phaseId: string, status: PhaseStatus) =>
