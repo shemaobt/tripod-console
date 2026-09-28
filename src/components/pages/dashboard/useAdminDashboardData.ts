@@ -29,6 +29,7 @@ export function useAdminDashboardData(enabled: boolean) {
   const [pendingFailed, setPendingFailed] = useState(false)
   const [attempt, setAttempt] = useState(0)
   const languages = useLanguagesStore((s) => s.languages)
+  const languagesFailed = useLanguagesStore((s) => s.failed)
   const fetchLanguages = useLanguagesStore((s) => s.fetch)
 
   useEffect(() => {
@@ -78,5 +79,5 @@ export function useAdminDashboardData(enabled: boolean) {
     setAttempt((n) => n + 1)
   }, [])
 
-  return { data, languages, loading: enabled && !data && !failed, failed, pendingFailed, retry }
+  return { data, languages: languagesFailed && languages.length === 0 ? null : languages, loading: enabled && !data && !failed, failed, pendingFailed, retry }
 }
