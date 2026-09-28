@@ -18,15 +18,6 @@ import type {
   AppRoleResponse,
   ProjectResponse,
 } from "@/types"
-import { Button } from "@/components/ui/button"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
 import { LoadingSpinner } from "@/components/common/LoadingSpinner"
 import { ConfirmDialog } from "@/components/common/ConfirmDialog"
 import { getUserRole, roleChoices } from "./roles"
@@ -34,6 +25,7 @@ import { UserHeader } from "./UserHeader"
 import { AccountCard } from "./AccountCard"
 import { GlobalRoleCard } from "./GlobalRoleCard"
 import { AppRolesCard } from "./AppRolesCard"
+import { ManagerProjectsDialog } from "./ManagerProjectsDialog"
 import { useUserRecord } from "./useUserRecord"
 
 export default function UserDetailPage() {
@@ -169,14 +161,6 @@ export default function UserDetailPage() {
     } else {
       setMemberConfirmOpen(true)
     }
-  }
-
-  function toggleProjectSelection(projectId: string) {
-    setSelectedProjectIds((prev) =>
-      prev.includes(projectId)
-        ? prev.filter((id) => id !== projectId)
-        : [...prev, projectId],
-    )
   }
 
   async function handleConfirmManager() {
@@ -341,56 +325,16 @@ export default function UserDetailPage() {
         onRevoke={setRevokingRole}
       />
 
-      <Dialog open={managerDialogOpen} onOpenChange={setManagerDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Select projects this user will manage</DialogTitle>
-            <DialogDescription>
-              Managers oversee specific projects. Select at least one project to
-              grant this user the manager role.
-            </DialogDescription>
-          </DialogHeader>
-          {projectsLoading ? (
-            <p className="text-sm text-fg-muted">Loading projects...</p>
-          ) : projects.length === 0 ? (
-            <p className="text-sm text-fg-muted">
-              No projects available. Create a project before assigning a manager.
-            </p>
-          ) : (
-            <div className="max-h-64 divide-y divide-line overflow-y-auto rounded-xl border border-line">
-              {projects.map((project) => (
-                <label
-                  key={project.id}
-                  className="flex cursor-pointer items-center gap-3 px-3 py-2.5 hover:bg-muted"
-                >
-                  <input
-                    type="checkbox"
-                    className="h-4 w-4 accent-accent"
-                    checked={selectedProjectIds.includes(project.id)}
-                    onChange={() => toggleProjectSelection(project.id)}
-                  />
-                  <span className="text-sm text-fg-strong">{project.name}</span>
-                </label>
-              ))}
-            </div>
-          )}
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setManagerDialogOpen(false)}
-              disabled={roleSaving}
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleConfirmManager}
-              disabled={roleSaving || selectedProjectIds.length === 0}
-            >
-              {roleSaving ? "Saving..." : "Make Manager"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <ManagerProjectsDialog
+        open={managerDialogOpen}
+        onOpenChange={setManagerDialogOpen}
+        projects={projects}
+        loading={projectsLoading}
+        selectedIds={selectedProjectIds}
+        onSelectedIdsChange={setSelectedProjectIds}
+        saving={roleSaving}
+        onConfirm={handleConfirmManager}
+      />
 
       <ConfirmDialog
         open={memberConfirmOpen}
