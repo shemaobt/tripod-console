@@ -11,3 +11,9 @@ const PLATFORM_LABELS: Record<string, string> = Object.fromEntries(
 export function platformLabel(platform: string): string {
   return PLATFORM_LABELS[platform] ?? platform
 }
+
+// Um app existe para ao menos uma plataforma: o cadastro e a edicao usam
+// esta mesma checagem, e a mensagem aparece no proprio campo ao salvar.
+export function platformsError(platforms: string[]): string | null {
+  return platforms.length === 0 ? "Select at least one platform." : null
+}

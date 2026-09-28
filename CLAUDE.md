@@ -54,12 +54,13 @@ src/
 │   ├── common/                  # Shared UI:
 │   │                            #   LoadingSpinner, EmptyState, ConfirmDialog, ErrorBoundary
 │   │                            #   LoadFailed         — plain-language "couldn't load X" + Try again
+│   │                            #   FieldError         — inline validation message under a form field
 │   │                            #   InfoTooltip        — (i) icon with hover/tap explanation popover
 │   │                            #   FeatureSpotlight   — one-time contextual highlight with dismiss
 │   │                            #   FilterBar          — reusable search + filters row
 │   │                            #   ImageUpload        — image picker with change/remove
 │   │                            #   LocationSearchInput — geocoding autocomplete input
-│   │                            #   PlatformMultiSelect — web/android/... platform picker
+│   │                            #   PlatformMultiSelect — web/android/... platform picker (≥ 1 required: `platformsError`)
 │   │                            #   ProfileDialog      — current-user profile editor
 │   │                            #   ReCaptcha          — reCAPTCHA v2 widget (public request)
 │   │                            #   StatCard           — dashboard metric card
@@ -102,7 +103,7 @@ src/
 │                                #   logApiFailure.ts — the one place API failures reach the console
 ├── types/                       # TS interfaces (auth, user, app, language, organization, project,
 │                                #   role, phase, accessRequest, changeRequest, publicRequest; index barrel)
-├── constants/                   # app.ts (token keys), platforms.ts (PLATFORM_OPTIONS, platformLabel),
+├── constants/                   # app.ts (token keys), platforms.ts (PLATFORM_OPTIONS, platformLabel, platformsError),
 │                                #   phaseStatus.ts, map.ts (tile URLs, OSM/CARTO attribution, pin icon)
 ├── utils/                       # cn.ts (class merging), format.ts (formatDate, timeAgo)
 └── styles/                      # Centralized style constants (cards, layout, states; index barrel)

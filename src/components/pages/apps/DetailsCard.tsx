@@ -1,8 +1,11 @@
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { PlatformMultiSelect } from "@/components/common/PlatformMultiSelect"
+import { FieldError } from "@/components/common/FieldError"
+import { platformsError } from "@/constants/platforms"
 
 export interface AppFormState {
   name: string
@@ -27,6 +30,15 @@ export function DetailsCard({
   saving: boolean
   onSave: () => void
 }) {
+  const [triedSave, setTriedSave] = useState(false)
+  const platformsProblem = platformsError(form.platforms)
+
+  function handleSave() {
+    setTriedSave(true)
+    if (platformsProblem) return
+    onSave()
+  }
+
   return (
     <div className="bg-elevated rounded-[1.125rem] shadow-[var(--shadow-card)] p-[1.375rem] flex flex-col gap-[1.125rem]">
       <h4 className="text-[0.96875rem] font-semibold text-fg-strong">Details</h4>
@@ -58,6 +70,7 @@ export function DetailsCard({
           value={form.platforms}
           onChange={(platforms) => setForm((f) => ({ ...f, platforms }))}
         />
+        {triedSave && platformsProblem && <FieldError>{platformsProblem}</FieldError>}
       </div>
 
       <div className="space-y-1.5">
@@ -92,7 +105,7 @@ export function DetailsCard({
       </div>
 
       <div className="flex justify-end">
-        <Button onClick={onSave} disabled={saving || !form.name.trim()}>
+        <Button onClick={handleSave} disabled={saving || !form.name.trim()}>
           {saving ? "Saving..." : "Save changes"}
         </Button>
       </div>
