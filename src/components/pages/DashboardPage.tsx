@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { useAuth } from "@/contexts/AuthContext"
 import { appsAPI, projectsAPI } from "@/services/api"
 import type { UserAppResponse, ProjectResponse } from "@/types"
@@ -12,8 +12,9 @@ import { useAdminDashboardData } from "@/components/pages/dashboard/useAdminDash
 
 export default function DashboardPage() {
   const { user, isPlatformAdmin } = useAuth()
-  const [apps, setApps] = useState<UserAppResponse[]>([])
-  const [projects, setProjects] = useState<ProjectResponse[]>([])
+  // null = a leitura falhou; [] = o servidor respondeu que nao ha nada.
+  const [apps, setApps] = useState<UserAppResponse[] | null>([])
+  const [projects, setProjects] = useState<ProjectResponse[] | null>([])
   const [loading, setLoading] = useState(true)
   const {
     data: adminData,
@@ -23,23 +24,18 @@ export default function DashboardPage() {
     pendingFailed,
   } = useAdminDashboardData(isPlatformAdmin)
 
+  const loadApps = useCallback(
+    () => appsAPI.myApps().then(({ data }) => setApps(data), () => setApps(null)),
+    [],
+  )
+  const loadProjects = useCallback(
+    () => projectsAPI.list().then(({ data }) => setProjects(data), () => setProjects(null)),
+    [],
+  )
+
   useEffect(() => {
-    async function fetchData() {
-      try {
-        const [appsRes, projectsRes] = await Promise.allSettled([
-          appsAPI.myApps(),
-          projectsAPI.list(),
-        ])
-        if (appsRes.status === "fulfilled") setApps(appsRes.value.data)
-        if (projectsRes.status === "fulfilled") setProjects(projectsRes.value.data)
-      } catch {
-        setApps([])
-      } finally {
-        setLoading(false)
-      }
-    }
-    fetchData()
-  }, [])
+    Promise.all([loadApps(), loadProjects()]).finally(() => setLoading(false))
+  }, [loadApps, loadProjects])
 
   if (loading) {
     return <LoadingSpinner />
@@ -86,8 +82,8 @@ export default function DashboardPage() {
       {isPlatformAdmin ? (
         <div className="grid grid-cols-1 lg:grid-cols-[1.65fr_1fr] gap-[1.125rem] items-start">
           <div className="flex flex-col gap-[1.125rem] min-w-0">
-            <MyAppsCard apps={apps} showManageLink />
-            <MapPreview projects={projects} />
+            <MyAppsCard apps={apps} onRetry={loadApps} showManageLink />
+            <MapPreview projects={projects} onRetry={loadProjects} />
           </div>
           <NeedsReviewPanel
             data={adminData}
@@ -97,8 +93,8 @@ export default function DashboardPage() {
         </div>
       ) : (
         <>
-          <MyAppsCard apps={apps} showManageLink={false} />
-          <MapPreview projects={projects} />
+          <MyAppsCard apps={apps} onRetry={loadApps} showManageLink={false} />
+          <MapPreview projects={projects} onRetry={loadProjects} />
         </>
       )}
     </div>

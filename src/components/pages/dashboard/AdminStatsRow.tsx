@@ -9,12 +9,12 @@ export function AdminStatsRow({
   pendingFailed,
 }: {
   data: AdminDashboardData
-  projects: ProjectResponse[]
+  projects: ProjectResponse[] | null
   languages: LanguageResponse[]
   pendingFailed: boolean
 }) {
   const activeCount = data.users.filter((u) => u.is_active).length
-  const withLocation = projects.filter(
+  const withLocation = projects?.filter(
     (p) => p.latitude != null && p.longitude != null,
   ).length
   const accessCount = data.pendingAccess.length
@@ -26,8 +26,8 @@ export function AdminStatsRow({
       <StatCard label="Users" value={data.users.length} subtitle={`${activeCount} active`} />
       <StatCard
         label="Projects"
-        value={projects.length}
-        subtitle={`${withLocation} with location`}
+        value={projects ? projects.length : "—"}
+        subtitle={projects ? `${withLocation} with location` : "Could not be loaded"}
       />
       <StatCard label="Languages" value={languages.length} subtitle="in the catalog" />
       <StatCard

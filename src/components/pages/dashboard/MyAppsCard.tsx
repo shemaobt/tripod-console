@@ -2,13 +2,16 @@ import { Link } from "react-router-dom"
 import { LayoutGrid } from "lucide-react"
 import type { UserAppResponse } from "@/types"
 import { EmptyState } from "@/components/common/EmptyState"
+import { LoadFailed } from "@/components/common/LoadFailed"
 import { AppCard } from "./AppCard"
 
 export function MyAppsCard({
   apps,
+  onRetry,
   showManageLink,
 }: {
-  apps: UserAppResponse[]
+  apps: UserAppResponse[] | null
+  onRetry: () => void
   showManageLink: boolean
 }) {
   return (
@@ -21,7 +24,9 @@ export function MyAppsCard({
           </Link>
         )}
       </div>
-      {apps.length === 0 ? (
+      {apps === null ? (
+        <LoadFailed what="your apps" onRetry={onRetry} />
+      ) : apps.length === 0 ? (
         <EmptyState
           icon={LayoutGrid}
           title="You don't have access to any apps yet"

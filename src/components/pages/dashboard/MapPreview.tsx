@@ -5,6 +5,7 @@ import "leaflet/dist/leaflet.css"
 import { useTheme } from "@/contexts/ThemeContext"
 import { MAP_ATTRIBUTION, TELHA, tileUrlForTheme } from "@/constants/map"
 import type { ProjectResponse } from "@/types"
+import { LoadFailed } from "@/components/common/LoadFailed"
 
 const FALLBACK_CENTER: [number, number] = [-14.2, -51.9]
 
@@ -22,11 +23,17 @@ function FitToMarkers({ points }: { points: [number, number][] }) {
   return null
 }
 
-export function MapPreview({ projects }: { projects: ProjectResponse[] }) {
+export function MapPreview({
+  projects,
+  onRetry,
+}: {
+  projects: ProjectResponse[] | null
+  onRetry: () => void
+}) {
   const { resolvedTheme } = useTheme()
 
   const located = useMemo(
-    () => projects.filter((p) => p.latitude != null && p.longitude != null),
+    () => (projects ?? []).filter((p) => p.latitude != null && p.longitude != null),
     [projects],
   )
   const points = useMemo(
@@ -61,18 +68,26 @@ export function MapPreview({ projects }: { projects: ProjectResponse[] }) {
           />
         ))}
       </MapContainer>
-      <div className="absolute left-3.5 bottom-3.5 z-[500] bg-elevated rounded-[0.75rem] shadow-[var(--shadow-md)] px-3.5 py-2.5 flex items-center gap-3.5">
-        <span className="text-[0.78125rem] text-fg-muted">
-          <strong className="text-fg-strong">{located.length}</strong> projects with field
-          locations
-        </span>
-        <Link
-          to="/app/map"
-          className="bg-accent text-white rounded-full px-3.5 py-1.5 text-xs font-semibold hover:bg-accent-hover transition-colors"
-        >
-          Open map
-        </Link>
-      </div>
+      {projects === null ? (
+        <LoadFailed
+          what="the projects for the map"
+          onRetry={onRetry}
+          className="absolute left-3.5 right-3.5 bottom-3.5 z-[500] shadow-[var(--shadow-md)]"
+        />
+      ) : (
+        <div className="absolute left-3.5 bottom-3.5 z-[500] bg-elevated rounded-[0.75rem] shadow-[var(--shadow-md)] px-3.5 py-2.5 flex items-center gap-3.5">
+          <span className="text-[0.78125rem] text-fg-muted">
+            <strong className="text-fg-strong">{located.length}</strong> projects with field
+            locations
+          </span>
+          <Link
+            to="/app/map"
+            className="bg-accent text-white rounded-full px-3.5 py-1.5 text-xs font-semibold hover:bg-accent-hover transition-colors"
+          >
+            Open map
+          </Link>
+        </div>
+      )}
     </div>
   )
 }
