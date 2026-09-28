@@ -21,6 +21,7 @@ import { useAuth } from "@/contexts/AuthContext"
 import { useTheme } from "@/contexts/ThemeContext"
 import { ProfileDialog } from "@/components/common/ProfileDialog"
 import { UserAvatar } from "@/components/common/UserAvatar"
+import { Dialog, DialogSideSheet, DialogTitle } from "@/components/ui/dialog"
 import { useRequestCountsStore } from "@/stores/requestCountsStore"
 import { useSidebarStore } from "@/stores/sidebarStore"
 
@@ -354,32 +355,34 @@ export default function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
         />
       </aside>
 
-      {mobileOpen && (
-        <div className="fixed inset-0 z-40 lg:hidden">
-          <div className="absolute inset-0 bg-scrim/50 animate-fade-in" onClick={onMobileClose} />
-          <aside className="relative z-50 h-full w-[min(16.125rem,calc(100vw-3rem))] bg-shell text-shell-fg flex flex-col px-3.5 pt-[1.375rem] pb-4">
-            <button
-              onClick={onMobileClose}
-              aria-label="Close menu"
-              className="absolute right-3 top-3 w-8 h-8 rounded-[0.5625rem] grid place-items-center text-[var(--shell-dim)] hover:bg-[var(--shell-active)] hover:text-shell-fg transition-colors"
-            >
-              <X className="w-4 h-4" strokeWidth={2} />
-            </button>
-            <SidebarContent
-              sections={sections}
-              collapsed={false}
-              onNavigate={onMobileClose}
-              onProfile={openProfile}
-              onLogout={logout}
-              userId={user?.id}
-              userName={userName}
-              userEmail={user?.email ?? ""}
-              userRole={userRole}
-              avatarUrl={user?.avatar_url}
-            />
-          </aside>
-        </div>
-      )}
+      <Dialog open={mobileOpen} onOpenChange={(open) => !open && onMobileClose()}>
+        <DialogSideSheet
+          aria-describedby={undefined}
+          className="h-full w-[min(16.125rem,calc(100vw-3rem))] bg-shell text-shell-fg px-3.5 pt-[1.375rem] pb-4"
+        >
+          <DialogTitle className="sr-only">Menu</DialogTitle>
+          <button
+            type="button"
+            onClick={onMobileClose}
+            aria-label="Close menu"
+            className="absolute right-3 top-3 w-8 h-8 rounded-[0.5625rem] grid place-items-center text-[var(--shell-dim)] hover:bg-[var(--shell-active)] hover:text-shell-fg transition-colors"
+          >
+            <X className="w-4 h-4" strokeWidth={2} />
+          </button>
+          <SidebarContent
+            sections={sections}
+            collapsed={false}
+            onNavigate={onMobileClose}
+            onProfile={openProfile}
+            onLogout={logout}
+            userId={user?.id}
+            userName={userName}
+            userEmail={user?.email ?? ""}
+            userRole={userRole}
+            avatarUrl={user?.avatar_url}
+          />
+        </DialogSideSheet>
+      </Dialog>
 
       <ProfileDialog open={profileOpen} onOpenChange={setProfileOpen} />
     </>

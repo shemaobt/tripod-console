@@ -91,6 +91,26 @@ const DialogDescription = React.forwardRef<
 ))
 DialogDescription.displayName = DialogPrimitive.Description.displayName
 
+const DialogSideSheet = React.forwardRef<
+  React.ComponentRef<typeof DialogPrimitive.Content>,
+  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
+>(({ className, children, ...props }, ref) => (
+  <DialogPortal>
+    <DialogOverlay />
+    <DialogPrimitive.Content
+      ref={ref}
+      className={cn(
+        "fixed inset-y-0 left-0 z-50 flex flex-col",
+        className
+      )}
+      {...props}
+    >
+      {children}
+    </DialogPrimitive.Content>
+  </DialogPortal>
+))
+DialogSideSheet.displayName = "DialogSideSheet"
+
 export {
   Dialog,
   DialogPortal,
@@ -98,6 +118,7 @@ export {
   DialogClose,
   DialogTrigger,
   DialogContent,
+  DialogSideSheet,
   DialogHeader,
   DialogFooter,
   DialogTitle,
