@@ -57,6 +57,7 @@ export default function UserDetailPage() {
   const [selectedProjectIds, setSelectedProjectIds] = useState<string[]>([])
   const [roleSaving, setRoleSaving] = useState(false)
   const [memberConfirmOpen, setMemberConfirmOpen] = useState(false)
+  const [adminConfirmOpen, setAdminConfirmOpen] = useState(false)
 
   async function handleToggleActive() {
     if (!userId || !user) return
@@ -155,7 +156,7 @@ export default function UserDetailPage() {
   function handleRoleSelect(role: UserRole) {
     if (!user || role === getUserRole(user)) return
     if (role === "platform_admin") {
-      applyRoleUpdate({ role: "platform_admin" })
+      setAdminConfirmOpen(true)
     } else if (role === "manager") {
       openManagerDialog()
     } else {
@@ -334,6 +335,16 @@ export default function UserDetailPage() {
         onSelectedIdsChange={setSelectedProjectIds}
         saving={roleSaving}
         onConfirm={handleConfirmManager}
+      />
+
+      <ConfirmDialog
+        open={adminConfirmOpen}
+        onOpenChange={setAdminConfirmOpen}
+        title="Make Platform Admin"
+        description={`"${user.display_name || user.email}" will get full access to the whole console: every user, app, project, language and phase, including granting and removing access for other people. Only confirm if this person should administer the entire platform.`}
+        confirmLabel="Make Platform Admin"
+        variant="default"
+        onConfirm={() => applyRoleUpdate({ role: "platform_admin" })}
       />
 
       <ConfirmDialog
