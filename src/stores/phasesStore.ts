@@ -14,6 +14,11 @@ interface PhasesStore {
 
 const CACHE_TTL = 2 * 60 * 1000
 
+// reset() roda no logout; uma busca que ainda estava no ar voltaria depois e
+// repovoaria o cache com as fases da sessao anterior, com TTL novo. Cada
+// reset abre uma geracao, e resposta de geracao velha e jogada fora.
+let generation = 0
+
 export const usePhasesStore = create<PhasesStore>((set, get) => ({
   phases: [],
   dependencies: new Map(),
@@ -26,9 +31,11 @@ export const usePhasesStore = create<PhasesStore>((set, get) => ({
       return
     }
     if (state.loading) return
+    const fetchedIn = generation
     set({ loading: true })
     try {
       const { data } = await phasesAPI.listWithDependencies()
+      if (fetchedIn !== generation) return
       const depsMap = new Map<string, string[]>()
       for (const [phaseId, depIds] of Object.entries(data.dependencies as Record<string, string[]>)) {
         depsMap.set(phaseId, depIds)
@@ -40,7 +47,7 @@ export const usePhasesStore = create<PhasesStore>((set, get) => ({
         loading: false,
       })
     } catch {
-      set({ loading: false })
+      if (fetchedIn === generation) set({ loading: false })
     }
   },
 
@@ -49,6 +56,7 @@ export const usePhasesStore = create<PhasesStore>((set, get) => ({
   },
 
   reset: () => {
+    generation += 1
     set({ phases: [], dependencies: new Map(), loading: false, lastFetched: null })
   },
 }))
