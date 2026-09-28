@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet"
 import "leaflet/dist/leaflet.css"
 import { projectsAPI } from "@/services/api"
@@ -6,6 +6,7 @@ import type { ProjectResponse, ProjectPhaseResponse } from "@/types"
 import { useLanguagesStore } from "@/stores/languagesStore"
 import { useTheme } from "@/contexts/ThemeContext"
 import { LoadingSpinner } from "@/components/common/LoadingSpinner"
+import { LoadFailed } from "@/components/common/LoadFailed"
 import { ProjectPopupContent } from "./map/ProjectPopupContent"
 import { FieldMapPanel, type MapRow } from "./map/FieldMapPanel"
 import { MAP_ATTRIBUTION, createProjectPinIcon, tileUrlForTheme } from "@/constants/map"
@@ -21,7 +22,7 @@ function FlyToProject({ lat, lng }: { lat: number; lng: number }) {
 }
 
 export default function MapPage() {
-  const [projects, setProjects] = useState<ProjectResponse[]>([])
+  const [projects, setProjects] = useState<ProjectResponse[] | null>([])
   const [projectPhases, setProjectPhases] = useState<Map<string, ProjectPhaseResponse[]>>(new Map())
   const [loading, setLoading] = useState(true)
   const { fetch: fetchLanguages, getLanguageName } = useLanguagesStore()
@@ -29,37 +30,34 @@ export default function MapPage() {
   const { resolvedTheme } = useTheme()
   const tileUrl = tileUrlForTheme(resolvedTheme)
 
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        const [projectsRes] = await Promise.all([
-          projectsAPI.list(),
-          fetchLanguages(),
-        ])
-        setProjects(projectsRes.data)
+  const loadProjects = useCallback(async () => {
+    try {
+      const [projectsRes] = await Promise.all([projectsAPI.list(), fetchLanguages()])
+      setProjects(projectsRes.data)
 
-        const phasesMap = new Map<string, ProjectPhaseResponse[]>()
-        const phaseResults = await Promise.allSettled(
-          projectsRes.data.map((p) => projectsAPI.listPhases(p.id)),
-        )
-        phaseResults.forEach((result, idx) => {
-          if (result.status === "fulfilled") {
-            phasesMap.set(projectsRes.data[idx].id, result.value.data)
-          }
-        })
-        setProjectPhases(phasesMap)
-      } catch {
-        void 0
-      } finally {
-        setLoading(false)
-      }
+      const phasesMap = new Map<string, ProjectPhaseResponse[]>()
+      const phaseResults = await Promise.allSettled(
+        projectsRes.data.map((p) => projectsAPI.listPhases(p.id)),
+      )
+      phaseResults.forEach((result, idx) => {
+        if (result.status === "fulfilled") {
+          phasesMap.set(projectsRes.data[idx].id, result.value.data)
+        }
+      })
+      setProjectPhases(phasesMap)
+    } catch {
+      setProjects(null)
+    } finally {
+      setLoading(false)
     }
-    fetchData()
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [fetchLanguages])
+
+  useEffect(() => {
+    loadProjects()
+  }, [loadProjects])
 
   const locatedProjects = useMemo(
-    () => projects.filter((p) => p.latitude !== null && p.longitude !== null),
+    () => (projects ?? []).filter((p) => p.latitude !== null && p.longitude !== null),
     [projects],
   )
 
@@ -126,12 +124,20 @@ export default function MapPage() {
         ))}
       </MapContainer>
 
-      <FieldMapPanel
-        rows={rows}
-        activeId={activeProject?.id ?? null}
-        onSelect={setActiveProject}
-        countLabel={countLabel}
-      />
+      {projects === null ? (
+        <LoadFailed
+          what="the projects for the map"
+          onRetry={loadProjects}
+          className="absolute left-4 right-4 top-4 z-[500] shadow-[var(--shadow-md)] sm:right-auto sm:max-w-[26rem]"
+        />
+      ) : (
+        <FieldMapPanel
+          rows={rows}
+          activeId={activeProject?.id ?? null}
+          onSelect={setActiveProject}
+          countLabel={countLabel}
+        />
+      )}
     </div>
   )
 }
