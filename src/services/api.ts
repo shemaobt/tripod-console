@@ -119,6 +119,7 @@ api.interceptors.response.use(
 
     const refreshToken = localStorage.getItem(REFRESH_TOKEN_KEY)
     if (!refreshToken) {
+      logApiFailure(error)
       isRefreshing = false
       localStorage.removeItem(ACCESS_TOKEN_KEY)
       localStorage.removeItem(REFRESH_TOKEN_KEY)
