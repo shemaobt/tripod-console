@@ -1,5 +1,6 @@
 import axios from "axios"
 import { ACCESS_TOKEN_KEY, REFRESH_TOKEN_KEY } from "@/constants/app"
+import { logApiFailure } from "./logApiFailure"
 import type {
   AuthResponse,
   TokenResponse,
@@ -108,6 +109,7 @@ api.interceptors.response.use(
     const originalRequest = error.config
 
     if (error.response?.status !== 401 || originalRequest._retry) {
+      logApiFailure(error)
       return Promise.reject(error)
     }
 
@@ -142,6 +144,7 @@ api.interceptors.response.use(
       originalRequest.headers.Authorization = `Bearer ${data.access_token}`
       return api(originalRequest)
     } catch (refreshError) {
+      logApiFailure(refreshError)
       processQueue(refreshError, null)
       localStorage.removeItem(ACCESS_TOKEN_KEY)
       localStorage.removeItem(REFRESH_TOKEN_KEY)

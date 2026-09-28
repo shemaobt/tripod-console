@@ -53,6 +53,7 @@ src/
 ├── components/
 │   ├── common/                  # Shared UI:
 │   │                            #   LoadingSpinner, EmptyState, ConfirmDialog, ErrorBoundary
+│   │                            #   LoadFailed         — plain-language "couldn't load X" + Try again
 │   │                            #   InfoTooltip        — (i) icon with hover/tap explanation popover
 │   │                            #   FeatureSpotlight   — one-time contextual highlight with dismiss
 │   │                            #   FilterBar          — reusable search + filters row
@@ -98,6 +99,7 @@ src/
 │                                #   languagesStore  — languages cache (5-min TTL) + getLanguageName
 │                                #   phasesStore     — phases + dependencies cache (2-min TTL)
 ├── services/                    # api.ts — Single Axios client with namespaced APIs
+│                                #   logApiFailure.ts — the one place API failures reach the console
 ├── types/                       # TS interfaces (auth, user, app, language, organization, project,
 │                                #   role, phase, accessRequest, changeRequest, publicRequest; index barrel)
 ├── constants/                   # app.ts (token keys), platforms.ts (PLATFORM_OPTIONS, platformLabel),
@@ -247,6 +249,7 @@ Key distinction:
 - `appsAPI.myApps()` → `GET /api/apps/my-apps` — returns apps the current user has access to, with their roles. Used by DashboardPage (My Apps hub). Available to all authenticated users.
 - `appsAPI.list()` → `GET /api/apps` — returns all apps. Admin only. Used by AppsPage (Manage Apps).
 
+- **Failed reads are never drawn as empty** (OBT-258, 2026-09-28, levigft). Every failed request is logged once by the response interceptor through `services/logApiFailure.ts` (method, URL, status and the backend's `detail`) — that is the developer's channel. The user's channel is `components/common/LoadFailed`: one plain sentence naming what did not load, with **Try again**, and no status code or jargon. A section whose read failed holds `null`, not `[]`, so "the server said there is nothing" and "the server did not answer" stay distinguishable.
 - **New endpoints**: Add methods to the appropriate namespace in `api.ts`; do not create a second axios client or duplicate auth handling.
 - **Types**: Prefer types from `src/types/`. Keep request/response types aligned with the backend schemas.
 
