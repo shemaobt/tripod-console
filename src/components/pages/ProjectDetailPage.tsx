@@ -30,6 +30,10 @@ export default function ProjectDetailPage() {
 
   const [project, setProject] = useState<ProjectResponse | null>(null)
   const [loading, setLoading] = useState(true)
+  // Conta os saves de localizacao: a secao remonta a cada um a partir do que o
+  // servidor devolveu, mesmo quando o valor volta igual (ex.: o back ignorou
+  // um campo) e a chave de lat/lng/nome sozinha nao mudaria.
+  const [locationSaves, setLocationSaves] = useState(0)
   const [fallbackLanguage, setFallbackLanguage] = useState<LanguageResponse | null>(null)
   const [failedLanguageId, setFailedLanguageId] = useState<string | null>(null)
   const [imageBusy, setImageBusy] = useState(false)
@@ -95,6 +99,7 @@ export default function ProjectDetailPage() {
         location_display_name: displayName,
       })
       setProject(data)
+      setLocationSaves((n) => n + 1)
       toast.success("Location updated")
     } catch {
       toast.error("Failed to update location")
@@ -269,7 +274,7 @@ export default function ProjectDetailPage() {
               onSaved={setProject}
             />
             <LocationSection
-              key={`${project.latitude},${project.longitude},${project.location_display_name}`}
+              key={`${project.latitude},${project.longitude},${project.location_display_name},${locationSaves}`}
               project={project}
               onSave={handleLocationSave}
             />
