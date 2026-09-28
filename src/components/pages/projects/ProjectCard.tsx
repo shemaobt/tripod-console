@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom"
 import { Pencil, MapPin } from "lucide-react"
 import type { ProjectResponse } from "@/types"
 import { UserAvatar } from "@/components/common/UserAvatar"
@@ -11,11 +12,11 @@ interface ProjectCardProps {
   project: ProjectResponse
   langName?: string
   langCode?: string
-  onOpen: () => void
+  to: string
   onEdit: (e: React.MouseEvent) => void
 }
 
-export function ProjectCard({ project, langName, langCode, onOpen, onEdit }: ProjectCardProps) {
+export function ProjectCard({ project, langName, langCode, to, onEdit }: ProjectCardProps) {
   const tile = avatarColors(project.id, project.name)
   const locationText =
     project.location_display_name ||
@@ -31,14 +32,13 @@ export function ProjectCard({ project, langName, langCode, onOpen, onEdit }: Pro
 
   return (
     <article
-      onClick={onOpen}
-      className="group relative flex cursor-pointer flex-col gap-2.5 rounded-[1.125rem] bg-elevated p-5 shadow-[var(--shadow-card)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[var(--shadow-md)]"
+      className="group relative flex flex-col gap-2.5 rounded-[1.125rem] bg-elevated p-5 shadow-[var(--shadow-card)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[var(--shadow-md)]"
     >
       <button
         type="button"
         onClick={onEdit}
         aria-label={`Edit ${project.name}`}
-        className="absolute right-2.5 top-2.5 grid h-[1.875rem] w-[1.875rem] place-items-center rounded-[0.5625rem] bg-elevated text-fg-subtle opacity-0 shadow-[var(--shadow-sm)] transition-all hover:bg-muted hover:text-fg-strong group-hover:opacity-100"
+        className="absolute right-2.5 top-2.5 z-10 grid h-[1.875rem] w-[1.875rem] place-items-center rounded-[0.5625rem] bg-elevated text-fg-subtle shadow-[var(--shadow-sm)] transition-all hover:bg-muted hover:text-fg-strong opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 [@media(hover:none)]:opacity-100"
       >
         <Pencil className="h-[0.9375rem] w-[0.9375rem]" strokeWidth={1.75} />
       </button>
@@ -59,9 +59,12 @@ export function ProjectCard({ project, langName, langCode, onOpen, onEdit }: Pro
               {initialsOf(project.name)}
             </span>
           )}
-          <span className="text-[0.9375rem] font-semibold leading-snug text-fg-strong">
+          <Link
+            to={to}
+            className="text-[0.9375rem] font-semibold leading-snug text-fg-strong after:absolute after:inset-0 after:rounded-[inherit]"
+          >
             {project.name}
-          </span>
+          </Link>
         </div>
         <span className="flex-none rounded-md bg-muted px-2 py-0.5 font-mono text-[0.71875rem] text-fg-muted">
           {langCode || "—"}

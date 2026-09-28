@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react"
-import { useNavigate } from "react-router"
 import { AppWindow, Plus } from "lucide-react"
 import { toast } from "sonner"
 import { appsAPI } from "@/services/api"
@@ -40,7 +39,6 @@ function formFromApp(app: AppResponse): AppFormState {
 }
 
 export default function AppsPage() {
-  const navigate = useNavigate()
   const [apps, setApps] = useState<AppResponse[]>([])
   const [loading, setLoading] = useState(true)
   const [dialogOpen, setDialogOpen] = useState(false)
@@ -185,7 +183,7 @@ export default function AppsPage() {
             <AppCard
               key={app.id}
               app={app}
-              onOpen={() => navigate(`/app/apps/${app.id}`)}
+              to={`/app/apps/${app.id}`}
               onEdit={(e) => openEditDialog(e, app)}
               onDelete={(e) => {
                 e.stopPropagation()
