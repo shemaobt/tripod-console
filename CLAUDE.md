@@ -187,6 +187,9 @@ Use `isPlatformAdmin`, `isManager`, `managedProjectIds` / `managedOrgIds`, and `
 
 - `index.css` defines `*:focus-visible { outline: 0.15625rem solid var(--focus-ring); outline-offset: 0.125rem }` (`--focus-ring` is telha; lighter in dark mode).
 - Components should **not** add ring utilities (`focus:ring-*` / `focus-visible:ring-*`) — the global outline handles keyboard focus.
+- A `focus:outline-none` inside a component does **not** remove that ring: the global rule is written outside any `@layer`, and unlayered CSS beats every Tailwind utility regardless of specificity. Measured on `SelectTrigger`, the dialog's close button and the roles inputs (2px telha outline on focus, #43). Do not "restore" a ring there.
+- A card whose whole surface opens something is a real link: the title is a `Link` stretched over the card with `after:absolute after:inset-0`, and any action buttons inside sit above it (`z-10`) and show on `group-focus-within` and on touch (`[@media(hover:none)]`), not only on hover (#43).
+- Every dialog returns focus to whatever opened it (`useReturnFocus` in `ui/dialog.tsx`) — Radix alone only does it for a `DialogTrigger`, and dialogs here open from state (#43).
 - Input-like components (Input, Textarea) are underline-style and use `focus:outline-none focus:border-accent` so the underline shifts to accent on focus.
 
 ### `bg-elevated` not `bg-white`
@@ -491,7 +494,7 @@ ADMINISTRATION                            [admin only]
 - **Nav items**: `rounded-[0.625rem]` rows; active = `bg-[var(--shell-active)] text-shell-fg`; inactive = `text-[var(--shell-dim)]`, hover gets the active treatment
 - **Footer**: `border-t border-[var(--shell-line)]` with profile button (avatar + display name + role label, opens ProfileDialog) and a sign-out icon button
 - **RBAC**: "Main" for all console users; "Content" shown to platform admins + managers; "Administration" only when `isPlatformAdmin`
-- **Collapsible icon rail (desktop).** A collapse toggle (PanelLeftClose/PanelLeftOpen) shrinks the rail to `w-[4.5rem]` icon-only mode — icons stay, section captions become hairline dividers, nav badges render as a numeric corner bubble, labels surface via `title` tooltips, and the theme pill collapses to a single icon. State persists in the `sidebarStore` (Zustand + localStorage `tc_sidebar`). Collapse is desktop-only. Mobile (`lg:hidden`): overlay drawer with dark backdrop and close button, always expanded
+- **Collapsible icon rail (desktop).** A collapse toggle (PanelLeftClose/PanelLeftOpen) shrinks the rail to `w-[4.5rem]` icon-only mode — icons stay, section captions become hairline dividers, nav badges render as a numeric corner bubble, labels surface via `title` tooltips, and the theme pill collapses to a single icon. State persists in the `sidebarStore` (Zustand + localStorage `tc_sidebar`). Collapse is desktop-only. Mobile (`lg:hidden`): the drawer is a Radix dialog (`DialogSideSheet` in `ui/dialog.tsx`) — focus trapped inside, Esc and the veil close it, focus returns to the menu button — always expanded (OBT-258 #43, 2026-09-28, levigft)
 
 ---
 
