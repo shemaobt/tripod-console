@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import {
   usersAPI,
   appsAPI,
@@ -27,6 +27,7 @@ export function useAdminDashboardData(enabled: boolean) {
   const [data, setData] = useState<AdminDashboardData | null>(null)
   const [failed, setFailed] = useState(false)
   const [pendingFailed, setPendingFailed] = useState(false)
+  const [attempt, setAttempt] = useState(0)
   const languages = useLanguagesStore((s) => s.languages)
   const fetchLanguages = useLanguagesStore((s) => s.fetch)
 
@@ -68,7 +69,14 @@ export function useAdminDashboardData(enabled: boolean) {
     return () => {
       cancelled = true
     }
-  }, [enabled, fetchLanguages])
+  }, [enabled, fetchLanguages, attempt])
 
-  return { data, languages, loading: enabled && !data && !failed, failed, pendingFailed }
+  const retry = useCallback(() => {
+    setData(null)
+    setFailed(false)
+    setPendingFailed(false)
+    setAttempt((n) => n + 1)
+  }, [])
+
+  return { data, languages, loading: enabled && !data && !failed, failed, pendingFailed, retry }
 }

@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom"
 import { LoadingSpinner } from "@/components/common/LoadingSpinner"
 import { UserAvatar } from "@/components/common/UserAvatar"
-import { states } from "@/styles"
+import { LoadFailed } from "@/components/common/LoadFailed"
 import { formatDate } from "@/utils/format"
 import type { AdminDashboardData } from "./useAdminDashboardData"
 
@@ -21,6 +21,7 @@ interface NeedsReviewPanelProps {
   data: AdminDashboardData | null
   loading: boolean
   failed: boolean
+  onRetry: () => void
 }
 
 const kindLabel: Record<string, string> = {
@@ -82,7 +83,7 @@ function recentItems(data: AdminDashboardData): ReviewItem[] {
     .slice(0, 5)
 }
 
-export function NeedsReviewPanel({ data, loading, failed }: NeedsReviewPanelProps) {
+export function NeedsReviewPanel({ data, loading, failed, onRetry }: NeedsReviewPanelProps) {
   const recent = data && !failed ? recentItems(data) : []
 
   return (
@@ -96,9 +97,7 @@ export function NeedsReviewPanel({ data, loading, failed }: NeedsReviewPanelProp
       {loading ? (
         <LoadingSpinner size="sm" />
       ) : failed || !data ? (
-        <div className={states.error}>
-          Pending requests could not be loaded. Reload the page to try again.
-        </div>
+        <LoadFailed what="the pending requests" onRetry={onRetry} />
       ) : recent.length > 0 ? (
         <div className="flex flex-col">
           {recent.map((item) => (

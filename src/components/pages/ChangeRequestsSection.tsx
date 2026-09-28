@@ -44,7 +44,6 @@ interface ChangeRequestsSectionProps {
 export function ChangeRequestsSection({ kinds, emptyLabel, onReviewed }: ChangeRequestsSectionProps) {
   const kindKey = kinds.join(",")
   const fetchLanguages = useLanguagesStore((s) => s.fetch)
-  // null = a busca do filtro atual falhou; nunca sobra a lista do filtro anterior.
   const [requests, setRequests] = useState<ReviewableRequest[] | null>([])
   const [publicFailed, setPublicFailed] = useState(false)
   const [loading, setLoading] = useState(true)
@@ -56,8 +55,7 @@ export function ChangeRequestsSection({ kinds, emptyLabel, onReviewed }: ChangeR
   const [grantManager, setGrantManager] = useState(false)
   const [submitting, setSubmitting] = useState(false)
 
-  // Trocar de chip rapido dispara buscas que podem voltar fora de ordem; so a
-  // mais recente e aplicada, para o chip e a lista nunca discordarem.
+  // Quick chip changes can resolve out of order; only the latest fetch may write.
   const fetchRequests = useCallback(async () => {
     const fetchId = ++latestFetch.current
     setLoading(true)
@@ -165,9 +163,11 @@ export function ChangeRequestsSection({ kinds, emptyLabel, onReviewed }: ChangeR
           </button>
         ))}
         <span className="text-xs text-fg-subtle tabular-nums ml-auto">
-          {loading || requests === null
+          {loading
             ? "..."
-            : `${requests.length} request${requests.length !== 1 ? "s" : ""}`}
+            : requests === null
+              ? "—"
+              : `${requests.length} request${requests.length !== 1 ? "s" : ""}`}
         </span>
       </div>
 

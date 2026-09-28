@@ -2,8 +2,8 @@ import { useCallback, useEffect, useState } from "react"
 import { useAuth } from "@/contexts/AuthContext"
 import { appsAPI, projectsAPI } from "@/services/api"
 import type { UserAppResponse, ProjectResponse } from "@/types"
-import { states } from "@/styles"
 import { LoadingSpinner } from "@/components/common/LoadingSpinner"
+import { LoadFailed } from "@/components/common/LoadFailed"
 import { MyAppsCard } from "@/components/pages/dashboard/MyAppsCard"
 import { MapPreview } from "@/components/pages/dashboard/MapPreview"
 import { AdminStatsRow } from "@/components/pages/dashboard/AdminStatsRow"
@@ -12,7 +12,6 @@ import { useAdminDashboardData } from "@/components/pages/dashboard/useAdminDash
 
 export default function DashboardPage() {
   const { user, isPlatformAdmin } = useAuth()
-  // null = a leitura falhou; [] = o servidor respondeu que nao ha nada.
   const [apps, setApps] = useState<UserAppResponse[] | null>([])
   const [projects, setProjects] = useState<ProjectResponse[] | null>([])
   const [loading, setLoading] = useState(true)
@@ -22,6 +21,7 @@ export default function DashboardPage() {
     loading: adminLoading,
     failed: adminFailed,
     pendingFailed,
+    retry: retryAdmin,
   } = useAdminDashboardData(isPlatformAdmin)
 
   const loadApps = useCallback(
@@ -65,9 +65,7 @@ export default function DashboardPage() {
 
       {isPlatformAdmin &&
         (adminFailed ? (
-          <div className={states.error}>
-            Platform overview could not be loaded. Reload the page to try again.
-          </div>
+          <LoadFailed what="the platform overview" onRetry={retryAdmin} />
         ) : adminData ? (
           <AdminStatsRow
             data={adminData}
@@ -89,6 +87,7 @@ export default function DashboardPage() {
             data={adminData}
             loading={adminLoading}
             failed={adminFailed || pendingFailed}
+            onRetry={retryAdmin}
           />
         </div>
       ) : (
