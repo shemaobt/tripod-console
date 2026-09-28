@@ -20,6 +20,7 @@ import type {
 } from "@/types"
 import { LoadingSpinner } from "@/components/common/LoadingSpinner"
 import { ConfirmDialog } from "@/components/common/ConfirmDialog"
+import { LoadFailed } from "@/components/common/LoadFailed"
 import { getUserRole, roleChoices } from "./roles"
 import { UserHeader } from "./UserHeader"
 import { AccountCard } from "./AccountCard"
@@ -33,7 +34,7 @@ export default function UserDetailPage() {
   const navigate = useNavigate()
   const { user: currentUser } = useAuth()
 
-  const { user, setUser, userLoading, roles, rolesLoading, fetchUser, fetchRoles } =
+  const { user, setUser, userLoading, userFailed, roles, rolesLoading, fetchUser, fetchRoles } =
     useUserRecord(userId)
 
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -52,7 +53,7 @@ export default function UserDetailPage() {
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
 
   const [managerDialogOpen, setManagerDialogOpen] = useState(false)
-  const [projects, setProjects] = useState<ProjectResponse[]>([])
+  const [projects, setProjects] = useState<ProjectResponse[] | null>([])
   const [projectsLoading, setProjectsLoading] = useState(false)
   const [selectedProjectIds, setSelectedProjectIds] = useState<string[]>([])
   const [roleSaving, setRoleSaving] = useState(false)
@@ -137,20 +138,22 @@ export default function UserDetailPage() {
     }
   }
 
-  async function openManagerDialog() {
+  async function loadManagerProjects() {
+    setProjectsLoading(true)
+    try {
+      const { data } = await projectsAPI.list()
+      setProjects(data)
+    } catch {
+      setProjects(null)
+    } finally {
+      setProjectsLoading(false)
+    }
+  }
+
+  function openManagerDialog() {
     setSelectedProjectIds([])
     setManagerDialogOpen(true)
-    if (projects.length === 0) {
-      setProjectsLoading(true)
-      try {
-        const { data } = await projectsAPI.list()
-        setProjects(data)
-      } catch {
-        toast.error("Failed to load projects")
-      } finally {
-        setProjectsLoading(false)
-      }
-    }
+    if (!projects?.length) loadManagerProjects()
   }
 
   function handleRoleSelect(role: UserRole) {
@@ -260,7 +263,11 @@ export default function UserDetailPage() {
   if (!user) {
     return (
       <div className="mx-auto max-w-[77.5rem] px-6 pt-8 sm:px-10">
-        <p className="text-fg-muted">User not found.</p>
+        {userFailed ? (
+          <LoadFailed what="this user" onRetry={fetchUser} />
+        ) : (
+          <p className="text-fg-muted">User not found.</p>
+        )}
       </div>
     )
   }
@@ -310,26 +317,31 @@ export default function UserDetailPage() {
         />
       </div>
 
-      <AppRolesCard
-        roles={roles}
-        loading={rolesLoading}
-        apps={apps}
-        availableRoles={availableRoles}
-        selectedAppKey={selectedAppKey}
-        selectedRoleKey={selectedRoleKey}
-        rolesForAppLoading={rolesForAppLoading}
-        assigning={assigning}
-        onEnsureApps={ensureAppsLoaded}
-        onAppChange={handleAppChange}
-        onRoleChange={setSelectedRoleKey}
-        onAssign={handleAssignRole}
-        onRevoke={setRevokingRole}
-      />
+      {roles === null ? (
+        <LoadFailed what="this user's app roles" onRetry={fetchRoles} />
+      ) : (
+        <AppRolesCard
+          roles={roles}
+          loading={rolesLoading}
+          apps={apps}
+          availableRoles={availableRoles}
+          selectedAppKey={selectedAppKey}
+          selectedRoleKey={selectedRoleKey}
+          rolesForAppLoading={rolesForAppLoading}
+          assigning={assigning}
+          onEnsureApps={ensureAppsLoaded}
+          onAppChange={handleAppChange}
+          onRoleChange={setSelectedRoleKey}
+          onAssign={handleAssignRole}
+          onRevoke={setRevokingRole}
+        />
+      )}
 
       <ManagerProjectsDialog
         open={managerDialogOpen}
         onOpenChange={setManagerDialogOpen}
         projects={projects}
+        onRetryProjects={loadManagerProjects}
         loading={projectsLoading}
         selectedIds={selectedProjectIds}
         onSelectedIdsChange={setSelectedProjectIds}

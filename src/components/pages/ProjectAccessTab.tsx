@@ -7,6 +7,7 @@ import type {
 } from "@/types"
 import { ConfirmDialog } from "@/components/common/ConfirmDialog"
 import { FeatureSpotlight } from "@/components/common/FeatureSpotlight"
+import { LoadFailed } from "@/components/common/LoadFailed"
 import { useAuth } from "@/contexts/AuthContext"
 import { UserAccessSection } from "./projectAccess/UserAccessSection"
 import { GrantUserDialog } from "./projectAccess/GrantUserDialog"
@@ -14,7 +15,7 @@ import { GrantUserDialog } from "./projectAccess/GrantUserDialog"
 export function ProjectAccessTab({ projectId }: { projectId: string }) {
   const { isPlatformAdmin, managedProjectIds } = useAuth()
   const [userAccess, setUserAccess] = useState<
-    ProjectUserAccessDetailResponse[]
+    ProjectUserAccessDetailResponse[] | null
   >([])
   const [usersLoading, setUsersLoading] = useState(true)
 
@@ -31,7 +32,7 @@ export function ProjectAccessTab({ projectId }: { projectId: string }) {
       const { data } = await projectsAPI.listUserAccess(projectId)
       setUserAccess(data)
     } catch {
-      toast.error("Failed to load user access")
+      setUserAccess(null)
     } finally {
       setUsersLoading(false)
     }
@@ -105,22 +106,26 @@ export function ProjectAccessTab({ projectId }: { projectId: string }) {
       description="Control who can access this project by granting access to individual people."
     >
       <div className="space-y-[1.125rem]">
-        <UserAccessSection
-          users={userAccess}
-          loading={usersLoading}
-          isPlatformAdmin={isPlatformAdmin}
-          isProjectManager={isProjectManager}
-          onGrant={openGrantUser}
-          onRevoke={setRevokingUser}
-          onRoleChange={handleRoleChange}
-        />
+        {userAccess === null ? (
+          <LoadFailed what="who has access to this project" onRetry={fetchUserAccess} />
+        ) : (
+          <UserAccessSection
+            users={userAccess}
+            loading={usersLoading}
+            isPlatformAdmin={isPlatformAdmin}
+            isProjectManager={isProjectManager}
+            onGrant={openGrantUser}
+            onRevoke={setRevokingUser}
+            onRoleChange={handleRoleChange}
+          />
+        )}
 
         <GrantUserDialog
           open={grantUserOpen}
           onOpenChange={setGrantUserOpen}
           selectedUser={selectedUser}
           onSelectUser={setSelectedUser}
-          excludeIds={userAccess.map((u) => u.user_id)}
+          excludeIds={(userAccess ?? []).map((u) => u.user_id)}
           grantRole={grantRole}
           onGrantRoleChange={setGrantRole}
           canGrantManagerRole={isPlatformAdmin}
