@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useState } from "react"
 import { Inbox } from "lucide-react"
-import { toast } from "sonner"
 import { changeRequestsAPI } from "@/services/api"
 import type { ChangeRequestKind, ChangeRequestResponse } from "@/types"
 import { useLanguagesStore } from "@/stores/languagesStore"
 import { cn } from "@/utils/cn"
 import { LoadingSpinner } from "@/components/common/LoadingSpinner"
 import { EmptyState } from "@/components/common/EmptyState"
+import { LoadFailed } from "@/components/common/LoadFailed"
 import { ChangeRequestCard } from "@/components/pages/changeRequests/ChangeRequestCard"
 import { fromChangeRequest } from "@/components/pages/changeRequests/reviewableRequest"
 
@@ -25,7 +25,7 @@ interface MyChangeRequestsSectionProps {
 export function MyChangeRequestsSection({ kinds, emptyLabel }: MyChangeRequestsSectionProps) {
   const kindKey = kinds ? kinds.join(",") : ""
   const fetchLanguages = useLanguagesStore((s) => s.fetch)
-  const [requests, setRequests] = useState<ChangeRequestResponse[]>([])
+  const [requests, setRequests] = useState<ChangeRequestResponse[] | null>([])
   const [loading, setLoading] = useState(true)
   const [filterStatus, setFilterStatus] = useState("all")
 
@@ -36,7 +36,7 @@ export function MyChangeRequestsSection({ kinds, emptyLabel }: MyChangeRequestsS
       const allowed = kindKey ? new Set(kindKey.split(",")) : null
       setRequests(allowed ? data.filter((r) => allowed.has(r.kind)) : data)
     } catch {
-      toast.error("Failed to load your requests")
+      setRequests(null)
     } finally {
       setLoading(false)
     }
@@ -48,7 +48,9 @@ export function MyChangeRequestsSection({ kinds, emptyLabel }: MyChangeRequestsS
   }, [fetchLanguages, fetchRequests])
 
   const visible =
-    filterStatus === "all" ? requests : requests.filter((r) => r.status === filterStatus)
+    requests === null || filterStatus === "all"
+      ? requests
+      : requests.filter((r) => r.status === filterStatus)
 
   return (
     <div className="space-y-4">
@@ -69,12 +71,18 @@ export function MyChangeRequestsSection({ kinds, emptyLabel }: MyChangeRequestsS
           </button>
         ))}
         <span className="text-xs text-fg-subtle tabular-nums ml-auto">
-          {loading ? "..." : `${visible.length} request${visible.length !== 1 ? "s" : ""}`}
+          {loading
+            ? "..."
+            : visible === null
+              ? "—"
+              : `${visible.length} request${visible.length !== 1 ? "s" : ""}`}
         </span>
       </div>
 
       {loading ? (
         <LoadingSpinner />
+      ) : visible === null ? (
+        <LoadFailed what="your requests" onRetry={fetchRequests} />
       ) : visible.length === 0 ? (
         <EmptyState
           icon={Inbox}
