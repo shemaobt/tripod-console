@@ -1,5 +1,7 @@
 import { Link } from "react-router-dom"
+import { LoadingSpinner } from "@/components/common/LoadingSpinner"
 import { UserAvatar } from "@/components/common/UserAvatar"
+import { LoadFailed } from "@/components/common/LoadFailed"
 import { formatDate } from "@/utils/format"
 import type { AdminDashboardData } from "./useAdminDashboardData"
 
@@ -15,6 +17,13 @@ interface ReviewItem {
   requestedAt: string
 }
 
+interface NeedsReviewPanelProps {
+  data: AdminDashboardData | null
+  loading: boolean
+  failed: boolean
+  onRetry: () => void
+}
+
 const kindLabel: Record<string, string> = {
   create_project: "New project",
   create_language: "New language",
@@ -25,7 +34,7 @@ function kindRoute(kind: string) {
   return kind === "create_project" ? "/app/projects" : "/app/languages"
 }
 
-export function NeedsReviewPanel({ data }: { data: AdminDashboardData }) {
+function recentItems(data: AdminDashboardData): ReviewItem[] {
   const userMap = new Map(data.users.map((u) => [u.id, u]))
   const appNameMap = new Map(data.apps.map((a) => [a.app_key, a.name]))
 
@@ -69,9 +78,13 @@ export function NeedsReviewPanel({ data }: { data: AdminDashboardData }) {
     requestedAt: req.requested_at,
   }))
 
-  const recent = [...accessItems, ...changeItems, ...publicItems]
+  return [...accessItems, ...changeItems, ...publicItems]
     .sort((a, b) => new Date(b.requestedAt).getTime() - new Date(a.requestedAt).getTime())
     .slice(0, 5)
+}
+
+export function NeedsReviewPanel({ data, loading, failed, onRetry }: NeedsReviewPanelProps) {
+  const recent = data && !failed ? recentItems(data) : []
 
   return (
     <div className="bg-elevated rounded-[1.125rem] shadow-[var(--shadow-card)] p-5 min-w-0">
@@ -81,7 +94,11 @@ export function NeedsReviewPanel({ data }: { data: AdminDashboardData }) {
           All requests →
         </Link>
       </div>
-      {recent.length > 0 ? (
+      {loading ? (
+        <LoadingSpinner size="sm" />
+      ) : failed || !data ? (
+        <LoadFailed what="the pending requests" onRetry={onRetry} />
+      ) : recent.length > 0 ? (
         <div className="flex flex-col">
           {recent.map((item) => (
             <div

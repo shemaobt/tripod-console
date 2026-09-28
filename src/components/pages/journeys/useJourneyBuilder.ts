@@ -221,7 +221,9 @@ export function useJourneyBuilder(isAdmin: boolean, managedProjectIds: string[])
             ? { ...d, entries: { ...d.entries, [phaseId]: data } }
             : { projectId, entries: { [phaseId]: data } },
         )
-      } catch {}
+      } catch {
+        // The status log is secondary to the trail; the failure already reaches the console through logApiFailure.
+      }
     },
     [projectId],
   )
@@ -254,7 +256,9 @@ export function useJourneyBuilder(isAdmin: boolean, managedProjectIds: string[])
           category_id: discovery?.id ?? null,
         })
         phaseCount = 1
-      } catch {}
+      } catch {
+        // The journey is created either way; it opens with no phase and the admin adds the first one.
+      }
       store.setJourneys([
         ...store.journeys,
         { ...created, phase_count: phaseCount, project_count: 0 },

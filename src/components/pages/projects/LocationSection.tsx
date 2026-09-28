@@ -1,9 +1,7 @@
 import { useState } from "react"
-import { MapContainer, TileLayer, Marker } from "react-leaflet"
-import L from "leaflet"
+import { AttributionControl, MapContainer, TileLayer, Marker } from "react-leaflet"
 import "leaflet/dist/leaflet.css"
 import { MapPin } from "lucide-react"
-import { toast } from "sonner"
 import type { ProjectResponse } from "@/types"
 import { useTheme } from "@/contexts/ThemeContext"
 import { card } from "@/styles"
@@ -12,21 +10,11 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { LocationSearchInput } from "@/components/common/LocationSearchInput"
 import { InfoTooltip } from "@/components/common/InfoTooltip"
+import { FieldError } from "@/components/common/FieldError"
+import { parseCoordinates, type CoordinateField } from "@/utils/coordinates"
+import { MAP_ATTRIBUTION, createProjectPinIcon, tileUrlForTheme } from "@/constants/map"
 
-const LIGHT_TILES = "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
-const DARK_TILES = "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-
-const locationMarkerSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="42" viewBox="0 0 32 42" fill="none">
-  <path d="M16 2C9.373 2 4 7.373 4 14c0 8.5 12 24 12 24s12-15.5 12-24c0-6.627-5.373-12-12-12z" fill="#BE4A01"/>
-  <circle cx="16" cy="14" r="5" fill="white"/>
-</svg>`
-
-const locationIcon = L.divIcon({
-  html: locationMarkerSvg,
-  className: "",
-  iconSize: [32, 42],
-  iconAnchor: [16, 42],
-})
+const locationIcon = createProjectPinIcon({ shadow: false })
 
 interface LocationSectionProps {
   project: ProjectResponse
@@ -39,7 +27,7 @@ interface LocationSectionProps {
 
 export function LocationSection({ project, onSave }: LocationSectionProps) {
   const { resolvedTheme } = useTheme()
-  const tileUrl = resolvedTheme === "dark" ? DARK_TILES : LIGHT_TILES
+  const tileUrl = tileUrlForTheme(resolvedTheme)
   const [location, setLocation] = useState<{
     displayName: string
     latitude: number
@@ -63,21 +51,18 @@ export function LocationSection({ project, onSave }: LocationSectionProps) {
   const [manualName, setManualName] = useState(
     project.location_display_name ?? "",
   )
+  const [errors, setErrors] = useState<Partial<Record<CoordinateField, string>>>({})
 
   async function handleSave() {
+    const parsed = parseCoordinates(manualLat, manualLng)
+    if (!parsed.ok) {
+      setErrors(parsed.errors)
+      return
+    }
+    setErrors({})
     setSaving(true)
     try {
-      const lat = manualLat.trim() ? parseFloat(manualLat) : null
-      const lng = manualLng.trim() ? parseFloat(manualLng) : null
-      if (manualLat.trim() && isNaN(lat!)) {
-        toast.error("Latitude must be a valid number")
-        return
-      }
-      if (manualLng.trim() && isNaN(lng!)) {
-        toast.error("Longitude must be a valid number")
-        return
-      }
-      await onSave(lat, lng, manualName.trim() || null)
+      await onSave(parsed.latitude, parsed.longitude, manualName.trim() || null)
     } finally {
       setSaving(false)
     }
@@ -87,6 +72,7 @@ export function LocationSection({ project, onSave }: LocationSectionProps) {
     loc: { displayName: string; latitude: number; longitude: number } | null,
   ) {
     setLocation(loc)
+    setErrors({})
     if (loc) {
       setManualLat(String(loc.latitude))
       setManualLng(String(loc.longitude))
@@ -99,6 +85,7 @@ export function LocationSection({ project, onSave }: LocationSectionProps) {
     setManualLat("")
     setManualLng("")
     setManualName("")
+    setErrors({})
   }
 
   const hasValue = Boolean(location || manualLat || manualLng)
@@ -146,7 +133,8 @@ export function LocationSection({ project, onSave }: LocationSectionProps) {
               dragging={false}
               attributionControl={false}
             >
-              <TileLayer key={tileUrl} url={tileUrl} maxZoom={20} />
+              <AttributionControl prefix={false} />
+              <TileLayer key={tileUrl} url={tileUrl} attribution={MAP_ATTRIBUTION} maxZoom={20} />
               <Marker position={[location.latitude, location.longitude]} icon={locationIcon} />
             </MapContainer>
           </div>
@@ -170,7 +158,10 @@ export function LocationSection({ project, onSave }: LocationSectionProps) {
             className="font-mono"
             placeholder="-4.2523"
             value={manualLat}
-            onChange={(e) => setManualLat(e.target.value)}
+            onChange={(e) => {
+              setManualLat(e.target.value)
+              setErrors({})
+            }}
           />
         </div>
         <div className="space-y-1.5">
@@ -180,13 +171,18 @@ export function LocationSection({ project, onSave }: LocationSectionProps) {
             className="font-mono"
             placeholder="-69.9381"
             value={manualLng}
-            onChange={(e) => setManualLng(e.target.value)}
+            onChange={(e) => {
+              setManualLng(e.target.value)
+              setErrors({})
+            }}
           />
         </div>
         <Button variant="secondary" onClick={handleSave} disabled={saving}>
           {saving ? "Applying..." : "Apply"}
         </Button>
       </div>
+      {errors.latitude && <FieldError>{errors.latitude}</FieldError>}
+      {errors.longitude && <FieldError>{errors.longitude}</FieldError>}
     </div>
   )
 }

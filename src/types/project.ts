@@ -52,13 +52,6 @@ export interface ProjectUserAccessResponse {
   granted_at: string
 }
 
-export interface ProjectOrganizationAccessResponse {
-  id: string
-  project_id: string
-  organization_id: string
-  granted_at: string
-}
-
 export interface ProjectGrantUserAccess {
   user_id: string
   role?: string
@@ -66,10 +59,6 @@ export interface ProjectGrantUserAccess {
 
 export interface ProjectUserAccessRoleUpdate {
   role: string
-}
-
-export interface ProjectGrantOrganizationAccess {
-  organization_id: string
 }
 
 export interface ProjectUserAccessDetailResponse {
@@ -80,14 +69,5 @@ export interface ProjectUserAccessDetailResponse {
   display_name: string | null
   avatar_url: string | null
   role: string
-  granted_at: string
-}
-
-export interface ProjectOrganizationAccessDetailResponse {
-  id: string
-  project_id: string
-  organization_id: string
-  name: string
-  slug: string
   granted_at: string
 }

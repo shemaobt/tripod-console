@@ -40,20 +40,20 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen grid lg:grid-cols-[1.05fr_1fr] bg-canvas">
-      <div className="hidden lg:flex relative overflow-hidden bg-inverse text-[#F6F5EB] flex-col justify-between px-[3.25rem] py-11">
+      <div className="hidden lg:flex relative overflow-hidden bg-inverse text-on-dark flex-col justify-between px-[3.25rem] py-11">
         <img src="/assets/logo-branco.svg" alt="Shemá" className="h-7 w-auto self-start relative z-10" />
         <div className="relative z-10 max-w-[29.375rem] flex flex-col gap-[1.125rem] pb-8">
-          <span className="text-[0.8125rem] font-semibold tracking-[0.14em] uppercase text-[#F6F5EB]/60">
+          <span className="text-[0.8125rem] font-semibold tracking-[0.14em] uppercase text-on-dark/60">
             Tripod Console
           </span>
           <div className="font-black text-[3.125rem] leading-[1.03] tracking-[-0.01em] uppercase">
             Every mother tongue, heard.
           </div>
-          <p className="font-serif text-[1.03125rem] leading-[1.65] text-[#F6F5EB]/80">
+          <p className="font-serif text-[1.03125rem] leading-[1.65] text-on-dark/80">
             Languages, projects, workflow phases and access — the governance console for the Shema oral
             Bible translation ecosystem.
           </p>
-          <p className="font-serif italic text-[0.9375rem] text-[#F6F5EB]/65 mt-1.5">
+          <p className="font-serif italic text-[0.9375rem] text-on-dark/65 mt-1.5">
             “Assim na terra como no céu.”
           </p>
         </div>

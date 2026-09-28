@@ -11,3 +11,7 @@ const PLATFORM_LABELS: Record<string, string> = Object.fromEntries(
 export function platformLabel(platform: string): string {
   return PLATFORM_LABELS[platform] ?? platform
 }
+
+export function platformsError(platforms: string[]): string | null {
+  return platforms.length === 0 ? "Select at least one platform." : null
+}

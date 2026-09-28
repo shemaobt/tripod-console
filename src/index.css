@@ -29,6 +29,7 @@
   --color-verde-claro: #777D45;
   --color-verde: #3F3E20;
   --color-preto: #0A0703;
+  --color-scrim: #0A0703;
   --color-surface: #FFFFFF;
   --color-surface-alt: #F3F2EB;
 
@@ -89,10 +90,26 @@
     --color-branco: #16150F;
     --color-areia: #4A4635;
     --color-azul: #A3C4BD;
-    --color-telha: #D4702E;
+    /* CLAUDE.md 9.2: brand = accent = telha. No dark o telha era #D4702E, um
+       laranja mais claro, e isso quebrava por dois lados: dividia a familia em
+       dois laranjas (o ponto do Manager na legenda x o do seletor) e derrubava
+       para 3.12:1 o texto de TODO pill que usa bg-telha + text-on-dark. Todo
+       consumo de telha no app e preenchimento com tinta clara em cima
+       (badge manager, contadores do menu, chip de projeto), nenhum e tinta
+       sobre o canvas - entao o valor que vale e o do accent: 4.60:1 de texto
+       em cima e 3.73:1 do proprio preenchimento contra o canvas escuro.
+       Telha COMO TINTA sobre fundo escuro ja tem token proprio: on-accent-soft
+       / st-warn (#E08145). */
+    --color-telha: #BE4A01;
     --color-verde-claro: #9AAD52;
     --color-verde: #A3A17A;
     --color-preto: #E8E4D9;
+    /* preto vira tinta CLARA no dark, entao um veu de modal escrito em preto
+       inverteria e clarearia a pagina atras. O scrim carrega o escurecimento,
+       nao a cor do texto, por isso tem token proprio; no dark ele vai a preto
+       puro porque a pagina atras ja e quase preta - mesma escolha das sombras
+       abaixo. */
+    --color-scrim: #000000;
     --color-surface: #1E1D17;
     --color-surface-alt: #252419;
 
@@ -102,6 +119,7 @@
     --color-quiet: #332D1E;
     --color-inverse: #3F3E20;
     --color-brand: #BE4A01;
+    --color-accent: #BE4A01;
 
     --color-fg: #E9E7D8;
     --color-fg-strong: #F6F5EB;

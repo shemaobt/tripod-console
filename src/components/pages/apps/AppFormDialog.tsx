@@ -1,3 +1,4 @@
+import { useState } from "react"
 import type { AppResponse } from "@/types"
 import { cn } from "@/utils/cn"
 import { Button } from "@/components/ui/button"
@@ -15,6 +16,8 @@ import {
 import { InfoTooltip } from "@/components/common/InfoTooltip"
 import { ImageUpload } from "@/components/common/ImageUpload"
 import { PlatformMultiSelect } from "@/components/common/PlatformMultiSelect"
+import { FieldError } from "@/components/common/FieldError"
+import { platformsError } from "@/constants/platforms"
 import { Switch } from "@/components/ui/switch"
 
 export interface AppFormState {
@@ -56,6 +59,19 @@ export function AppFormDialog({
   onSave: () => void
 }) {
   const isValid = form.name.trim() && (editing || form.app_key.trim())
+  const platformsProblem = platformsError(form.platforms)
+  const [triedSave, setTriedSave] = useState(false)
+  const [openedAs, setOpenedAs] = useState(open)
+  if (openedAs !== open) {
+    setOpenedAs(open)
+    if (open) setTriedSave(false)
+  }
+
+  function handleSave() {
+    setTriedSave(true)
+    if (platformsProblem) return
+    onSave()
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -128,6 +144,7 @@ export function AppFormDialog({
                 value={form.platforms}
                 onChange={(platforms) => setForm((f) => ({ ...f, platforms }))}
               />
+              {triedSave && platformsProblem && <FieldError>{platformsProblem}</FieldError>}
             </div>
             <div className="space-y-1.5">
               <Label>App Icon</Label>
@@ -205,7 +222,7 @@ export function AppFormDialog({
           >
             Cancel
           </Button>
-          <Button onClick={onSave} disabled={saving || !isValid}>
+          <Button onClick={handleSave} disabled={saving || !isValid}>
             {saving
               ? editing
                 ? "Saving..."

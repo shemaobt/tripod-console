@@ -1,6 +1,6 @@
 interface StatCardProps {
   label: string
-  value: number
+  value: number | string
   subtitle?: string
 }
 
@@ -11,7 +11,7 @@ export function StatCard({ label, value, subtitle }: StatCardProps) {
         {label}
       </span>
       <span className="text-[1.875rem] font-bold leading-[1.1] tabular-nums text-fg-strong">
-        {value.toLocaleString()}
+        {typeof value === "number" ? value.toLocaleString() : value}
       </span>
       {subtitle && <span className="text-xs text-fg-muted">{subtitle}</span>}
     </div>

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { Inbox, Loader2 } from "lucide-react"
 import { toast } from "sonner"
 import { changeRequestsAPI, publicRequestsAPI } from "@/services/api"
@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/dialog"
 import { LoadingSpinner } from "@/components/common/LoadingSpinner"
 import { EmptyState } from "@/components/common/EmptyState"
+import { LoadFailed } from "@/components/common/LoadFailed"
 import { ChangeRequestCard } from "@/components/pages/changeRequests/ChangeRequestCard"
 import {
   byNewestFirst,
@@ -43,8 +44,10 @@ interface ChangeRequestsSectionProps {
 export function ChangeRequestsSection({ kinds, emptyLabel, onReviewed }: ChangeRequestsSectionProps) {
   const kindKey = kinds.join(",")
   const fetchLanguages = useLanguagesStore((s) => s.fetch)
-  const [requests, setRequests] = useState<ReviewableRequest[]>([])
+  const [requests, setRequests] = useState<ReviewableRequest[] | null>([])
+  const [publicFailed, setPublicFailed] = useState(false)
   const [loading, setLoading] = useState(true)
+  const latestFetch = useRef(0)
   const [filterStatus, setFilterStatus] = useState("pending")
   const [reviewTarget, setReviewTarget] = useState<ReviewableRequest | null>(null)
   const [reviewAction, setReviewAction] = useState<"approved" | "rejected">("approved")
@@ -52,7 +55,9 @@ export function ChangeRequestsSection({ kinds, emptyLabel, onReviewed }: ChangeR
   const [grantManager, setGrantManager] = useState(false)
   const [submitting, setSubmitting] = useState(false)
 
+  // Quick chip changes can resolve out of order; only the latest fetch may write.
   const fetchRequests = useCallback(async () => {
+    const fetchId = ++latestFetch.current
     setLoading(true)
     const allowed = new Set(kindKey.split(","))
     const status = filterStatus === "all" ? undefined : filterStatus
@@ -63,7 +68,8 @@ export function ChangeRequestsSection({ kinds, emptyLabel, onReviewed }: ChangeR
           .list(status ? { status: status as PublicRequestStatus } : undefined)
           .catch(() => null),
       ])
-      if (!publicRes) toast.error("Failed to load public requests")
+      if (fetchId !== latestFetch.current) return
+      setPublicFailed(!publicRes)
       const merged = [
         ...changeRes.data.filter((r) => allowed.has(r.kind)).map(fromChangeRequest),
         ...(publicRes?.data ?? [])
@@ -72,9 +78,11 @@ export function ChangeRequestsSection({ kinds, emptyLabel, onReviewed }: ChangeR
       ].sort(byNewestFirst)
       setRequests(merged)
     } catch {
-      toast.error("Failed to load requests")
+      if (fetchId !== latestFetch.current) return
+      setRequests(null)
+      setPublicFailed(false)
     } finally {
-      setLoading(false)
+      if (fetchId === latestFetch.current) setLoading(false)
     }
   }, [kindKey, filterStatus])
 
@@ -155,12 +163,22 @@ export function ChangeRequestsSection({ kinds, emptyLabel, onReviewed }: ChangeR
           </button>
         ))}
         <span className="text-xs text-fg-subtle tabular-nums ml-auto">
-          {loading ? "..." : `${requests.length} request${requests.length !== 1 ? "s" : ""}`}
+          {loading
+            ? "..."
+            : requests === null
+              ? "—"
+              : `${requests.length} request${requests.length !== 1 ? "s" : ""}`}
         </span>
       </div>
 
+      {!loading && requests !== null && publicFailed && (
+        <LoadFailed what="the requests sent through the public form" onRetry={fetchRequests} />
+      )}
+
       {loading ? (
         <LoadingSpinner />
+      ) : requests === null ? (
+        <LoadFailed what="the requests" onRetry={fetchRequests} />
       ) : requests.length === 0 ? (
         <EmptyState
           icon={Inbox}

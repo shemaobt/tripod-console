@@ -39,6 +39,7 @@ export function UserSearchPicker({
       const { data } = await usersAPI.search(q)
       setResults(data)
     } catch {
+      // A failed search keeps the previous matches rather than emptying the list under the cursor.
     } finally {
       setSearching(false)
     }

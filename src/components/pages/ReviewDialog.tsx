@@ -44,6 +44,7 @@ export function ReviewDialog({
       setReason("")
       onOpenChange(false)
     } catch {
+      // onSubmit reports the failure itself and rethrows only to keep this dialog open.
     } finally {
       setSubmitting(false)
     }

@@ -1,46 +1,30 @@
 import { useEffect, useState } from "react"
 import { toast } from "sonner"
-import { projectsAPI, orgsAPI } from "@/services/api"
+import { projectsAPI } from "@/services/api"
 import type {
   ProjectUserAccessDetailResponse,
-  ProjectOrganizationAccessDetailResponse,
-  OrganizationResponse,
   UserListResponse,
 } from "@/types"
 import { ConfirmDialog } from "@/components/common/ConfirmDialog"
 import { FeatureSpotlight } from "@/components/common/FeatureSpotlight"
 import { useAuth } from "@/contexts/AuthContext"
 import { UserAccessSection } from "./projectAccess/UserAccessSection"
-import { OrgAccessSection } from "./projectAccess/OrgAccessSection"
 import { GrantUserDialog } from "./projectAccess/GrantUserDialog"
-import { GrantOrgDialog } from "./projectAccess/GrantOrgDialog"
 
 export function ProjectAccessTab({ projectId }: { projectId: string }) {
-  const { user, isPlatformAdmin } = useAuth()
+  const { isPlatformAdmin, managedProjectIds } = useAuth()
   const [userAccess, setUserAccess] = useState<
     ProjectUserAccessDetailResponse[]
   >([])
-  const [orgAccess, setOrgAccess] = useState<
-    ProjectOrganizationAccessDetailResponse[]
-  >([])
   const [usersLoading, setUsersLoading] = useState(true)
-  const [orgsLoading, setOrgsLoading] = useState(true)
 
   const [grantUserOpen, setGrantUserOpen] = useState(false)
   const [selectedUser, setSelectedUser] = useState<UserListResponse | null>(null)
   const [grantRole, setGrantRole] = useState("member")
   const [grantingUser, setGrantingUser] = useState(false)
 
-  const [grantOrgOpen, setGrantOrgOpen] = useState(false)
-  const [grantOrgId, setGrantOrgId] = useState("")
-  const [grantingOrg, setGrantingOrg] = useState(false)
-  const [availableOrgs, setAvailableOrgs] = useState<OrganizationResponse[]>([])
-  const [orgsListLoading, setOrgsListLoading] = useState(false)
-
   const [revokingUser, setRevokingUser] =
     useState<ProjectUserAccessDetailResponse | null>(null)
-  const [revokingOrg, setRevokingOrg] =
-    useState<ProjectOrganizationAccessDetailResponse | null>(null)
 
   async function fetchUserAccess() {
     try {
@@ -53,20 +37,8 @@ export function ProjectAccessTab({ projectId }: { projectId: string }) {
     }
   }
 
-  async function fetchOrgAccess() {
-    try {
-      const { data } = await projectsAPI.listOrgAccess(projectId)
-      setOrgAccess(data)
-    } catch {
-      toast.error("Failed to load organization access")
-    } finally {
-      setOrgsLoading(false)
-    }
-  }
-
   useEffect(() => {
     fetchUserAccess()
-    fetchOrgAccess()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectId])
 
@@ -74,22 +46,6 @@ export function ProjectAccessTab({ projectId }: { projectId: string }) {
     setSelectedUser(null)
     setGrantRole("member")
     setGrantUserOpen(true)
-  }
-
-  async function openGrantOrg() {
-    setGrantOrgId("")
-    setGrantOrgOpen(true)
-    if (availableOrgs.length === 0) {
-      setOrgsListLoading(true)
-      try {
-        const { data } = await orgsAPI.list()
-        setAvailableOrgs(data)
-      } catch {
-        toast.error("Failed to load organizations")
-      } finally {
-        setOrgsListLoading(false)
-      }
-    }
   }
 
   async function handleGrantUser() {
@@ -118,27 +74,6 @@ export function ProjectAccessTab({ projectId }: { projectId: string }) {
     }
   }
 
-  async function handleGrantOrg() {
-    if (!grantOrgId) return
-    setGrantingOrg(true)
-    try {
-      await projectsAPI.grantOrg(projectId, { organization_id: grantOrgId })
-      toast.success("Organization access granted")
-      setGrantOrgOpen(false)
-      await fetchOrgAccess()
-    } catch (err: unknown) {
-      const status = (err as { response?: { status?: number } })?.response
-        ?.status
-      if (status === 409) {
-        toast.error("This organization already has access to the project")
-      } else {
-        toast.error("Failed to grant organization access")
-      }
-    } finally {
-      setGrantingOrg(false)
-    }
-  }
-
   async function handleRoleChange(userId: string, newRole: string) {
     try {
       await projectsAPI.updateUserRole(projectId, userId, { role: newRole })
@@ -161,27 +96,13 @@ export function ProjectAccessTab({ projectId }: { projectId: string }) {
     }
   }
 
-  async function handleRevokeOrg() {
-    if (!revokingOrg) return
-    try {
-      await projectsAPI.revokeOrg(projectId, revokingOrg.organization_id)
-      toast.success("Organization access revoked")
-      setRevokingOrg(null)
-      await fetchOrgAccess()
-    } catch {
-      toast.error("Failed to revoke organization access")
-    }
-  }
-
-  const isProjectManager = userAccess.some(
-    (u) => u.user_id === user?.id && u.role === "manager",
-  )
+  const isProjectManager = managedProjectIds.includes(projectId)
 
   return (
     <FeatureSpotlight
       featureKey="project-access-first-visit"
       title="Project Access Management"
-      description="Control who can access this project by granting access to individual users or entire organizations."
+      description="Control who can access this project by granting access to individual people."
     >
       <div className="space-y-[1.125rem]">
         <UserAccessSection
@@ -194,13 +115,6 @@ export function ProjectAccessTab({ projectId }: { projectId: string }) {
           onRoleChange={handleRoleChange}
         />
 
-        <OrgAccessSection
-          orgs={orgAccess}
-          loading={orgsLoading}
-          onGrant={openGrantOrg}
-          onRevoke={setRevokingOrg}
-        />
-
         <GrantUserDialog
           open={grantUserOpen}
           onOpenChange={setGrantUserOpen}
@@ -209,19 +123,9 @@ export function ProjectAccessTab({ projectId }: { projectId: string }) {
           excludeIds={userAccess.map((u) => u.user_id)}
           grantRole={grantRole}
           onGrantRoleChange={setGrantRole}
+          canGrantManagerRole={isPlatformAdmin}
           granting={grantingUser}
           onGrant={handleGrantUser}
-        />
-
-        <GrantOrgDialog
-          open={grantOrgOpen}
-          onOpenChange={setGrantOrgOpen}
-          orgs={availableOrgs}
-          orgsLoading={orgsListLoading}
-          orgId={grantOrgId}
-          onOrgIdChange={setGrantOrgId}
-          granting={grantingOrg}
-          onGrant={handleGrantOrg}
         />
 
         <ConfirmDialog
@@ -236,17 +140,6 @@ export function ProjectAccessTab({ projectId }: { projectId: string }) {
           onConfirm={handleRevokeUser}
         />
 
-        <ConfirmDialog
-          open={revokingOrg !== null}
-          onOpenChange={(open) => {
-            if (!open) setRevokingOrg(null)
-          }}
-          title="Revoke Organization Access"
-          description={`Are you sure you want to revoke access for ${revokingOrg?.name ?? "this organization"}? Members will lose access to this project through this organization.`}
-          confirmLabel="Revoke"
-          variant="destructive"
-          onConfirm={handleRevokeOrg}
-        />
       </div>
     </FeatureSpotlight>
   )

@@ -1,5 +1,6 @@
 import axios from "axios"
 import { ACCESS_TOKEN_KEY, REFRESH_TOKEN_KEY } from "@/constants/app"
+import { logApiFailure } from "./logApiFailure"
 import type {
   AuthResponse,
   TokenResponse,
@@ -20,21 +21,13 @@ import type {
   LanguageCreate,
   LanguageUpdate,
   LanguageStatsResponse,
-  OrganizationResponse,
-  OrganizationCreate,
-  OrganizationUpdate,
-  OrganizationMemberAdd,
-  OrganizationMemberResponse,
   ProjectResponse,
   ProjectCreate,
   ProjectUpdate,
   ProjectLocationUpdate,
   ProjectUserAccessResponse,
-  ProjectOrganizationAccessResponse,
   ProjectGrantUserAccess,
-  ProjectGrantOrganizationAccess,
   ProjectUserAccessDetailResponse,
-  ProjectOrganizationAccessDetailResponse,
   ProjectUserAccessRoleUpdate,
   RoleAssignRequest,
   RoleRevokeRequest,
@@ -115,6 +108,7 @@ api.interceptors.response.use(
     const originalRequest = error.config
 
     if (error.response?.status !== 401 || originalRequest._retry) {
+      logApiFailure(error)
       return Promise.reject(error)
     }
 
@@ -132,6 +126,7 @@ api.interceptors.response.use(
 
     const refreshToken = localStorage.getItem(REFRESH_TOKEN_KEY)
     if (!refreshToken) {
+      logApiFailure(error)
       isRefreshing = false
       localStorage.removeItem(ACCESS_TOKEN_KEY)
       localStorage.removeItem(REFRESH_TOKEN_KEY)
@@ -149,6 +144,7 @@ api.interceptors.response.use(
       originalRequest.headers.Authorization = `Bearer ${data.access_token}`
       return api(originalRequest)
     } catch (refreshError) {
+      logApiFailure(refreshError)
       processQueue(refreshError, null)
       localStorage.removeItem(ACCESS_TOKEN_KEY)
       localStorage.removeItem(REFRESH_TOKEN_KEY)
@@ -224,25 +220,6 @@ export const languagesAPI = {
     api.get<LanguageResponse>(`/languages/code/${code}`),
 }
 
-export const orgsAPI = {
-  list: () => api.get<OrganizationResponse[]>("/organizations"),
-  create: (data: OrganizationCreate) =>
-    api.post<OrganizationResponse>("/organizations", data),
-  get: (orgId: string) =>
-    api.get<OrganizationResponse>(`/organizations/${orgId}`),
-  update: (orgId: string, data: OrganizationUpdate) =>
-    api.patch<OrganizationResponse>(`/organizations/${orgId}`, data),
-  listMembers: (orgId: string) =>
-    api.get<OrganizationMemberResponse[]>(`/organizations/${orgId}/members`),
-  addMember: (orgId: string, data: OrganizationMemberAdd) =>
-    api.post<OrganizationMemberResponse>(
-      `/organizations/${orgId}/members`,
-      data,
-    ),
-  removeMember: (orgId: string, userId: string) =>
-    api.delete(`/organizations/${orgId}/members/${userId}`),
-}
-
 export const projectsAPI = {
   list: (params?: { organization_id?: string }) =>
     api.get<ProjectResponse[]>("/projects", { params }),
@@ -258,18 +235,9 @@ export const projectsAPI = {
     api.get<ProjectUserAccessDetailResponse[]>(
       `/projects/${projectId}/access/users`,
     ),
-  listOrgAccess: (projectId: string) =>
-    api.get<ProjectOrganizationAccessDetailResponse[]>(
-      `/projects/${projectId}/access/organizations`,
-    ),
   grantUser: (projectId: string, data: ProjectGrantUserAccess) =>
     api.post<ProjectUserAccessResponse>(
       `/projects/${projectId}/access/users`,
-      data,
-    ),
-  grantOrg: (projectId: string, data: ProjectGrantOrganizationAccess) =>
-    api.post<ProjectOrganizationAccessResponse>(
-      `/projects/${projectId}/access/organizations`,
       data,
     ),
   updateUserRole: (projectId: string, userId: string, data: ProjectUserAccessRoleUpdate) =>
@@ -279,8 +247,6 @@ export const projectsAPI = {
     ),
   revokeUser: (projectId: string, userId: string) =>
     api.delete(`/projects/${projectId}/access/users/${userId}`),
-  revokeOrg: (projectId: string, orgId: string) =>
-    api.delete(`/projects/${projectId}/access/organizations/${orgId}`),
   listPhases: (projectId: string) =>
     api.get<ProjectPhaseResponse[]>(`/projects/${projectId}/phases`),
   updatePhaseStatus: (projectId: string, phaseId: string, data: { status: PhaseStatus; note?: string }) =>

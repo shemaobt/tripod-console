@@ -106,11 +106,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = useCallback(async () => {
     const refreshToken = localStorage.getItem(REFRESH_TOKEN_KEY)
-    try {
-      if (refreshToken) {
-        await authAPI.logout(refreshToken)
-      }
-    } catch {}
+    if (refreshToken) {
+      await authAPI.logout(refreshToken).catch(() => undefined)
+    }
     clearTokens()
     setSession(null)
     useLanguagesStore.getState().reset()

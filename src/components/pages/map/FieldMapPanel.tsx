@@ -1,7 +1,7 @@
 import { useState } from "react"
-import { Search } from "lucide-react"
 import type { ProjectResponse } from "@/types"
 import { cn } from "@/utils/cn"
+import { SearchPill } from "@/components/common/FilterBar"
 
 export type MapRow = {
   project: ProjectResponse
@@ -36,18 +36,17 @@ export function FieldMapPanel({
     <div className="absolute left-4 top-4 bottom-4 z-[1000] flex w-[18.75rem] max-w-[calc(100vw-2rem)] flex-col gap-3 rounded-[1.125rem] bg-elevated p-4 shadow-[var(--shadow-lg)]">
       <div className="flex flex-col gap-0.5">
         <h4 className="text-[0.96875rem] font-semibold text-fg-strong">Field map</h4>
-        <span className="text-[0.71875rem] text-fg-subtle">{countLabel}</span>
+        <span className="text-[0.71875rem] text-fg-subtle">
+          {query ? `${filtered.length} of ${rows.length} shown` : countLabel}
+        </span>
       </div>
 
-      <div className="flex items-center gap-2 rounded-full bg-muted px-[0.875rem] py-2">
-        <Search className="h-3.5 w-3.5 flex-none text-fg-subtle" strokeWidth={2} />
-        <input
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search projects…"
-          className="w-full border-none bg-transparent text-[0.8125rem] text-fg-strong outline-none placeholder:text-fg-subtle"
-        />
-      </div>
+      <SearchPill
+        size="sm"
+        value={search}
+        onChange={setSearch}
+        placeholder="Search projects…"
+      />
 
       <div className="-mx-1.5 flex flex-1 flex-col overflow-y-auto">
         {filtered.length === 0 ? (

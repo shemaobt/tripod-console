@@ -70,11 +70,11 @@ function NavItem({
       {!collapsed && <span className="flex-1">{label}</span>}
       {badge ? (
         collapsed ? (
-          <span className="absolute top-0.5 right-0.5 min-w-[0.9375rem] h-[0.9375rem] px-1 grid place-items-center bg-telha text-on-dark rounded-full text-[0.5625rem] font-bold leading-none">
+          <span className="absolute top-0.5 right-0.5 min-w-[1.125rem] h-[1.125rem] px-1 grid place-items-center bg-telha text-on-dark rounded-full text-xs font-bold leading-none">
             {badge}
           </span>
         ) : (
-          <span className="bg-telha text-on-dark rounded-full text-[0.65625rem] font-bold px-[0.4375rem] py-px shrink-0">
+          <span className="bg-telha text-on-dark rounded-full text-xs font-bold px-[0.4375rem] py-px shrink-0">
             {badge}
           </span>
         )
@@ -86,7 +86,7 @@ function NavItem({
 function ThemeToggle() {
   const { resolvedTheme, setTheme } = useTheme()
   return (
-    <div className="inline-flex bg-[rgba(246,245,235,0.07)] rounded-full p-[0.1875rem] shrink-0">
+    <div className="inline-flex bg-on-dark/7 rounded-full p-[0.1875rem] shrink-0">
       <button
         onClick={() => setTheme("light")}
         title="Light theme"
@@ -94,7 +94,7 @@ function ThemeToggle() {
         className={cn(
           "w-[1.875rem] h-[1.625rem] rounded-full grid place-items-center transition-colors",
           resolvedTheme === "light"
-            ? "bg-[rgba(246,245,235,0.16)] text-shell-fg"
+            ? "bg-on-dark/16 text-shell-fg"
             : "text-[var(--shell-dim)] hover:text-shell-fg",
         )}
       >
@@ -107,7 +107,7 @@ function ThemeToggle() {
         className={cn(
           "w-[1.875rem] h-[1.625rem] rounded-full grid place-items-center transition-colors",
           resolvedTheme === "dark"
-            ? "bg-[rgba(246,245,235,0.16)] text-shell-fg"
+            ? "bg-on-dark/16 text-shell-fg"
             : "text-[var(--shell-dim)] hover:text-shell-fg",
         )}
       >
@@ -356,7 +356,7 @@ export default function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
 
       {mobileOpen && (
         <div className="fixed inset-0 z-40 lg:hidden">
-          <div className="absolute inset-0 bg-preto/50 animate-fade-in" onClick={onMobileClose} />
+          <div className="absolute inset-0 bg-scrim/50 animate-fade-in" onClick={onMobileClose} />
           <aside className="relative z-50 h-full w-[min(16.125rem,calc(100vw-3rem))] bg-shell text-shell-fg flex flex-col px-3.5 pt-[1.375rem] pb-4">
             <button
               onClick={onMobileClose}

@@ -26,27 +26,59 @@ export interface FilterSearchConfig {
   placeholder?: string
 }
 
+interface SearchPillProps extends FilterSearchConfig {
+  size?: "sm" | "md"
+  className?: string
+}
+
+const pillSizes = {
+  sm: {
+    pill: "px-3.5 py-2",
+    icon: "h-3.5 w-3.5",
+    input: "text-[0.8125rem]",
+  },
+  md: {
+    pill: "px-4 py-2.5",
+    icon: "h-[0.9375rem] w-[0.9375rem]",
+    input: "text-[0.84375rem]",
+  },
+}
+
+export function SearchPill({
+  value,
+  onChange,
+  placeholder = "Search...",
+  size = "md",
+  className,
+}: SearchPillProps) {
+  const sizing = pillSizes[size]
+  return (
+    <div className={cn("flex min-w-0 items-center gap-2 rounded-full bg-muted", sizing.pill, className)}>
+      <Search className={cn("shrink-0 text-fg-subtle", sizing.icon)} strokeWidth={2} />
+      <input
+        placeholder={placeholder}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className={cn(
+          "w-full border-0 bg-transparent text-fg-strong outline-none placeholder:text-fg-subtle",
+          sizing.input,
+        )}
+      />
+    </div>
+  )
+}
+
 interface FilterBarProps {
-  filters: FilterConfig[]
+  filters?: FilterConfig[]
   search?: FilterSearchConfig
   resultLabel?: ReactNode
   className?: string
 }
 
-export function FilterBar({ filters, search, resultLabel, className }: FilterBarProps) {
+export function FilterBar({ filters = [], search, resultLabel, className }: FilterBarProps) {
   return (
     <div className={cn("flex flex-wrap items-center gap-3", className)}>
-      {search && (
-        <div className="flex items-center gap-2 bg-muted rounded-full px-4 py-2.5 flex-1 min-w-0 sm:min-w-[15rem] sm:max-w-[17.5rem]">
-          <Search className="h-[0.9375rem] w-[0.9375rem] text-fg-subtle shrink-0" strokeWidth={2} />
-          <input
-            placeholder={search.placeholder ?? "Search..."}
-            value={search.value}
-            onChange={(e) => search.onChange(e.target.value)}
-            className="bg-transparent border-0 outline-none text-[0.84375rem] text-fg-strong placeholder:text-fg-subtle w-full"
-          />
-        </div>
-      )}
+      {search && <SearchPill {...search} className="flex-1 sm:min-w-[15rem] sm:max-w-[17.5rem]" />}
 
       {filters.map((filter) => {
         const inactiveValue = filter.inactiveValue ?? "all"
