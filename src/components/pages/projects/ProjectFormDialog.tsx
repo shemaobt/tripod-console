@@ -23,6 +23,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { InfoTooltip } from "@/components/common/InfoTooltip"
+import { LoadFailed } from "@/components/common/LoadFailed"
 
 const NEW_LANGUAGE = "__new__"
 
@@ -44,6 +45,7 @@ export function ProjectFormDialog({
   const {
     languages,
     loading: languagesLoading,
+    failed: languagesFailed,
     fetch: fetchLanguages,
     invalidate,
   } = useLanguagesStore()
@@ -201,6 +203,8 @@ export function ProjectFormDialog({
             </Label>
             {languagesLoading && languages.length === 0 ? (
               <p className="text-sm text-fg-muted">Loading languages...</p>
+            ) : languagesFailed && languages.length === 0 ? (
+              <LoadFailed what="the languages" onRetry={fetchLanguages} />
             ) : (
               <Select value={languageId} onValueChange={setLanguageId}>
                 <SelectTrigger>
