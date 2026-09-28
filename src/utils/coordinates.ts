@@ -1,6 +1,6 @@
 export type CoordinateField = "latitude" | "longitude"
 
-export type ParsedCoordinates =
+type ParsedCoordinates =
   | { ok: true; latitude: number | null; longitude: number | null }
   | { ok: false; errors: Partial<Record<CoordinateField, string>> }
 
