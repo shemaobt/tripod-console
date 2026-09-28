@@ -458,7 +458,7 @@ Do not override, reinterpret, or invent visual rules.
 - **Labels**: `text-[0.8125rem] font-semibold text-fg-strong mb-1.5`
 
 ### 9.9 Tables
-- **Container**: `bg-elevated rounded-[1.125rem] shadow-[var(--shadow-card)] overflow-hidden` (no border)
+- **Container**: `bg-elevated rounded-[1.125rem] shadow-[var(--shadow-card)] overflow-hidden` (no border). When the columns can outgrow a phone, use `overflow-x-auto` instead, so the last columns scroll rather than get cut off — the Languages table does (OBT-258, 2026-09-28, levigft).
 - **Header cells**: `text-left px-5 py-3 text-[0.6875rem] font-semibold tracking-[0.08em] uppercase text-fg-subtle border-b border-line`
 - **Body cells**: `px-5 py-3 border-b border-line`; row hover `hover:bg-muted`; first-column names `font-semibold text-fg-strong`
 - **Code chips**: `font-mono text-xs bg-muted rounded-md px-2 py-0.5 text-fg-muted`

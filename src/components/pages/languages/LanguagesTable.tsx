@@ -32,7 +32,7 @@ export function LanguagesTable({
   onReactivate,
 }: LanguagesTableProps) {
   return (
-    <div className="bg-elevated rounded-[1.125rem] shadow-[var(--shadow-card)] overflow-hidden">
+    <div className="bg-elevated rounded-[1.125rem] shadow-[var(--shadow-card)] overflow-x-auto">
       <table className="w-full border-collapse text-sm">
         <thead>
           <tr>
