@@ -16,6 +16,9 @@ interface JourneysStore {
 
 const CACHE_TTL = 2 * 60 * 1000
 
+// Bumped by reset() so a fetch still in flight at logout cannot repopulate the cache.
+let generation = 0
+
 export const useJourneysStore = create<JourneysStore>((set, get) => ({
   journeys: [],
   categories: [],
@@ -28,12 +31,14 @@ export const useJourneysStore = create<JourneysStore>((set, get) => ({
       return
     }
     if (state.loading) return
+    const fetchedIn = generation
     set({ loading: true })
     try {
       const [journeysRes, categoriesRes] = await Promise.all([
         journeysAPI.list(),
         phaseCategoriesAPI.list(),
       ])
+      if (fetchedIn !== generation) return
       set({
         journeys: journeysRes.data,
         categories: categoriesRes.data,
@@ -41,7 +46,7 @@ export const useJourneysStore = create<JourneysStore>((set, get) => ({
         loading: false,
       })
     } catch {
-      set({ loading: false })
+      if (fetchedIn === generation) set({ loading: false })
     }
   },
 
@@ -58,6 +63,7 @@ export const useJourneysStore = create<JourneysStore>((set, get) => ({
   },
 
   reset: () => {
+    generation += 1
     set({ journeys: [], categories: [], loading: false, lastFetched: null })
   },
 }))
