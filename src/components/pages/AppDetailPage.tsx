@@ -6,9 +6,11 @@ import { appsAPI, uploadsAPI } from "@/services/api"
 import type { AppResponse, AppRoleResponse } from "@/types"
 import { cn } from "@/utils/cn"
 import { avatarColors, initialsOf } from "@/utils/avatar"
+import { isNotFound } from "@/utils/apiError"
 import { Switch } from "@/components/ui/switch"
 import { LoadingSpinner } from "@/components/common/LoadingSpinner"
 import { ConfirmDialog } from "@/components/common/ConfirmDialog"
+import { LoadFailed } from "@/components/common/LoadFailed"
 import { DetailsCard, type AppFormState } from "./apps/DetailsCard"
 import { AutoApproveCard } from "./apps/AutoApproveCard"
 import { DangerZoneCard } from "./apps/DangerZoneCard"
@@ -34,7 +36,8 @@ export default function AppDetailPage() {
 
   const [app, setApp] = useState<AppResponse | null>(null)
   const [appLoading, setAppLoading] = useState(true)
-  const [roles, setRoles] = useState<AppRoleResponse[]>([])
+  const [appFailed, setAppFailed] = useState(false)
+  const [roles, setRoles] = useState<AppRoleResponse[] | null>([])
   const [rolesLoading, setRolesLoading] = useState(true)
 
   const [form, setForm] = useState<AppFormState>({
@@ -91,8 +94,9 @@ export default function AppDetailPage() {
       const { data } = await appsAPI.get(appId)
       setApp(data)
       setForm(formFromApp(data))
-    } catch {
-      toast.error("Failed to load app")
+      setAppFailed(false)
+    } catch (err) {
+      setAppFailed(!isNotFound(err))
     } finally {
       setAppLoading(false)
     }
@@ -104,7 +108,7 @@ export default function AppDetailPage() {
       const { data } = await appsAPI.listRoles(appId)
       setRoles(data)
     } catch {
-      toast.error("Failed to load roles")
+      setRoles(null)
     } finally {
       setRolesLoading(false)
     }
@@ -200,7 +204,11 @@ export default function AppDetailPage() {
   if (!app) {
     return (
       <div className="max-w-[77.5rem] mx-auto px-6 sm:px-10 pt-8">
-        <p className="text-fg-muted">App not found.</p>
+        {appFailed ? (
+          <LoadFailed what="this app" onRetry={fetchApp} />
+        ) : (
+          <p className="text-fg-muted">App not found.</p>
+        )}
       </div>
     )
   }
@@ -296,15 +304,19 @@ export default function AppDetailPage() {
         </div>
       </div>
 
-      <RolesCard
-        roles={roles}
-        loading={rolesLoading}
-        roleForm={roleForm}
-        setRoleForm={setRoleForm}
-        adding={addingRole}
-        onAdd={handleAddRole}
-        onDelete={setDeletingRole}
-      />
+      {roles === null ? (
+        <LoadFailed what="the roles of this app" onRetry={fetchRoles} />
+      ) : (
+        <RolesCard
+          roles={roles}
+          loading={rolesLoading}
+          roleForm={roleForm}
+          setRoleForm={setRoleForm}
+          adding={addingRole}
+          onAdd={handleAddRole}
+          onDelete={setDeletingRole}
+        />
+      )}
 
       <ConfirmDialog
         open={deletingRole !== null}
