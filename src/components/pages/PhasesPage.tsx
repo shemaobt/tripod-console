@@ -150,7 +150,7 @@ export default function PhasesPage() {
           </span>
           <h3 className="text-[1.5625rem] font-bold tracking-tight text-fg-strong">Phases</h3>
           <span className="text-[0.78125rem] text-fg-subtle">
-            Global catalog — changes affect every project. Editable by admins and managers.
+            Global catalog — changes affect every project. Only platform admins edit it; managers update each phase's status inside the projects they manage.
           </span>
         </div>
         <Button size="lg" onClick={openCreateDialog}>
