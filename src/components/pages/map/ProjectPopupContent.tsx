@@ -12,7 +12,7 @@ export function ProjectPopupContent({
 }: {
   project: ProjectResponse
   languageName: string | null
-  phases: ProjectPhaseResponse[]
+  phases: ProjectPhaseResponse[] | null
 }) {
   const navigate = useNavigate()
 
@@ -22,14 +22,19 @@ export function ProjectPopupContent({
       : null
   const locationLine = [project.location_display_name, coords].filter(Boolean).join(" · ")
 
-  const completed = phases.filter((p) => p.status === "completed").length
-  const shownPhases = phases.slice(0, MAX_CHIPS)
-  const hiddenPhases = phases.length - shownPhases.length
+  const knownPhases = phases ?? []
+  const completed = knownPhases.filter((p) => p.status === "completed").length
+  const shownPhases = knownPhases.slice(0, MAX_CHIPS)
+  const hiddenPhases = knownPhases.length - shownPhases.length
 
   const meta = [
     languageName,
     `${project.team_size} team`,
-    phases.length > 0 ? `${completed}/${phases.length} completed` : null,
+    phases === null
+      ? "phases unavailable"
+      : phases.length > 0
+        ? `${completed}/${phases.length} completed`
+        : null,
   ]
     .filter(Boolean)
     .join(" · ")
@@ -46,7 +51,7 @@ export function ProjectPopupContent({
         </p>
       )}
 
-      {phases.length > 0 && (
+      {knownPhases.length > 0 && (
         <div className="mt-2 flex flex-wrap gap-1.5">
           {shownPhases.map((phase) => {
             const status = PHASE_STATUS_CONFIG[phase.status]

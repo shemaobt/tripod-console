@@ -23,7 +23,9 @@ function FlyToProject({ lat, lng }: { lat: number; lng: number }) {
 
 export default function MapPage() {
   const [projects, setProjects] = useState<ProjectResponse[] | null>([])
-  const [projectPhases, setProjectPhases] = useState<Map<string, ProjectPhaseResponse[]>>(new Map())
+  const [projectPhases, setProjectPhases] = useState<Map<string, ProjectPhaseResponse[] | null>>(
+    new Map(),
+  )
   const [loading, setLoading] = useState(true)
   const { fetch: fetchLanguages, getLanguageName } = useLanguagesStore()
   const [activeProject, setActiveProject] = useState<ProjectResponse | null>(null)
@@ -33,17 +35,17 @@ export default function MapPage() {
   const loadProjects = useCallback(async () => {
     try {
       const [projectsRes] = await Promise.all([projectsAPI.list(), fetchLanguages()])
-      setProjects(projectsRes.data)
-
-      const phasesMap = new Map<string, ProjectPhaseResponse[]>()
+      const phasesMap = new Map<string, ProjectPhaseResponse[] | null>()
       const phaseResults = await Promise.allSettled(
         projectsRes.data.map((p) => projectsAPI.listPhases(p.id)),
       )
       phaseResults.forEach((result, idx) => {
-        if (result.status === "fulfilled") {
-          phasesMap.set(projectsRes.data[idx].id, result.value.data)
-        }
+        phasesMap.set(
+          projectsRes.data[idx].id,
+          result.status === "fulfilled" ? result.value.data : null,
+        )
       })
+      setProjects(projectsRes.data)
       setProjectPhases(phasesMap)
     } catch {
       setProjects(null)
@@ -67,13 +69,17 @@ export default function MapPage() {
         const locLine =
           project.location_display_name ??
           `${project.latitude!.toFixed(3)}, ${project.longitude!.toFixed(3)}`
-        const phases = projectPhases.get(project.id) ?? []
-        const done = phases.filter((p) => p.status === "completed").length
+        const phases = projectPhases.get(project.id) ?? null
         const lang = getLanguageName(project.language_id)
         const parts: string[] = []
         if (lang) parts.push(lang)
         parts.push(`${project.team_size} member${project.team_size === 1 ? "" : "s"}`)
-        if (phases.length) parts.push(`${done}/${phases.length} phases`)
+        if (phases === null) {
+          parts.push("phases unavailable")
+        } else if (phases.length) {
+          const done = phases.filter((p) => p.status === "completed").length
+          parts.push(`${done}/${phases.length} phases`)
+        }
         return { project, name: project.name, locLine, meta: parts.join(" · ") }
       }),
     [locatedProjects, projectPhases, getLanguageName],
@@ -117,7 +123,7 @@ export default function MapPage() {
               <ProjectPopupContent
                 project={project}
                 languageName={getLanguageName(project.language_id)}
-                phases={projectPhases.get(project.id) ?? []}
+                phases={projectPhases.get(project.id) ?? null}
               />
             </Popup>
           </Marker>
