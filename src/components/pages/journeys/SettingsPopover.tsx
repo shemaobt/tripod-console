@@ -2,6 +2,8 @@ import { useRef, useState } from "react"
 import { Check, Folder, Search, Settings } from "lucide-react"
 import { Popover, PopoverAnchor, PopoverContent } from "@/components/ui/popover"
 import { ConfirmDialog } from "@/components/common/ConfirmDialog"
+import { FieldError } from "@/components/common/FieldError"
+import { NAME_REQUIRED_MESSAGE } from "@/constants/journeyStatus"
 import { Button } from "@/components/ui/button"
 import type { Journey, ProjectResponse } from "@/types"
 
@@ -49,6 +51,7 @@ export function SettingsPopover({
   const linkedCount = projects.filter((p) => p.journey_id === journey?.id).length
   const linkedLabel = `${assignedCount} ${assignedCount === 1 ? "project linked" : "projects linked"}`
   const canDelete = journeys.length > 1
+  const nameMissing = journey !== null && !journey.name.trim()
   const journeyName = (id: string | null | undefined) =>
     id ? journeys.find((j) => j.id === id)?.name ?? "Unassigned" : "No journey"
 
@@ -101,10 +104,16 @@ export function SettingsPopover({
             </label>
             <input
               id="jn_name"
+              aria-invalid={nameMissing}
               value={journey?.name ?? ""}
               onChange={(e) => onRename(e.target.value)}
               className="h-[2.375rem] w-full rounded-[0.625rem] border border-line-strong bg-elevated px-3 text-[0.8125rem] font-semibold text-fg-strong focus:border-accent focus:outline-none"
             />
+            {nameMissing && (
+              <div className="mt-1.5">
+                <FieldError>{NAME_REQUIRED_MESSAGE}</FieldError>
+              </div>
+            )}
           </div>
           <div>
             <label

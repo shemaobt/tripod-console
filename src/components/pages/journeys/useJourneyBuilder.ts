@@ -54,6 +54,14 @@ interface LogsData {
   entries: Record<string, PhaseStatusLogEntry[]>
 }
 
+function stageFields<T extends { name?: string }, S>(pending: PendingPatch<T, S>, fields: T) {
+  pending.fields = { ...pending.fields, ...fields }
+  if (fields.name !== undefined && !fields.name.trim()) delete pending.fields.name
+  if (pending.timer) clearTimeout(pending.timer)
+  pending.timer = null
+  return Object.keys(pending.fields).length > 0
+}
+
 function pickImageFile(onPick: (file: File) => void) {
   const input = document.createElement("input")
   input.type = "file"
@@ -286,8 +294,8 @@ export function useJourneyBuilder(isAdmin: boolean, managedProjectIds: string[])
         store.journeys.map((j) => (j.id === journeyId ? { ...j, ...fields } : j)),
       )
       store.invalidate()
-      pending.fields = { ...pending.fields, ...fields }
-      if (pending.timer) clearTimeout(pending.timer)
+      journeyPatches.current[journeyId] = pending
+      if (!stageFields(pending, fields)) return
       pending.timer = setTimeout(() => {
         const rec = journeyPatches.current[journeyId]
         delete journeyPatches.current[journeyId]
@@ -302,7 +310,6 @@ export function useJourneyBuilder(isAdmin: boolean, managedProjectIds: string[])
           toast.error("Failed to save journey")
         })
       }, PATCH_DELAY)
-      journeyPatches.current[journeyId] = pending
     },
     [journeyId],
   )
@@ -353,8 +360,8 @@ export function useJourneyBuilder(isAdmin: boolean, managedProjectIds: string[])
         prev: phasesRef.current.find((p) => p.id === id),
       }
       mutPhases((ps) => ps.map((p) => (p.id === id ? { ...p, ...fields } : p)))
-      pending.fields = { ...pending.fields, ...fields }
-      if (pending.timer) clearTimeout(pending.timer)
+      phasePatches.current[id] = pending
+      if (!stageFields(pending, fields)) return
       const flush = () => {
         const rec = phasePatches.current[id]
         delete phasePatches.current[id]
@@ -365,13 +372,8 @@ export function useJourneyBuilder(isAdmin: boolean, managedProjectIds: string[])
           toast.error("Failed to save phase")
         })
       }
-      if (immediate) {
-        phasePatches.current[id] = pending
-        flush()
-      } else {
-        pending.timer = setTimeout(flush, PATCH_DELAY)
-        phasePatches.current[id] = pending
-      }
+      if (immediate) flush()
+      else pending.timer = setTimeout(flush, PATCH_DELAY)
     },
     [mutPhases],
   )
@@ -543,8 +545,8 @@ export function useJourneyBuilder(isAdmin: boolean, managedProjectIds: string[])
       store.setCategories(
         store.categories.map((c) => (c.id === id ? { ...c, ...fields } : c)),
       )
-      pending.fields = { ...pending.fields, ...fields }
-      if (pending.timer) clearTimeout(pending.timer)
+      categoryPatches.current[id] = pending
+      if (!stageFields(pending, fields)) return
       const flush = () => {
         const rec = categoryPatches.current[id]
         delete categoryPatches.current[id]
@@ -558,13 +560,8 @@ export function useJourneyBuilder(isAdmin: boolean, managedProjectIds: string[])
           toast.error("Failed to save category")
         })
       }
-      if (immediate) {
-        categoryPatches.current[id] = pending
-        flush()
-      } else {
-        pending.timer = setTimeout(flush, PATCH_DELAY)
-        categoryPatches.current[id] = pending
-      }
+      if (immediate) flush()
+      else pending.timer = setTimeout(flush, PATCH_DELAY)
     },
     [],
   )

@@ -1,7 +1,13 @@
 import { Circle, Plus, Trash2 } from "lucide-react"
 import type { PhaseCategory } from "@/types"
 import { Button } from "@/components/ui/button"
-import { CATEGORY_ICONS, CATEGORY_PALETTE, ICON_KEYS } from "@/constants/journeyStatus"
+import { FieldError } from "@/components/common/FieldError"
+import {
+  CATEGORY_ICONS,
+  CATEGORY_PALETTE,
+  ICON_KEYS,
+  NAME_REQUIRED_MESSAGE,
+} from "@/constants/journeyStatus"
 import { cn } from "@/utils/cn"
 
 interface RegistryCategoriesTabProps {
@@ -54,6 +60,7 @@ export function RegistryCategoriesTab({
               </span>
               <input
                 aria-label="Category name"
+                aria-invalid={!c.name.trim()}
                 value={c.name}
                 onChange={(e) => onName(c.id, e.target.value)}
                 className="h-[2.125rem] min-w-0 flex-1 rounded-[0.625rem] border border-line-strong bg-elevated px-2.5 text-[0.8125rem] font-semibold text-fg-strong focus:border-accent focus:outline-none"
@@ -81,6 +88,7 @@ export function RegistryCategoriesTab({
                 </Button>
               </span>
             </div>
+            {!c.name.trim() && <FieldError>{NAME_REQUIRED_MESSAGE}</FieldError>}
             {open && (
               <div className="flex flex-col gap-[0.6875rem] border-t border-line pt-2.5">
                 <div>

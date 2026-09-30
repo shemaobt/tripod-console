@@ -58,6 +58,8 @@ export const LEGEND_STATUS_ORDER: DerivedPhaseStatus[] = [
   "cancelled",
 ]
 
+export const NAME_REQUIRED_MESSAGE = "Enter a name. Until then, the last saved one is kept."
+
 export const NOTE_REQUIRED_STATUSES: PhaseStatus[] = ["delayed", "blocked", "cancelled"]
 
 export const STATUS_PROMPTS: Record<PhaseStatus, [string, string]> = {

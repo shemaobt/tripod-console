@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { ConfirmDialog } from "@/components/common/ConfirmDialog"
+import { FieldError } from "@/components/common/FieldError"
 import { phasesAPI } from "@/services/api"
 import type {
   DerivedPhaseStatus,
@@ -13,7 +14,11 @@ import type {
   PhaseStatusLogEntry,
 } from "@/types"
 import { PHASE_STATUSES } from "@/types"
-import { CATEGORY_ICONS, JOURNEY_STATUS_CONFIG } from "@/constants/journeyStatus"
+import {
+  CATEGORY_ICONS,
+  JOURNEY_STATUS_CONFIG,
+  NAME_REQUIRED_MESSAGE,
+} from "@/constants/journeyStatus"
 import { orbGrad, soft } from "@/utils/color"
 import { cn } from "@/utils/cn"
 import { collectReachable } from "./layout"
@@ -141,9 +146,15 @@ export function PhaseInspector({
             <div className={cn(EYEBROW, "mb-[0.4375rem]")}>Phase title</div>
             <Input
               aria-label="Phase title"
+              aria-invalid={!phase.name.trim()}
               value={phase.name}
               onChange={(e) => onTitle(e.target.value)}
             />
+            {!phase.name.trim() && (
+              <div className="mt-1.5">
+                <FieldError>{NAME_REQUIRED_MESSAGE}</FieldError>
+              </div>
+            )}
           </div>
         ) : (
           <h2
