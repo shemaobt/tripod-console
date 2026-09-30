@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, useCallback } from "react"
 import { MapPin, Loader2, Search, X } from "lucide-react"
 import { cn } from "@/utils/cn"
 import { placesAPI } from "@/services/api"
+import { LoadFailed } from "@/components/common/LoadFailed"
 
 export interface LocationResult {
   displayName: string
@@ -34,6 +35,7 @@ export function LocationSearchInput({
   const [query, setQuery] = useState("")
   const [suggestions, setSuggestions] = useState<Suggestion[]>([])
   const [loading, setLoading] = useState(false)
+  const [failed, setFailed] = useState(false)
   const [showResults, setShowResults] = useState(false)
   const [resolving, setResolving] = useState(false)
 
@@ -57,6 +59,7 @@ export function LocationSearchInput({
   }, [])
 
   const searchPlaces = useCallback(async (input: string) => {
+    setFailed(false)
     if (!input.trim()) {
       setSuggestions([])
       return
@@ -67,6 +70,7 @@ export function LocationSearchInput({
       setSuggestions(data.suggestions ?? [])
     } catch {
       setSuggestions([])
+      setFailed(true)
     } finally {
       setLoading(false)
     }
@@ -158,6 +162,11 @@ export function LocationSearchInput({
                 <div className="flex items-center justify-center py-4">
                   <Loader2 className="h-5 w-5 text-fg-subtle animate-spin" />
                 </div>
+              ) : failed ? (
+                <LoadFailed
+                  what="the locations matching your search"
+                  onRetry={() => searchPlaces(query)}
+                />
               ) : suggestions.length === 0 ? (
                 <p className="text-sm text-fg-subtle text-center py-4">
                   No locations found
