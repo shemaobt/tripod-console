@@ -27,7 +27,9 @@ export function useUserRecord(userId: string | undefined) {
   }, [userId])
 
   const setUser = useCallback((data: UserListResponse) => {
-    if (data.id === currentId.current) setUserState(data)
+    if (data.id !== currentId.current) return
+    setUserState(data)
+    setUserFailed(false)
   }, [])
 
   const fetchUser = useCallback(async () => {
@@ -35,7 +37,6 @@ export function useUserRecord(userId: string | undefined) {
     try {
       const { data } = await usersAPI.get(userId)
       setUser(data)
-      if (userId === currentId.current) setUserFailed(false)
     } catch (err) {
       if (userId === currentId.current) setUserFailed(!isNotFound(err))
     } finally {

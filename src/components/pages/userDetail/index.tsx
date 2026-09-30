@@ -299,6 +299,14 @@ export default function UserDetailPage() {
         onChange={handleAvatarFile}
       />
 
+      {userFailed && (
+        <LoadFailed
+          what="this user's latest details, so the role shown may be out of date"
+          onRetry={fetchUser}
+          className="mb-[1.125rem]"
+        />
+      )}
+
       <div className="mb-[1.125rem] grid grid-cols-1 items-start gap-[1.125rem] lg:grid-cols-[1fr_1.3fr]">
         <AccountCard
           user={user}
