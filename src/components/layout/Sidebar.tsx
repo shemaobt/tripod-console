@@ -328,11 +328,6 @@ export default function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
     })
   }
 
-  const openProfile = () => {
-    setProfileOpen(true)
-    onMobileClose()
-  }
-
   return (
     <>
       <aside
@@ -373,7 +368,7 @@ export default function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
             sections={sections}
             collapsed={false}
             onNavigate={onMobileClose}
-            onProfile={openProfile}
+            onProfile={() => setProfileOpen(true)}
             onLogout={logout}
             userId={user?.id}
             userName={userName}
