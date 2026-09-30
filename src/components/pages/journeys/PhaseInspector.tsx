@@ -23,19 +23,20 @@ import { cn } from "@/utils/cn"
 import { collectReachable } from "./layout"
 import { StatusHistory } from "./StatusHistory"
 import { deletePhaseDescription, usePhaseUsage } from "./usePhaseUsage"
-import type { CategoryVisual } from "./useJourneyBuilder"
+import type { CategoryVisual, StatusesState } from "./useJourneyBuilder"
 
 interface PhaseInspectorProps {
   phase: PhaseResponse
   isAdmin: boolean
   hasProject: boolean
+  statusesState: StatusesState
   hasLinkedProjects: boolean
   projectName: string | null
   phases: PhaseResponse[]
   deps: Record<string, string[]>
   kids: Record<string, string[]>
   stepNums: Record<string, string>
-  logs: Record<string, PhaseStatusLogEntry[]>
+  logs: Record<string, PhaseStatusLogEntry[] | null>
   categories: PhaseCategory[]
   categoryFor: (categoryId: string | null) => CategoryVisual
   storedStatus: (phaseId: string) => PhaseStatus
@@ -49,6 +50,7 @@ interface PhaseInspectorProps {
   onUploadIcon: () => void
   onClearIcon: () => void
   onRequestStatus: (to: PhaseStatus) => void
+  onRetryHistory: () => unknown
   onDelete: () => void
 }
 
@@ -58,6 +60,7 @@ export function PhaseInspector({
   phase,
   isAdmin,
   hasProject,
+  statusesState,
   hasLinkedProjects,
   projectName,
   phases,
@@ -78,6 +81,7 @@ export function PhaseInspector({
   onUploadIcon,
   onClearIcon,
   onRequestStatus,
+  onRetryHistory,
   onDelete,
 }: PhaseInspectorProps) {
   const [confirmOpen, setConfirmOpen] = useState(false)
@@ -88,6 +92,7 @@ export function PhaseInspector({
   const derived = derivedStatus(phase.id)
   const status = JOURNEY_STATUS_CONFIG[derived]
   const cancelled = stored === "cancelled"
+  const statusKnown = statusesState === "ready"
   const myDeps = deps[phase.id] ?? []
   const descendants = useMemo(() => collectReachable(phase.id, kids), [phase.id, kids])
   const unlocks = kids[phase.id] ?? []
@@ -172,19 +177,27 @@ export function PhaseInspector({
               {projectName ? `Status · ${projectName}` : "Status"}
             </div>
             <span className="relative flex items-center">
-              <span
-                className="pointer-events-none absolute left-3 h-2.5 w-2.5 rounded-full"
-                style={{ background: status.solid }}
-              />
+              {statusKnown && (
+                <span
+                  className="pointer-events-none absolute left-3 h-2.5 w-2.5 rounded-full"
+                  style={{ background: status.solid }}
+                />
+              )}
               <select
                 aria-label="Phase status"
-                value={stored}
+                value={statusKnown ? stored : ""}
+                disabled={!statusKnown}
                 onChange={(e) => {
                   const v = e.target.value as PhaseStatus
                   if (v !== stored) onRequestStatus(v)
                 }}
-                className="h-10 w-full cursor-pointer appearance-none rounded-[0.75rem] border border-line-strong bg-elevated pl-[1.875rem] pr-8 text-[0.8125rem] font-semibold text-fg-strong focus:border-accent focus:outline-none"
+                className="h-10 w-full cursor-pointer appearance-none rounded-[0.75rem] border border-line-strong bg-elevated pl-[1.875rem] pr-8 text-[0.8125rem] font-semibold text-fg-strong focus:border-accent focus:outline-none disabled:cursor-default disabled:text-fg-subtle"
               >
+                {!statusKnown && (
+                  <option value="">
+                    {statusesState === "failed" ? "Status unavailable" : "Loading status…"}
+                  </option>
+                )}
                 {PHASE_STATUSES.map((s) => (
                   <option key={s} value={s}>
                     {JOURNEY_STATUS_CONFIG[s].label}
@@ -196,7 +209,7 @@ export function PhaseInspector({
                 strokeWidth={2}
               />
             </span>
-            {stored === "not_started" && (
+            {statusKnown && stored === "not_started" && (
               <div className={cn("mt-1.5 text-[0.71875rem]", status.text)}>
                 {derived === "ready"
                   ? "All dependencies met — this phase can start."
@@ -430,7 +443,7 @@ export function PhaseInspector({
           )}
         </div>
 
-        {hasProject && <StatusHistory entries={logs[phase.id] ?? []} />}
+        {hasProject && <StatusHistory entries={logs[phase.id]} onRetry={onRetryHistory} />}
 
         {isAdmin && (
           <div className="flex justify-end border-t border-line pt-3.5">

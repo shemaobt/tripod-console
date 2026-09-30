@@ -23,7 +23,8 @@ const PATCH_DELAY = 500
 const EMPTY_PHASES: PhaseResponse[] = []
 const EMPTY_DEPS: Record<string, string[]> = {}
 const EMPTY_STATUSES: Record<string, PhaseStatus> = {}
-const EMPTY_LOGS: Record<string, PhaseStatusLogEntry[]> = {}
+const EMPTY_LOGS: Record<string, PhaseStatusLogEntry[] | null> = {}
+const EMPTY_PROJECTS: ProjectResponse[] = []
 
 export interface CategoryVisual {
   id: string | null
@@ -46,13 +47,15 @@ interface PhaseData {
 
 interface StatusData {
   projectId: string | null
-  map: Record<string, PhaseStatus>
+  map: Record<string, PhaseStatus> | null
 }
 
 interface LogsData {
   projectId: string | null
-  entries: Record<string, PhaseStatusLogEntry[]>
+  entries: Record<string, PhaseStatusLogEntry[] | null>
 }
+
+export type StatusesState = "loading" | "failed" | "ready"
 
 function stageFields<T extends { name?: string }, S>(pending: PendingPatch<T, S>, fields: T) {
   pending.fields = { ...pending.fields, ...fields }
@@ -85,7 +88,7 @@ export function useJourneyBuilder(isAdmin: boolean, managedProjectIds: string[])
     phases: [],
     deps: {},
   })
-  const [projects, setProjects] = useState<ProjectResponse[]>([])
+  const [projectList, setProjects] = useState<ProjectResponse[] | null>([])
   const [projectsLoading, setProjectsLoading] = useState(true)
   const [chosenProjectId, setChosenProjectId] = useState<string | null>(null)
   const [templateView, setTemplateView] = useState(false)
@@ -95,6 +98,8 @@ export function useJourneyBuilder(isAdmin: boolean, managedProjectIds: string[])
   const phasePatches = useRef<Record<string, PendingPatch<PhaseUpdate, PhaseResponse>>>({})
   const journeyPatches = useRef<Record<string, PendingPatch<JourneyUpdate, Journey>>>({})
   const categoryPatches = useRef<Record<string, PendingPatch<PhaseCategoryUpdate, PhaseCategory>>>({})
+
+  const projects = projectList ?? EMPTY_PROJECTS
 
   const managedProjects = useMemo(
     () => projects.filter((p) => p.journey_id != null && managedProjectIds.includes(p.id)),
@@ -118,10 +123,7 @@ export function useJourneyBuilder(isAdmin: boolean, managedProjectIds: string[])
   const phasesLoading = journeyId !== null && !phasesReady
 
   const phasesRef = useRef(phases)
-
-  useEffect(() => {
-    phasesRef.current = phases
-  })
+  const projectIdRef = useRef<string | null>(null)
 
   const assignedProjects = useMemo(
     () => projects.filter((p) => p.journey_id === journeyId),
@@ -138,29 +140,47 @@ export function useJourneyBuilder(isAdmin: boolean, managedProjectIds: string[])
         : eligibleProjects[0]?.id ?? null
     : managerProjectId
 
-  const statuses =
-    statusData.projectId === projectId && projectId !== null ? statusData.map : EMPTY_STATUSES
+  useEffect(() => {
+    phasesRef.current = phases
+    projectIdRef.current = projectId
+  })
+
+  const statusesLoaded = statusData.projectId === projectId && projectId !== null
+  const statusMap = statusesLoaded ? statusData.map : null
+  const statuses = statusMap ?? EMPTY_STATUSES
+  const statusesState: StatusesState = statusMap
+    ? "ready"
+    : statusesLoaded
+      ? "failed"
+      : "loading"
   const logs =
     logsData.projectId === projectId && projectId !== null ? logsData.entries : EMPTY_LOGS
+
+  const fetchProjects = useCallback(
+    (isCurrent: () => boolean = () => true) =>
+      projectsAPI.list().then(
+        ({ data }) => {
+          if (isCurrent()) setProjects(data)
+        },
+        () => {
+          if (isCurrent()) setProjects(null)
+        },
+      ),
+    [],
+  )
+
+  const reloadProjects = useCallback(() => fetchProjects(), [fetchProjects])
 
   useEffect(() => {
     void fetchStore()
     let cancelled = false
-    projectsAPI
-      .list()
-      .then(({ data }) => {
-        if (!cancelled) setProjects(data)
-      })
-      .catch(() => {
-        if (!cancelled) toast.error("Failed to load projects")
-      })
-      .finally(() => {
-        if (!cancelled) setProjectsLoading(false)
-      })
+    void fetchProjects(() => !cancelled).finally(() => {
+      if (!cancelled) setProjectsLoading(false)
+    })
     return () => {
       cancelled = true
     }
-  }, [fetchStore])
+  }, [fetchStore, fetchProjects])
 
   useEffect(() => {
     if (!journeyId) return
@@ -187,26 +207,37 @@ export function useJourneyBuilder(isAdmin: boolean, managedProjectIds: string[])
     }
   }, [journeyId])
 
+  const fetchStatuses = useCallback(
+    (pid: string, isCurrent: () => boolean) =>
+      projectsAPI.listPhases(pid).then(
+        ({ data }) => {
+          if (!isCurrent()) return
+          const map: Record<string, PhaseStatus> = {}
+          data.forEach((row) => {
+            map[row.phase_id] = row.status
+          })
+          setStatusData({ projectId: pid, map })
+        },
+        () => {
+          if (isCurrent()) setStatusData({ projectId: pid, map: null })
+        },
+      ),
+    [],
+  )
+
+  const reloadStatuses = useCallback(async () => {
+    const pid = projectIdRef.current
+    if (pid) await fetchStatuses(pid, () => projectIdRef.current === pid)
+  }, [fetchStatuses])
+
   useEffect(() => {
     if (!projectId) return
     let cancelled = false
-    projectsAPI
-      .listPhases(projectId)
-      .then(({ data }) => {
-        if (cancelled) return
-        const map: Record<string, PhaseStatus> = {}
-        data.forEach((row) => {
-          map[row.phase_id] = row.status
-        })
-        setStatusData({ projectId, map })
-      })
-      .catch(() => {
-        if (!cancelled) setStatusData({ projectId, map: {} })
-      })
+    void fetchStatuses(projectId, () => !cancelled)
     return () => {
       cancelled = true
     }
-  }, [projectId])
+  }, [projectId, fetchStatuses])
 
   const mutPhases = useCallback((fn: (phases: PhaseResponse[]) => PhaseResponse[]) => {
     setPhaseData((d) => ({ ...d, phases: fn(d.phases) }))
@@ -222,16 +253,15 @@ export function useJourneyBuilder(isAdmin: boolean, managedProjectIds: string[])
   const loadLog = useCallback(
     async (phaseId: string) => {
       if (!projectId) return
-      try {
-        const { data } = await projectsAPI.phaseStatusLog(projectId, phaseId)
-        setLogsData((d) =>
-          d.projectId === projectId
-            ? { ...d, entries: { ...d.entries, [phaseId]: data } }
-            : { projectId, entries: { [phaseId]: data } },
-        )
-      } catch {
-        // The status log is secondary to the trail; the failure already reaches the console through logApiFailure.
-      }
+      const data = await projectsAPI.phaseStatusLog(projectId, phaseId).then(
+        (res) => res.data,
+        () => null,
+      )
+      setLogsData((d) =>
+        d.projectId === projectId
+          ? { ...d, entries: { ...d.entries, [phaseId]: data } }
+          : { projectId, entries: { [phaseId]: data } },
+      )
     },
     [projectId],
   )
@@ -323,8 +353,8 @@ export function useJourneyBuilder(isAdmin: boolean, managedProjectIds: string[])
       const rest = store.journeys.filter((j) => j.id !== journeyId)
       store.setJourneys(rest)
       store.invalidate()
-      setProjects((ps) =>
-        ps.map((p) => (p.journey_id === journeyId ? { ...p, journey_id: null } : p)),
+      setProjects(
+        (ps) => ps && ps.map((p) => (p.journey_id === journeyId ? { ...p, journey_id: null } : p)),
       )
       setChosenJourneyId(rest[0]?.id ?? null)
       setTemplateView(false)
@@ -474,12 +504,10 @@ export function useJourneyBuilder(isAdmin: boolean, managedProjectIds: string[])
 
   const setStatus = useCallback(
     async (phaseId: string, to: PhaseStatus, note: string) => {
-      if (!projectId) return
-      const prev = statuses[phaseId] ?? "not_started"
+      if (!projectId || !statusMap) return
+      const prev = statusMap[phaseId] ?? "not_started"
       setStatusData((d) =>
-        d.projectId === projectId
-          ? { ...d, map: { ...d.map, [phaseId]: to } }
-          : { projectId, map: { [phaseId]: to } },
+        d.projectId === projectId && d.map ? { ...d, map: { ...d.map, [phaseId]: to } } : d,
       )
       try {
         const trimmed = note.trim()
@@ -491,22 +519,24 @@ export function useJourneyBuilder(isAdmin: boolean, managedProjectIds: string[])
         void loadLog(phaseId)
       } catch {
         setStatusData((d) =>
-          d.projectId === projectId ? { ...d, map: { ...d.map, [phaseId]: prev } } : d,
+          d.projectId === projectId && d.map ? { ...d, map: { ...d.map, [phaseId]: prev } } : d,
         )
         toast.error("Failed to update status")
       }
     },
-    [projectId, statuses, loadLog],
+    [projectId, statusMap, loadLog],
   )
 
   const assignProject = useCallback(
     async (targetProjectId: string, on: boolean) => {
-      if (!journeyId) return
-      const prev = projects
-      setProjects((ps) =>
-        ps.map((p) =>
-          p.id === targetProjectId ? { ...p, journey_id: on ? journeyId : null } : p,
-        ),
+      if (!journeyId || !projectList) return
+      const prev = projectList
+      setProjects(
+        (ps) =>
+          ps &&
+          ps.map((p) =>
+            p.id === targetProjectId ? { ...p, journey_id: on ? journeyId : null } : p,
+          ),
       )
       try {
         await projectsAPI.assignJourney(targetProjectId, on ? journeyId : null)
@@ -515,7 +545,7 @@ export function useJourneyBuilder(isAdmin: boolean, managedProjectIds: string[])
         toast.error("Failed to update project assignment")
       }
     },
-    [journeyId, projects],
+    [journeyId, projectList],
   )
 
   const addCategory = useCallback(async () => {
@@ -618,8 +648,11 @@ export function useJourneyBuilder(isAdmin: boolean, managedProjectIds: string[])
   )
 
   const projectCountFor = useCallback(
-    (jid: string) => projects.filter((p) => p.journey_id === jid).length,
-    [projects],
+    (jid: string) =>
+      projectList
+        ? projectList.filter((p) => p.journey_id === jid).length
+        : journeys.find((j) => j.id === jid)?.project_count ?? 0,
+    [projectList, journeys],
   )
 
   const journeyPhaseCount = useCallback(
@@ -646,12 +679,15 @@ export function useJourneyBuilder(isAdmin: boolean, managedProjectIds: string[])
     deps,
     phasesLoading,
     initialLoading: (storeLoading && journeys.length === 0) || (!isAdmin && projectsLoading),
-    projects,
+    projects: projectList,
+    reloadProjects,
     assignedProjects,
     eligibleProjects,
     projectId,
     project,
     statuses,
+    statusesState,
+    reloadStatuses,
     logs,
     hasProject: projectId !== null,
     templateView,

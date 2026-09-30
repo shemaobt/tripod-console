@@ -1,28 +1,37 @@
 import { ArrowRight } from "lucide-react"
+import { LoadFailed } from "@/components/common/LoadFailed"
 import type { PhaseStatusLogEntry } from "@/types"
 import { JOURNEY_STATUS_CONFIG } from "@/constants/journeyStatus"
 import { formatStatusTimestamp } from "@/utils/format"
 import { cn } from "@/utils/cn"
 
 interface StatusHistoryProps {
-  entries: PhaseStatusLogEntry[]
+  entries: PhaseStatusLogEntry[] | null | undefined
+  onRetry: () => unknown
 }
 
-export function StatusHistory({ entries }: StatusHistoryProps) {
+export function StatusHistory({ entries, onRetry }: StatusHistoryProps) {
+  const list = entries ?? []
   return (
     <div className="border-t border-line pt-3.5">
       <div className="mb-2.5 flex items-baseline gap-2">
         <div className="text-[0.625rem] font-bold uppercase tracking-[0.08em] text-fg-muted">
           Status history
         </div>
-        <span className="font-mono text-[0.625rem] text-fg-subtle">{entries.length}</span>
+        {entries && (
+          <span className="font-mono text-[0.625rem] text-fg-subtle">{entries.length}</span>
+        )}
       </div>
-      {entries.length === 0 && (
+      {entries === null && <LoadFailed what="the status history" onRetry={onRetry} />}
+      {entries === undefined && (
+        <div className="text-[0.78125rem] leading-[1.6] text-fg-subtle">Loading history…</div>
+      )}
+      {entries?.length === 0 && (
         <div className="text-[0.78125rem] leading-[1.6] text-fg-subtle">
           No status changes recorded yet. The next change will ask for a note.
         </div>
       )}
-      {entries.map((entry, i) => {
+      {list.map((entry, i) => {
         const from = JOURNEY_STATUS_CONFIG[entry.from_status] ?? JOURNEY_STATUS_CONFIG.not_started
         const to = JOURNEY_STATUS_CONFIG[entry.to_status] ?? JOURNEY_STATUS_CONFIG.not_started
         const who = entry.changed_by_name
@@ -30,7 +39,7 @@ export function StatusHistory({ entries }: StatusHistoryProps) {
           : "Deleted user"
         return (
           <div key={entry.id} className="relative flex gap-[0.6875rem] pb-4">
-            {i < entries.length - 1 && (
+            {i < list.length - 1 && (
               <span className="absolute bottom-px left-1 top-[0.9375rem] w-[0.09375rem] bg-line" />
             )}
             <span

@@ -3,6 +3,8 @@ import { Route } from "lucide-react"
 import { useAuth } from "@/contexts/AuthContext"
 import { EmptyState } from "@/components/common/EmptyState"
 import { LoadingSpinner } from "@/components/common/LoadingSpinner"
+import { LoadFailed } from "@/components/common/LoadFailed"
+import { layout as pageLayout } from "@/styles"
 import type { PhaseStatus } from "@/types"
 import { uiScale } from "@/utils/uiScale"
 import { useJourneyBuilder } from "./useJourneyBuilder"
@@ -126,6 +128,16 @@ export default function JourneysPage() {
 
   if (builder.initialLoading) return <LoadingSpinner size="lg" />
 
+  if (!isAdmin && builder.projects === null)
+    return (
+      <div className={pageLayout.container}>
+        <LoadFailed what="the projects you manage" onRetry={builder.reloadProjects} />
+      </div>
+    )
+
+  const projectsFailed = builder.projects === null
+  const statusesFailed = builder.statusesState === "failed"
+
   if (!isAdmin && builder.eligibleProjects.length === 0)
     return (
       <EmptyState
@@ -148,6 +160,17 @@ export default function JourneysPage() {
         onOpenRegistry={() => setRegistryOpen(true)}
         onDeleteJourney={handleDeleteJourney}
       />
+      {(projectsFailed || statusesFailed) && (
+        <div className="flex flex-none flex-col gap-2 px-5 pt-3">
+          {projectsFailed && <LoadFailed what="the projects" onRetry={builder.reloadProjects} />}
+          {statusesFailed && (
+            <LoadFailed
+              what={`the phase statuses of ${builder.project?.name ?? "this project"}`}
+              onRetry={builder.reloadStatuses}
+            />
+          )}
+        </div>
+      )}
       <div ref={setContainer} className="relative min-h-0 flex-1 overflow-hidden">
         <JourneyCanvas
           phases={phases}
@@ -192,6 +215,7 @@ export default function JourneysPage() {
             phase={selPhase}
             isAdmin={isAdmin}
             hasProject={builder.hasProject}
+            statusesState={builder.statusesState}
             hasLinkedProjects={builder.assignedProjects.length > 0}
             projectName={builder.project?.name ?? null}
             phases={phases}
@@ -218,6 +242,7 @@ export default function JourneysPage() {
             onUploadIcon={() => builder.uploadPhaseIcon(selPhase.id)}
             onClearIcon={() => builder.clearPhaseIcon(selPhase.id)}
             onRequestStatus={handleRequestStatus}
+            onRetryHistory={() => builder.loadLog(selPhase.id)}
             onDelete={() => void handleDeletePhase()}
           />
         )}

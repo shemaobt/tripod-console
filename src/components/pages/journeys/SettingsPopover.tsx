@@ -3,6 +3,7 @@ import { Check, Folder, Search, Settings } from "lucide-react"
 import { Popover, PopoverAnchor, PopoverContent } from "@/components/ui/popover"
 import { ConfirmDialog } from "@/components/common/ConfirmDialog"
 import { FieldError } from "@/components/common/FieldError"
+import { LoadFailed } from "@/components/common/LoadFailed"
 import { NAME_REQUIRED_MESSAGE } from "@/constants/journeyStatus"
 import { Button } from "@/components/ui/button"
 import type { Journey, ProjectResponse } from "@/types"
@@ -14,7 +15,8 @@ interface SettingsPopoverProps {
   journeys: Journey[]
   phaseCount: number
   assignedCount: number
-  projects: ProjectResponse[]
+  projects: ProjectResponse[] | null
+  onRetryProjects: () => unknown
   onRename: (name: string) => void
   onDescribe: (description: string) => void
   onToggleProject: (projectId: string, on: boolean) => void
@@ -37,6 +39,7 @@ export function SettingsPopover({
   phaseCount,
   assignedCount,
   projects,
+  onRetryProjects,
   onRename,
   onDescribe,
   onToggleProject,
@@ -53,8 +56,8 @@ export function SettingsPopover({
   }
 
   const q = query.trim().toLowerCase()
-  const filtered = projects.filter((p) => !q || p.name.toLowerCase().includes(q))
-  const linkedCount = projects.filter((p) => p.journey_id === journey?.id).length
+  const filtered = (projects ?? []).filter((p) => !q || p.name.toLowerCase().includes(q))
+  const linkedCount = (projects ?? []).filter((p) => p.journey_id === journey?.id).length
   const linkedLabel = `${assignedCount} ${assignedCount === 1 ? "project linked" : "projects linked"}`
   const canDelete = journeys.length > 1
   const nameMissing = journey !== null && !journey.name.trim()
@@ -157,58 +160,64 @@ export function SettingsPopover({
               Tick the projects that inherit this journey’s phases. Each project follows exactly
               one journey.
             </div>
-            <span className="relative mb-1.5 flex items-center">
-              <Search
-                className="pointer-events-none absolute left-[0.6875rem] h-[0.8125rem] w-[0.8125rem] text-fg-subtle"
-                strokeWidth={2}
-              />
-              <input
-                aria-label="Search projects"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search all projects…"
-                className="h-[2.125rem] w-full rounded-[0.625rem] border border-line-strong bg-elevated pl-[1.9375rem] pr-3 text-[0.78125rem] text-fg-strong placeholder:text-fg-subtle focus:border-accent focus:outline-none"
-              />
-            </span>
-            <div className="flex max-h-[14.25rem] flex-col overflow-y-auto">
-              {filtered.map((p) => {
-                const on = p.journey_id === journey?.id
-                return (
-                  <button
-                    key={p.id}
-                    onClick={() => requestToggle(p)}
-                    aria-pressed={on}
-                    className="flex w-full cursor-pointer items-center gap-2.5 rounded-[0.625rem] px-2.5 py-2 transition-colors hover:bg-muted"
-                  >
-                    <span
-                      className={
-                        on
-                          ? "flex h-[1.0625rem] w-[1.0625rem] flex-none items-center justify-center rounded-[0.3125rem] bg-accent"
-                          : "flex h-[1.0625rem] w-[1.0625rem] flex-none items-center justify-center rounded-[0.3125rem] bg-elevated shadow-[inset_0_0_0_0.09375rem_var(--color-line-strong)]"
-                      }
-                    >
-                      {on && (
-                        <Check className="h-[0.6875rem] w-[0.6875rem] text-[#F6F5EB]" strokeWidth={3.2} />
-                      )}
-                    </span>
-                    <span className="truncate text-[0.8125rem] font-semibold text-fg-strong">
-                      {p.name}
-                    </span>
-                    <span className="ml-auto flex-none text-[0.65625rem] text-fg-subtle">
-                      {on ? "This journey" : journeyName(p.journey_id)}
-                    </span>
-                  </button>
-                )
-              })}
-            </div>
-            {filtered.length === 0 && (
-              <div className="px-0.5 py-2 text-[0.75rem] text-fg-subtle">
-                No project matches “{query}”.
-              </div>
+            {projects === null ? (
+              <LoadFailed what="the projects" onRetry={onRetryProjects} />
+            ) : (
+              <>
+                <span className="relative mb-1.5 flex items-center">
+                  <Search
+                    className="pointer-events-none absolute left-[0.6875rem] h-[0.8125rem] w-[0.8125rem] text-fg-subtle"
+                    strokeWidth={2}
+                  />
+                  <input
+                    aria-label="Search projects"
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    placeholder="Search all projects…"
+                    className="h-[2.125rem] w-full rounded-[0.625rem] border border-line-strong bg-elevated pl-[1.9375rem] pr-3 text-[0.78125rem] text-fg-strong placeholder:text-fg-subtle focus:border-accent focus:outline-none"
+                  />
+                </span>
+                <div className="flex max-h-[14.25rem] flex-col overflow-y-auto">
+                  {filtered.map((p) => {
+                    const on = p.journey_id === journey?.id
+                    return (
+                      <button
+                        key={p.id}
+                        onClick={() => requestToggle(p)}
+                        aria-pressed={on}
+                        className="flex w-full cursor-pointer items-center gap-2.5 rounded-[0.625rem] px-2.5 py-2 transition-colors hover:bg-muted"
+                      >
+                        <span
+                          className={
+                            on
+                              ? "flex h-[1.0625rem] w-[1.0625rem] flex-none items-center justify-center rounded-[0.3125rem] bg-accent"
+                              : "flex h-[1.0625rem] w-[1.0625rem] flex-none items-center justify-center rounded-[0.3125rem] bg-elevated shadow-[inset_0_0_0_0.09375rem_var(--color-line-strong)]"
+                          }
+                        >
+                          {on && (
+                            <Check className="h-[0.6875rem] w-[0.6875rem] text-[#F6F5EB]" strokeWidth={3.2} />
+                          )}
+                        </span>
+                        <span className="truncate text-[0.8125rem] font-semibold text-fg-strong">
+                          {p.name}
+                        </span>
+                        <span className="ml-auto flex-none text-[0.65625rem] text-fg-subtle">
+                          {on ? "This journey" : journeyName(p.journey_id)}
+                        </span>
+                      </button>
+                    )
+                  })}
+                </div>
+                {filtered.length === 0 && (
+                  <div className="px-0.5 py-2 text-[0.75rem] text-fg-subtle">
+                    No project matches “{query}”.
+                  </div>
+                )}
+                <div className="mt-2 text-[0.65625rem] text-fg-subtle">
+                  {projects.length} projects · {linkedCount} linked to this journey
+                </div>
+              </>
             )}
-            <div className="mt-2 text-[0.65625rem] text-fg-subtle">
-              {projects.length} projects · {linkedCount} linked to this journey
-            </div>
           </div>
           <div className="flex items-center justify-between border-t border-line pt-3">
             <span className="text-[0.6875rem] text-fg-subtle">

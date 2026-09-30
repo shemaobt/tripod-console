@@ -99,6 +99,7 @@ export function JourneyHeader({
             phaseCount={phases.length}
             assignedCount={assignedCount}
             projects={builder.projects}
+            onRetryProjects={builder.reloadProjects}
             onRename={(name) => builder.updateJourney({ name })}
             onDescribe={(description) => builder.updateJourney({ description })}
             onToggleProject={(projectId, on) => void builder.assignProject(projectId, on)}
