@@ -3,12 +3,12 @@ import { ChevronDown, ChevronUp, Circle, Image, Plus, Trash2 } from "lucide-reac
 import { ConfirmDialog } from "@/components/common/ConfirmDialog"
 import { FieldError } from "@/components/common/FieldError"
 import { Button } from "@/components/ui/button"
-import { phasesAPI } from "@/services/api"
 import type { PhaseCategory, PhaseResponse } from "@/types"
 import { CATEGORY_ICONS, NAME_REQUIRED_MESSAGE } from "@/constants/journeyStatus"
 import { orbGrad } from "@/utils/color"
 import { cn } from "@/utils/cn"
 import type { CategoryVisual } from "./useJourneyBuilder"
+import { deletePhaseDescription, usePhaseUsage } from "./usePhaseUsage"
 
 interface RegistryPhasesTabProps {
   phases: PhaseResponse[]
@@ -39,26 +39,14 @@ export function RegistryPhasesTab({
   onAddPhase,
 }: RegistryPhasesTabProps) {
   const [deleteId, setDeleteId] = useState<string | null>(null)
-  const [usage, setUsage] = useState<{ id: string; count: number } | null>(null)
+  const { check, usedBy } = usePhaseUsage()
   const target = phases.find((p) => p.id === deleteId)
-  const usedBy =
-    usage && usage.id === deleteId ? usage.count : target?.project_ids?.length ?? 0
+  const usage = usedBy(deleteId)
 
   const requestDelete = (id: string) => {
-    setUsage(null)
+    check(id)
     setDeleteId(id)
-    phasesAPI
-      .get(id)
-      .then(({ data }) => setUsage({ id, count: data.project_ids?.length ?? 0 }))
-      .catch(() => undefined)
   }
-  const confirmDescription = target
-    ? `Hard delete of "${target.name}" from this journey. This cannot be undone.${
-        usedBy > 0
-          ? ` Used by ${usedBy} project${usedBy === 1 ? "" : "s"} — their phase statuses and history will be removed.`
-          : ""
-      }`
-    : ""
 
   return (
     <div className="flex flex-col gap-[0.4375rem]">
@@ -172,8 +160,9 @@ export function RegistryPhasesTab({
           if (!open) setDeleteId(null)
         }}
         title="Delete phase"
-        description={confirmDescription}
+        description={target ? deletePhaseDescription(target.name, usage) : ""}
         confirmLabel="Delete phase"
+        confirmDisabled={usage === undefined}
         onConfirm={() => {
           if (deleteId) onDelete(deleteId)
         }}

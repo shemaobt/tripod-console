@@ -5,7 +5,6 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { ConfirmDialog } from "@/components/common/ConfirmDialog"
 import { FieldError } from "@/components/common/FieldError"
-import { phasesAPI } from "@/services/api"
 import type {
   DerivedPhaseStatus,
   PhaseCategory,
@@ -23,6 +22,7 @@ import { orbGrad, soft } from "@/utils/color"
 import { cn } from "@/utils/cn"
 import { collectReachable } from "./layout"
 import { StatusHistory } from "./StatusHistory"
+import { deletePhaseDescription, usePhaseUsage } from "./usePhaseUsage"
 import type { CategoryVisual } from "./useJourneyBuilder"
 
 interface PhaseInspectorProps {
@@ -81,7 +81,7 @@ export function PhaseInspector({
   onDelete,
 }: PhaseInspectorProps) {
   const [confirmOpen, setConfirmOpen] = useState(false)
-  const [usage, setUsage] = useState<{ id: string; count: number } | null>(null)
+  const { check, usedBy } = usePhaseUsage()
   const cat = categoryFor(phase.category_id)
   const CatIcon = CATEGORY_ICONS[cat.icon] ?? Circle
   const stored = storedStatus(phase.id)
@@ -93,24 +93,12 @@ export function PhaseInspector({
   const unlocks = kids[phase.id] ?? []
   const others = phases.filter((p) => p.id !== phase.id)
   const unmet = myDeps.filter((d) => storedStatus(d) !== "completed").length
-  const usedBy =
-    usage && usage.id === phase.id ? usage.count : phase.project_ids?.length ?? 0
+  const usage = usedBy(phase.id)
 
   const requestDelete = () => {
-    const id = phase.id
-    setUsage(null)
+    check(phase.id)
     setConfirmOpen(true)
-    phasesAPI
-      .get(id)
-      .then(({ data }) => setUsage({ id, count: data.project_ids?.length ?? 0 }))
-      .catch(() => undefined)
   }
-
-  const confirmDescription = `Hard delete of "${phase.name}" from this journey. This cannot be undone.${
-    usedBy > 0
-      ? ` Used by ${usedBy} project${usedBy === 1 ? "" : "s"} — their phase statuses and history will be removed.`
-      : ""
-  }`
 
   return (
     <aside
@@ -457,8 +445,9 @@ export function PhaseInspector({
         open={confirmOpen}
         onOpenChange={setConfirmOpen}
         title="Delete phase"
-        description={confirmDescription}
+        description={deletePhaseDescription(phase.name, usage)}
         confirmLabel="Delete phase"
+        confirmDisabled={usage === undefined}
         onConfirm={onDelete}
       />
     </aside>
