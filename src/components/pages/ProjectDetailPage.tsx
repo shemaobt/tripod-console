@@ -43,6 +43,7 @@ export default function ProjectDetailPage() {
   const {
     languages,
     loading: languagesLoading,
+    failed: languagesFailed,
     fetch: fetchLanguages,
   } = useLanguagesStore()
 
@@ -277,6 +278,8 @@ export default function ProjectDetailPage() {
               project={project}
               languages={languages}
               languagesLoading={languagesLoading}
+              languagesFailed={languagesFailed}
+              onRetryLanguages={fetchLanguages}
               onSaved={setProject}
             />
             <LocationSection
