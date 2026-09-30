@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { LoadFailed } from "@/components/common/LoadFailed"
 import {
   Select,
   SelectContent,
@@ -19,6 +20,8 @@ interface ProjectInfoFormProps {
   project: ProjectResponse
   languages: LanguageResponse[]
   languagesLoading: boolean
+  languagesFailed: boolean
+  onRetryLanguages: () => unknown
   onSaved: (project: ProjectResponse) => void
 }
 
@@ -26,6 +29,8 @@ export function ProjectInfoForm({
   project,
   languages,
   languagesLoading,
+  languagesFailed,
+  onRetryLanguages,
   onSaved,
 }: ProjectInfoFormProps) {
   const [name, setName] = useState(project.name)
@@ -79,6 +84,8 @@ export function ProjectInfoForm({
         <Label>Language</Label>
         {languagesLoading ? (
           <p className="text-sm text-fg-muted">Loading languages...</p>
+        ) : languagesFailed && languages.length === 0 ? (
+          <LoadFailed what="the languages" onRetry={onRetryLanguages} />
         ) : (
           <Select value={languageId} onValueChange={setLanguageId}>
             <SelectTrigger>

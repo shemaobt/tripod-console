@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useMemo } from "react"
+import { useEffect, useState, useCallback, useMemo, useRef } from "react"
 import { Inbox } from "lucide-react"
 import { toast } from "sonner"
 import { accessRequestsAPI } from "@/services/api"
@@ -6,6 +6,7 @@ import type { AccessRequestResponse, UserListResponse, AppResponse } from "@/typ
 import { cn } from "@/utils/cn"
 import { LoadingSpinner } from "@/components/common/LoadingSpinner"
 import { EmptyState } from "@/components/common/EmptyState"
+import { LoadFailed } from "@/components/common/LoadFailed"
 import { FilterBar } from "@/components/common/FilterBar"
 import { ReviewDialog } from "@/components/pages/ReviewDialog"
 import { UserAvatar } from "@/components/common/UserAvatar"
@@ -31,8 +32,9 @@ interface AccessRequestsSectionProps {
 }
 
 export function AccessRequestsSection({ users, apps, onReviewed }: AccessRequestsSectionProps) {
-  const [requests, setRequests] = useState<AccessRequestResponse[]>([])
+  const [requests, setRequests] = useState<AccessRequestResponse[] | null>([])
   const [loading, setLoading] = useState(true)
+  const latestFetch = useRef(0)
   const [filterApp, setFilterApp] = useState("all")
   const [filterStatus, setFilterStatus] = useState("all")
   const [reviewTarget, setReviewTarget] = useState<AccessRequestResponse | null>(null)
@@ -41,18 +43,20 @@ export function AccessRequestsSection({ users, apps, onReviewed }: AccessRequest
   const userMap = useMemo(() => new Map(users.map((u) => [u.id, u])), [users])
   const appMap = useMemo(() => new Map(apps.map((a) => [a.app_key, a])), [apps])
 
+  // Quick filter changes can resolve out of order; only the latest fetch may write.
   const fetchRequests = useCallback(async () => {
+    const fetchId = ++latestFetch.current
     setLoading(true)
     try {
       const params: { app_key?: string; status?: string } = {}
       if (filterApp !== "all") params.app_key = filterApp
       if (filterStatus !== "all") params.status = filterStatus
       const { data } = await accessRequestsAPI.list(params)
-      setRequests(data)
+      if (fetchId === latestFetch.current) setRequests(data)
     } catch {
-      toast.error("Failed to load access requests")
+      if (fetchId === latestFetch.current) setRequests(null)
     } finally {
-      setLoading(false)
+      if (fetchId === latestFetch.current) setLoading(false)
     }
   }, [filterApp, filterStatus])
 
@@ -111,12 +115,18 @@ export function AccessRequestsSection({ users, apps, onReviewed }: AccessRequest
           </button>
         ))}
         <span className="text-xs text-fg-subtle tabular-nums ml-auto">
-          {loading ? "..." : `${requests.length} request${requests.length !== 1 ? "s" : ""}`}
+          {loading
+            ? "..."
+            : requests === null
+              ? "—"
+              : `${requests.length} request${requests.length !== 1 ? "s" : ""}`}
         </span>
       </div>
 
       {loading ? (
         <LoadingSpinner />
+      ) : requests === null ? (
+        <LoadFailed what="the access requests" onRetry={fetchRequests} />
       ) : requests.length === 0 ? (
         <EmptyState
           icon={Inbox}

@@ -22,6 +22,7 @@ export default function DashboardPage() {
     failed: adminFailed,
     pendingFailed,
     retry: retryAdmin,
+    retryLanguages,
   } = useAdminDashboardData(isPlatformAdmin)
 
   const loadApps = useCallback(
@@ -71,6 +72,7 @@ export default function DashboardPage() {
             data={adminData}
             projects={projects}
             languages={languages}
+            onRetryLanguages={retryLanguages}
             pendingFailed={pendingFailed}
           />
         ) : (

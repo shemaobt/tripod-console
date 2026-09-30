@@ -7,6 +7,7 @@ import type { ProjectResponse, LanguageResponse } from "@/types"
 import { useAuth } from "@/contexts/AuthContext"
 import { useLanguagesStore } from "@/stores/languagesStore"
 import { avatarColors, initialsOf } from "@/utils/avatar"
+import { isNotFound } from "@/utils/apiError"
 import { cn } from "@/utils/cn"
 import {
   Tabs,
@@ -15,6 +16,7 @@ import {
   TabsTrigger,
 } from "@/components/ui/tabs"
 import { LoadingSpinner } from "@/components/common/LoadingSpinner"
+import { LoadFailed } from "@/components/common/LoadFailed"
 import { InfoTooltip } from "@/components/common/InfoTooltip"
 import { ProjectInfoForm } from "./projects/ProjectInfoForm"
 import { LocationSection } from "./projects/LocationSection"
@@ -30,6 +32,7 @@ export default function ProjectDetailPage() {
 
   const [project, setProject] = useState<ProjectResponse | null>(null)
   const [loading, setLoading] = useState(true)
+  const [projectFailed, setProjectFailed] = useState(false)
   // Remount after every save, even when the server echoes the same values back.
   const [locationSaves, setLocationSaves] = useState(0)
   const [fallbackLanguage, setFallbackLanguage] = useState<LanguageResponse | null>(null)
@@ -40,6 +43,7 @@ export default function ProjectDetailPage() {
   const {
     languages,
     loading: languagesLoading,
+    failed: languagesFailed,
     fetch: fetchLanguages,
   } = useLanguagesStore()
 
@@ -48,8 +52,9 @@ export default function ProjectDetailPage() {
     try {
       const { data } = await projectsAPI.get(projectId)
       setProject(data)
-    } catch {
-      toast.error("Failed to load project")
+      setProjectFailed(false)
+    } catch (err) {
+      setProjectFailed(!isNotFound(err))
     } finally {
       setLoading(false)
     }
@@ -152,7 +157,11 @@ export default function ProjectDetailPage() {
   if (!project) {
     return (
       <div className="max-w-[77.5rem] mx-auto px-6 sm:px-10 pt-8 pb-14">
-        <p className="text-fg-muted">Project not found.</p>
+        {projectFailed ? (
+          <LoadFailed what="this project" onRetry={fetchProject} />
+        ) : (
+          <p className="text-fg-muted">Project not found.</p>
+        )}
       </div>
     )
   }
@@ -269,6 +278,8 @@ export default function ProjectDetailPage() {
               project={project}
               languages={languages}
               languagesLoading={languagesLoading}
+              languagesFailed={languagesFailed}
+              onRetryLanguages={fetchLanguages}
               onSaved={setProject}
             />
             <LocationSection

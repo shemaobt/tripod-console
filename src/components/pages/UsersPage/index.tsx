@@ -1,12 +1,12 @@
-import { useEffect, useState, useMemo } from "react"
+import { useCallback, useEffect, useState, useMemo } from "react"
 import { Users } from "lucide-react"
-import { toast } from "sonner"
 import { usersAPI, appsAPI } from "@/services/api"
 import type { UserListResponse, UserRoleResponse, AppResponse } from "@/types"
 import { cn } from "@/utils/cn"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { LoadingSpinner } from "@/components/common/LoadingSpinner"
 import { EmptyState } from "@/components/common/EmptyState"
+import { LoadFailed } from "@/components/common/LoadFailed"
 import { FilterBar } from "@/components/common/FilterBar"
 import { AccessRequestsSection } from "@/components/pages/AccessRequestsSection"
 import { useRequestCountsStore } from "@/stores/requestCountsStore"
@@ -16,9 +16,12 @@ import { UserCard } from "./UserCard"
 const roleLegend = [...roleChoices].reverse()
 
 export default function UsersPage() {
-  const [users, setUsers] = useState<UserListResponse[]>([])
+  const [users, setUsers] = useState<UserListResponse[] | null>([])
   const [apps, setApps] = useState<AppResponse[]>([])
-  const [userRolesMap, setUserRolesMap] = useState<Map<string, UserRoleResponse[]>>(new Map())
+  const [userRolesMap, setUserRolesMap] = useState<Map<string, UserRoleResponse[] | null>>(
+    new Map(),
+  )
+  const [rolesFailed, setRolesFailed] = useState(0)
   const [loading, setLoading] = useState(true)
   const [filterApp, setFilterApp] = useState("all")
   const [search, setSearch] = useState("")
@@ -30,37 +33,35 @@ export default function UsersPage() {
     fetchCounts()
   }, [fetchCounts])
 
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        const [usersRes, appsRes] = await Promise.all([
-          usersAPI.list(),
-          appsAPI.list(),
-        ])
-        setUsers(usersRes.data)
-        setApps(appsRes.data)
-
-        const rolesEntries = await Promise.all(
-          usersRes.data.map(async (u) => {
-            try {
-              const { data } = await usersAPI.listRoles(u.id)
-              return [u.id, data] as [string, UserRoleResponse[]]
-            } catch {
-              return [u.id, [] as UserRoleResponse[]] as [string, UserRoleResponse[]]
-            }
-          }),
-        )
-        setUserRolesMap(new Map(rolesEntries))
-      } catch {
-        toast.error("Failed to load users")
-      } finally {
-        setLoading(false)
-      }
+  const loadUsers = useCallback(async () => {
+    try {
+      const [usersRes, appsRes] = await Promise.all([usersAPI.list(), appsAPI.list()])
+      const rolesEntries = await Promise.all(
+        usersRes.data.map(async (u) => {
+          try {
+            const { data } = await usersAPI.listRoles(u.id)
+            return [u.id, data] as [string, UserRoleResponse[] | null]
+          } catch {
+            return [u.id, null] as [string, UserRoleResponse[] | null]
+          }
+        }),
+      )
+      setUsers(usersRes.data)
+      setApps(appsRes.data)
+      setRolesFailed(rolesEntries.filter(([, roles]) => roles === null).length)
+      setUserRolesMap(new Map(rolesEntries))
+    } catch {
+      setUsers(null)
+    } finally {
+      setLoading(false)
     }
-    fetchData()
   }, [])
 
-  const filteredUsers = useMemo(() => users.filter((u) => {
+  useEffect(() => {
+    loadUsers()
+  }, [loadUsers])
+
+  const filteredUsers = useMemo(() => (users ?? []).filter((u) => {
     const matchesApp =
       filterApp === "all" ||
       (userRolesMap.get(u.id) ?? []).some((r) => r.app_key === filterApp)
@@ -114,54 +115,64 @@ export default function UsersPage() {
         </div>
 
         <TabsContent value="users">
-          <div className="space-y-4">
-            <FilterBar
-              search={{
-                value: search,
-                onChange: setSearch,
-                placeholder: "Search name or email…",
-              }}
-              filters={[
-                {
-                  key: "app",
-                  label: "All Apps",
-                  value: filterApp,
-                  onChange: setFilterApp,
-                  options: [
-                    { value: "all", label: "All Apps" },
-                    ...apps.map((app) => ({ value: app.app_key, label: app.name })),
-                  ],
-                },
-              ]}
-              resultLabel={`${filteredUsers.length} result${filteredUsers.length !== 1 ? "s" : ""}`}
-            />
-
-            {filteredUsers.length === 0 ? (
-              <EmptyState
-                icon={Users}
-                title={filterApp === "all" && !search ? "No users found" : "No matching users"}
-                description={
-                  filterApp === "all" && !search
-                    ? "There are no registered users in the system yet."
-                    : "Try adjusting your search or filter criteria."
-                }
+          {users === null ? (
+            <LoadFailed what="the users" onRetry={loadUsers} />
+          ) : (
+            <div className="space-y-4">
+              {rolesFailed > 0 && (
+                <LoadFailed
+                  what={`the app roles of ${rolesFailed} user${rolesFailed !== 1 ? "s" : ""}, so the app filter cannot see them`}
+                  onRetry={loadUsers}
+                />
+              )}
+              <FilterBar
+                search={{
+                  value: search,
+                  onChange: setSearch,
+                  placeholder: "Search name or email…",
+                }}
+                filters={[
+                  {
+                    key: "app",
+                    label: "All Apps",
+                    value: filterApp,
+                    onChange: setFilterApp,
+                    options: [
+                      { value: "all", label: "All Apps" },
+                      ...apps.map((app) => ({ value: app.app_key, label: app.name })),
+                    ],
+                  },
+                ]}
+                resultLabel={`${filteredUsers.length} result${filteredUsers.length !== 1 ? "s" : ""}`}
               />
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3.5">
-                {filteredUsers.map((user) => (
-                  <UserCard
-                    key={user.id}
-                    user={user}
-                    roles={userRolesMap.get(user.id) ?? []}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
+
+              {filteredUsers.length === 0 ? (
+                <EmptyState
+                  icon={Users}
+                  title={filterApp === "all" && !search ? "No users found" : "No matching users"}
+                  description={
+                    filterApp === "all" && !search
+                      ? "There are no registered users in the system yet."
+                      : "Try adjusting your search or filter criteria."
+                  }
+                />
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3.5">
+                  {filteredUsers.map((user) => (
+                    <UserCard
+                      key={user.id}
+                      user={user}
+                      roles={userRolesMap.get(user.id) ?? null}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </TabsContent>
 
         <TabsContent value="requests">
-          <AccessRequestsSection users={users} apps={apps} onReviewed={refreshCounts} />
+          <AccessRequestsSection users={users ?? []} apps={apps} onReviewed={refreshCounts} />
         </TabsContent>
       </Tabs>
     </div>

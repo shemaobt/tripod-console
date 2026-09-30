@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react"
 import { FolderOpen } from "lucide-react"
-import { toast } from "sonner"
 import { projectsAPI } from "@/services/api"
 import { useAuth } from "@/contexts/AuthContext"
 import type { ProjectResponse } from "@/types"
@@ -14,11 +13,12 @@ import { Button } from "@/components/ui/button"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { LoadingSpinner } from "@/components/common/LoadingSpinner"
 import { EmptyState } from "@/components/common/EmptyState"
+import { LoadFailed } from "@/components/common/LoadFailed"
 import { FilterBar } from "@/components/common/FilterBar"
 
 export default function ProjectsPage() {
   const { isPlatformAdmin, isManager } = useAuth()
-  const [projects, setProjects] = useState<ProjectResponse[]>([])
+  const [projects, setProjects] = useState<ProjectResponse[] | null>([])
   const [loading, setLoading] = useState(true)
   const [query, setQuery] = useState("")
   const [dialogOpen, setDialogOpen] = useState(false)
@@ -38,7 +38,7 @@ export default function ProjectsPage() {
       const { data } = await projectsAPI.list()
       setProjects(data)
     } catch {
-      toast.error("Failed to load projects")
+      setProjects(null)
     } finally {
       setLoading(false)
     }
@@ -77,7 +77,7 @@ export default function ProjectsPage() {
 
   const q = query.trim().toLowerCase()
   const filtered = q
-    ? projects.filter((p) => {
+    ? (projects ?? []).filter((p) => {
         const lang = langOf(p.language_id)
         return (
           p.name.toLowerCase().includes(q) ||
@@ -86,10 +86,12 @@ export default function ProjectsPage() {
           (lang ? `${lang.name} ${lang.code}`.toLowerCase().includes(q) : false)
         )
       })
-    : projects
+    : (projects ?? [])
 
   const projectsView =
-    projects.length === 0 ? (
+    projects === null ? (
+      <LoadFailed what="the projects" onRetry={fetchProjects} />
+    ) : projects.length === 0 ? (
       <EmptyState
         icon={FolderOpen}
         title="No projects yet"
@@ -144,7 +146,9 @@ export default function ProjectsPage() {
           </span>
           <h3 className="text-[1.5625rem] font-bold tracking-tight text-fg-strong">Projects</h3>
           <span className="text-[0.78125rem] text-fg-subtle">
-            {projects.length} project{projects.length !== 1 ? "s" : ""} total
+            {projects === null
+              ? "—"
+              : `${projects.length} project${projects.length !== 1 ? "s" : ""} total`}
           </span>
         </div>
         <div className="flex items-center">

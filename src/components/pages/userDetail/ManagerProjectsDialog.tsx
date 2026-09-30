@@ -8,11 +8,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import { LoadFailed } from "@/components/common/LoadFailed"
 
 export function ManagerProjectsDialog({
   open,
   onOpenChange,
   projects,
+  onRetryProjects,
   loading,
   selectedIds,
   onSelectedIdsChange,
@@ -21,7 +23,8 @@ export function ManagerProjectsDialog({
 }: {
   open: boolean
   onOpenChange: (open: boolean) => void
-  projects: ProjectResponse[]
+  projects: ProjectResponse[] | null
+  onRetryProjects: () => void
   loading: boolean
   selectedIds: string[]
   onSelectedIdsChange: (ids: string[]) => void
@@ -48,6 +51,8 @@ export function ManagerProjectsDialog({
         </DialogHeader>
         {loading ? (
           <p className="text-sm text-fg-muted">Loading projects...</p>
+        ) : projects === null ? (
+          <LoadFailed what="the projects" onRetry={onRetryProjects} />
         ) : projects.length === 0 ? (
           <p className="text-sm text-fg-muted">
             No projects available. Create a project before assigning a manager.

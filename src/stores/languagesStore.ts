@@ -5,6 +5,7 @@ import { languagesAPI } from "@/services/api"
 interface LanguagesStore {
   languages: LanguageResponse[]
   loading: boolean
+  failed: boolean
   lastFetched: number | null
   fetch: () => Promise<LanguageResponse[]>
   invalidate: () => void
@@ -17,6 +18,7 @@ const CACHE_TTL = 5 * 60 * 1000
 export const useLanguagesStore = create<LanguagesStore>((set, get) => ({
   languages: [],
   loading: false,
+  failed: false,
   lastFetched: null,
 
   fetch: async () => {
@@ -37,10 +39,10 @@ export const useLanguagesStore = create<LanguagesStore>((set, get) => ({
     set({ loading: true })
     try {
       const { data } = await languagesAPI.list()
-      set({ languages: data, lastFetched: Date.now(), loading: false })
+      set({ languages: data, lastFetched: Date.now(), loading: false, failed: false })
       return data
     } catch {
-      set({ loading: false })
+      set({ loading: false, failed: true })
       return state.languages
     }
   },
@@ -50,7 +52,7 @@ export const useLanguagesStore = create<LanguagesStore>((set, get) => ({
   },
 
   reset: () => {
-    set({ languages: [], loading: false, lastFetched: null })
+    set({ languages: [], loading: false, failed: false, lastFetched: null })
   },
 
   getLanguageName: (langId: string) => {
