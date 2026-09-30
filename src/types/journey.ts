@@ -51,7 +51,7 @@ export interface PhaseStatusLogEntry {
   to_status: PhaseStatus
   note: string | null
   changed_by: string | null
-  changed_by_name: string
+  changed_by_name: string | null
   is_admin_author: boolean
   created_at: string
 }

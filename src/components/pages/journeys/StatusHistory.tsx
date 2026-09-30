@@ -24,7 +24,9 @@ export function StatusHistory({ entries }: StatusHistoryProps) {
       {entries.map((entry, i) => {
         const from = JOURNEY_STATUS_CONFIG[entry.from_status] ?? JOURNEY_STATUS_CONFIG.not_started
         const to = JOURNEY_STATUS_CONFIG[entry.to_status] ?? JOURNEY_STATUS_CONFIG.not_started
-        const who = `${entry.changed_by_name} · ${entry.is_admin_author ? "Platform admin" : "Project manager"}`
+        const who = entry.changed_by_name
+          ? `${entry.changed_by_name} · ${entry.is_admin_author ? "Platform admin" : "Project manager"}`
+          : "Deleted user"
         return (
           <div key={entry.id} className="relative flex gap-[0.6875rem] pb-4">
             {i < entries.length - 1 && (
