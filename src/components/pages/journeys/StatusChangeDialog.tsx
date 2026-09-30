@@ -7,6 +7,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
+import { cn } from "@/utils/cn"
 import type { PhaseStatus } from "@/types"
 import {
   JOURNEY_STATUS_CONFIG,
@@ -68,8 +69,10 @@ export function StatusChangeDialog({
           </span>
           <ArrowRight className="h-[0.8125rem] w-[0.8125rem] flex-none text-fg-subtle" strokeWidth={2.2} />
           <span
-            className="inline-flex items-center gap-[0.4375rem] rounded-full px-[0.6875rem] py-1 text-[0.75rem] font-bold"
-            style={{ background: toConfig.soft, color: toConfig.text }}
+            className={cn(
+              "inline-flex items-center gap-[0.4375rem] rounded-full bg-elevated px-[0.6875rem] py-1 text-[0.75rem] font-bold shadow-[inset_0_0_0_0.0625rem_var(--color-line-strong)]",
+              toConfig.text,
+            )}
           >
             <ToIcon className="h-3 w-3" strokeWidth={2.2} />
             {toConfig.label}
@@ -91,8 +94,7 @@ export function StatusChangeDialog({
             className="min-h-[6.5rem] w-full resize-y rounded-[0.75rem] border border-line-strong bg-elevated px-[0.8125rem] py-[0.6875rem] text-[0.8125rem] leading-[1.6] text-fg placeholder:text-fg-subtle focus:border-accent focus:outline-none"
           />
           <div
-            className={required ? "mt-1.5 text-[0.71875rem]" : "mt-1.5 text-[0.71875rem] text-fg-subtle"}
-            style={required ? { color: "#8A6209" } : undefined}
+            className={cn("mt-1.5 text-[0.71875rem]", required ? "text-st-warn" : "text-fg-subtle")}
           >
             {required
               ? "A note is required for this status."

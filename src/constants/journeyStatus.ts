@@ -32,20 +32,19 @@ import type { DerivedPhaseStatus, PhaseStatus } from "@/types"
 export interface JourneyStatusConfig {
   label: string
   solid: string
-  soft: string
   text: string
   icon: LucideIcon
 }
 
 export const JOURNEY_STATUS_CONFIG: Record<DerivedPhaseStatus, JourneyStatusConfig> = {
-  completed: { label: "Completed", solid: "#5D6236", soft: "#E2E5D2", text: "#5D6236", icon: Check },
-  in_progress: { label: "In progress", solid: "#4D7068", soft: "#DCE7E4", text: "#3F5D56", icon: Activity },
-  ready: { label: "Ready to start", solid: "#777D45", soft: "#E9EAD9", text: "#5F6534", icon: Play },
-  waiting: { label: "Waiting on deps", solid: "#A87B12", soft: "#F3EAD2", text: "#8A6209", icon: Clock },
-  delayed: { label: "Delayed", solid: "#BE4A01", soft: "#F2D8C2", text: "#A23E00", icon: AlertTriangle },
-  blocked: { label: "Blocked", solid: "#A63A2E", soft: "#F0DCD8", text: "#A63A2E", icon: Lock },
-  not_started: { label: "Not started", solid: "#8A8970", soft: "#E7E6DB", text: "#6B6A52", icon: Circle },
-  cancelled: { label: "Cancelled", solid: "#8A8970", soft: "#EBEAE0", text: "#6B6A52", icon: X },
+  completed: { label: "Completed", solid: "#5D6236", text: "text-st-ok", icon: Check },
+  in_progress: { label: "In progress", solid: "#4D7068", text: "text-st-info", icon: Activity },
+  ready: { label: "Ready to start", solid: "#777D45", text: "text-st-ok", icon: Play },
+  waiting: { label: "Waiting on deps", solid: "#A87B12", text: "text-st-warn", icon: Clock },
+  delayed: { label: "Delayed", solid: "#BE4A01", text: "text-on-accent-soft", icon: AlertTriangle },
+  blocked: { label: "Blocked", solid: "#A63A2E", text: "text-on-accent-soft", icon: Lock },
+  not_started: { label: "Not started", solid: "#8A8970", text: "text-st-idle", icon: Circle },
+  cancelled: { label: "Cancelled", solid: "#8A8970", text: "text-st-idle", icon: X },
 }
 
 export const LEGEND_STATUS_ORDER: DerivedPhaseStatus[] = [

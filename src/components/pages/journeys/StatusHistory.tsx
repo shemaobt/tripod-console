@@ -2,6 +2,7 @@ import { ArrowRight } from "lucide-react"
 import type { PhaseStatusLogEntry } from "@/types"
 import { JOURNEY_STATUS_CONFIG } from "@/constants/journeyStatus"
 import { formatStatusTimestamp } from "@/utils/format"
+import { cn } from "@/utils/cn"
 
 interface StatusHistoryProps {
   entries: PhaseStatusLogEntry[]
@@ -41,8 +42,10 @@ export function StatusHistory({ entries }: StatusHistoryProps) {
                 <span className="text-[0.65625rem] font-semibold text-fg-subtle">{from.label}</span>
                 <ArrowRight className="h-[0.6875rem] w-[0.6875rem] flex-none text-fg-subtle" strokeWidth={2.2} />
                 <span
-                  className="rounded-full px-[0.5625rem] py-[0.15625rem] text-[0.65625rem] font-bold"
-                  style={{ background: to.soft, color: to.text }}
+                  className={cn(
+                    "rounded-full bg-elevated px-[0.5625rem] py-[0.15625rem] text-[0.65625rem] font-bold shadow-[inset_0_0_0_0.0625rem_var(--color-line-strong)]",
+                    to.text,
+                  )}
                 >
                   {to.label}
                 </span>

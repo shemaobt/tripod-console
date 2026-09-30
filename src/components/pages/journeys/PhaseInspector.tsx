@@ -197,10 +197,7 @@ export function PhaseInspector({
               />
             </span>
             {stored === "not_started" && (
-              <div
-                className="mt-1.5 text-[0.71875rem]"
-                style={{ color: derived === "ready" ? "#5F6534" : "#8A6209" }}
-              >
+              <div className={cn("mt-1.5 text-[0.71875rem]", status.text)}>
                 {derived === "ready"
                   ? "All dependencies met — this phase can start."
                   : `Waiting on ${unmet} unfinished ${unmet === 1 ? "dependency." : "dependencies."}`}
@@ -341,8 +338,10 @@ export function PhaseInspector({
                       {o.name}
                     </span>
                     <span
-                      className="ml-auto flex-none text-[0.65625rem] font-semibold"
-                      style={{ color: JOURNEY_STATUS_CONFIG[od].text }}
+                      className={cn(
+                        "ml-auto flex-none text-[0.65625rem] font-semibold",
+                        JOURNEY_STATUS_CONFIG[od].text,
+                      )}
                     >
                       {JOURNEY_STATUS_CONFIG[od].label}
                     </span>
