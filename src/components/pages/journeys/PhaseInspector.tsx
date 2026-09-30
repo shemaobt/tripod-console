@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react"
 import { Check, ChevronDown, ChevronRight, Circle, Upload, X } from "lucide-react"
+import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { ConfirmDialog } from "@/components/common/ConfirmDialog"
@@ -434,12 +435,9 @@ export function PhaseInspector({
 
         {isAdmin && (
           <div className="flex justify-end border-t border-line pt-3.5">
-            <button
-              onClick={requestDelete}
-              className="cursor-pointer rounded-full px-4 py-2 text-[0.78125rem] font-bold text-[#A63A2E] shadow-[inset_0_0_0_0.09375rem_#A63A2E66] transition-colors hover:bg-[#F0DCD8]"
-            >
+            <Button variant="outline-destructive" size="sm" onClick={requestDelete}>
               Delete phase
-            </button>
+            </Button>
           </div>
         )}
       </div>

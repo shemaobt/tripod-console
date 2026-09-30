@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { ChevronDown, ChevronUp, Circle, Image, Plus, Trash2 } from "lucide-react"
 import { ConfirmDialog } from "@/components/common/ConfirmDialog"
+import { Button } from "@/components/ui/button"
 import { phasesAPI } from "@/services/api"
 import type { PhaseCategory, PhaseResponse } from "@/types"
 import { CATEGORY_ICONS } from "@/constants/journeyStatus"
@@ -141,14 +142,16 @@ export function RegistryPhasesTab({
               >
                 <ChevronDown className="h-3.5 w-3.5" strokeWidth={2.1} />
               </button>
-              <button
+              <Button
+                variant="outline-destructive"
+                size="icon"
                 onClick={() => requestDelete(phase.id)}
                 title="Delete phase"
                 aria-label="Delete phase"
-                className="flex h-7 w-7 flex-none cursor-pointer items-center justify-center rounded-[0.5rem] text-[#A63A2E] transition-colors hover:bg-[#F0DCD8]"
+                className="h-7 w-7 flex-none rounded-[0.5rem]"
               >
                 <Trash2 className="h-3.5 w-3.5" strokeWidth={1.9} />
-              </button>
+              </Button>
             </span>
           </div>
         )

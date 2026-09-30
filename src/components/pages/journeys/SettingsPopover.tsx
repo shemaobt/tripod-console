@@ -2,7 +2,7 @@ import { useRef, useState } from "react"
 import { Check, Folder, Search, Settings } from "lucide-react"
 import { Popover, PopoverAnchor, PopoverContent } from "@/components/ui/popover"
 import { ConfirmDialog } from "@/components/common/ConfirmDialog"
-import { cn } from "@/utils/cn"
+import { Button } from "@/components/ui/button"
 import type { Journey, ProjectResponse } from "@/types"
 
 interface SettingsPopoverProps {
@@ -186,17 +186,16 @@ export function SettingsPopover({
             <span className="text-[0.6875rem] text-fg-subtle">
               Phases and assignments are removed.
             </span>
-            <button
-              onClick={() => setConfirmOpen(true)}
-              disabled={!canDelete}
-              title={canDelete ? undefined : "The only journey cannot be deleted"}
-              className={cn(
-                "rounded-full px-4 py-2 text-[0.78125rem] font-bold text-[#A63A2E] shadow-[inset_0_0_0_0.09375rem_#A63A2E66] transition-colors",
-                canDelete ? "cursor-pointer hover:bg-[#F0DCD8]" : "cursor-default opacity-40",
-              )}
-            >
-              Delete journey
-            </button>
+            <span title={canDelete ? undefined : "The only journey cannot be deleted"}>
+              <Button
+                variant="outline-destructive"
+                size="sm"
+                onClick={() => setConfirmOpen(true)}
+                disabled={!canDelete}
+              >
+                Delete journey
+              </Button>
+            </span>
           </div>
         </PopoverContent>
       </Popover>

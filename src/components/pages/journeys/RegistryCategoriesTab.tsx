@@ -1,5 +1,6 @@
 import { Circle, Plus, Trash2 } from "lucide-react"
 import type { PhaseCategory } from "@/types"
+import { Button } from "@/components/ui/button"
 import { CATEGORY_ICONS, CATEGORY_PALETTE, ICON_KEYS } from "@/constants/journeyStatus"
 import { cn } from "@/utils/cn"
 
@@ -67,17 +68,18 @@ export function RegistryCategoriesTab({
               >
                 {open ? "Done" : "Style"}
               </button>
-              <button
-                onClick={canDelete ? () => onDelete(c.id) : undefined}
-                title={deleteHint}
-                aria-label="Delete category"
-                className={cn(
-                  "flex h-7 w-7 flex-none items-center justify-center rounded-[0.5rem] text-[#A63A2E] transition-colors",
-                  canDelete ? "cursor-pointer hover:bg-[#F0DCD8]" : "cursor-default opacity-30",
-                )}
-              >
-                <Trash2 className="h-3.5 w-3.5" strokeWidth={1.9} />
-              </button>
+              <span title={deleteHint} className="flex flex-none">
+                <Button
+                  variant="outline-destructive"
+                  size="icon"
+                  onClick={() => onDelete(c.id)}
+                  disabled={!canDelete}
+                  aria-label="Delete category"
+                  className="h-7 w-7 rounded-[0.5rem]"
+                >
+                  <Trash2 className="h-3.5 w-3.5" strokeWidth={1.9} />
+                </Button>
+              </span>
             </div>
             {open && (
               <div className="flex flex-col gap-[0.6875rem] border-t border-line pt-2.5">
