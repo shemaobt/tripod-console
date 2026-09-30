@@ -4,6 +4,7 @@ import type { AppResponse } from "@/types"
 import { cn } from "@/utils/cn"
 import { avatarColors, initialsOf } from "@/utils/avatar"
 import { platformLabel } from "@/constants/platforms"
+import { card } from "@/styles"
 
 export function AppCard({
   app,
@@ -48,7 +49,7 @@ export function AppCard({
         <div className="flex flex-col gap-px min-w-0">
           <Link
             to={to}
-            className="text-[0.90625rem] font-semibold text-fg-strong truncate after:absolute after:inset-0 after:rounded-[inherit]"
+            className={cn("text-[0.90625rem] font-semibold text-fg-strong truncate", card.stretchedLink)}
           >
             {app.name}
           </Link>
@@ -77,7 +78,7 @@ export function AppCard({
         </span>
       )}
 
-      <div className="absolute top-2.5 right-2.5 z-10 flex items-center gap-1 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 [@media(hover:none)]:opacity-100 transition-opacity">
+      <div className={cn("absolute top-2.5 right-2.5 z-10 flex items-center gap-1 transition-opacity", card.revealActions)}>
         <button
           type="button"
           onClick={onEdit}

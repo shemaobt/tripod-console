@@ -5,6 +5,7 @@ import { UserAvatar } from "@/components/common/UserAvatar"
 import { avatarColors, initialsOf } from "@/utils/avatar"
 import { formatDate } from "@/utils/format"
 import { cn } from "@/utils/cn"
+import { card } from "@/styles"
 
 const MEMBER_STYLES = ["bg-azul", "bg-verde-claro", "bg-quiet"]
 
@@ -52,7 +53,7 @@ export function ProjectCard({ project, langName, langCode, to, onEdit }: Project
           )}
           <Link
             to={to}
-            className="text-[0.9375rem] font-semibold leading-snug text-fg-strong after:absolute after:inset-0 after:rounded-[inherit]"
+            className={cn("text-[0.9375rem] font-semibold leading-snug text-fg-strong", card.stretchedLink)}
           >
             {project.name}
           </Link>
@@ -129,7 +130,10 @@ export function ProjectCard({ project, langName, langCode, to, onEdit }: Project
         type="button"
         onClick={onEdit}
         aria-label={`Edit ${project.name}`}
-        className="absolute right-2.5 top-2.5 z-10 grid h-[1.875rem] w-[1.875rem] place-items-center rounded-[0.5625rem] bg-elevated text-fg-subtle shadow-[var(--shadow-sm)] transition-all hover:bg-muted hover:text-fg-strong opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 [@media(hover:none)]:opacity-100"
+        className={cn(
+          "absolute right-2.5 top-2.5 z-10 grid h-[1.875rem] w-[1.875rem] place-items-center rounded-[0.5625rem] bg-elevated text-fg-subtle shadow-[var(--shadow-sm)] transition-all hover:bg-muted hover:text-fg-strong",
+          card.revealActions,
+        )}
       >
         <Pencil className="h-[0.9375rem] w-[0.9375rem]" strokeWidth={1.75} />
       </button>

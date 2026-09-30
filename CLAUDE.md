@@ -188,7 +188,7 @@ Use `isPlatformAdmin`, `isManager`, `managedProjectIds` / `managedOrgIds`, and `
 - `index.css` defines `*:focus-visible { outline: 0.15625rem solid var(--focus-ring); outline-offset: 0.125rem }` (`--focus-ring` is telha; lighter in dark mode).
 - Components should **not** add ring utilities (`focus:ring-*` / `focus-visible:ring-*`) — the global outline handles keyboard focus.
 - A `focus:outline-none` inside a component does **not** remove that ring: the global rule is written outside any `@layer`, and unlayered CSS beats every Tailwind utility regardless of specificity. Measured on `SelectTrigger`, the dialog's close button and the roles inputs (2px telha outline on focus, #43). Do not "restore" a ring there.
-- A card whose whole surface opens something is a real link: the title is a `Link` stretched over the card with `after:absolute after:inset-0`, and any action buttons inside sit above it (`z-10`) and show on `group-focus-within` and on touch (`[@media(hover:none)]`), not only on hover (#43).
+- A card whose whole surface opens something is a real link: the title is a `Link` stretched over the card with `card.stretchedLink`, and any action buttons inside come after it in the DOM, sit above it (`z-10`) and use `card.revealActions`, which shows them on `group-focus-within` and on touch (`[@media(hover:none)]`), not only on hover (#43).
 - Every dialog returns focus to whatever opened it (`useReturnFocus` in `ui/dialog.tsx`) — Radix alone only does it for a `DialogTrigger`, and dialogs here open from state (#43).
 - Input-like components (Input, Textarea) are underline-style and use `focus:outline-none focus:border-accent` so the underline shifts to accent on focus.
 
@@ -201,7 +201,7 @@ Use `isPlatformAdmin`, `isManager`, `managedProjectIds` / `managedOrgIds`, and `
 ### Centralized style constants
 
 - **Use `src/styles/`** for reusable style constants. This directory contains TypeScript objects with Tailwind class strings organized by purpose:
-  - `cards.ts` — `card.base` (`bg-elevated rounded-[1.125rem] shadow-[var(--shadow-card)]`), `card.hover` (lift + shadow), `card.interactive` (base + hover + cursor), `card.padded` (base + `p-5 sm:p-6`)
+  - `cards.ts` — `card.base` (`bg-elevated rounded-[1.125rem] shadow-[var(--shadow-card)]`), `card.hover` (lift + shadow), `card.interactive` (base + hover + cursor), `card.padded` (base + `p-5 sm:p-6`), `card.stretchedLink` (`after:absolute after:inset-0`, for a title link that covers a `relative` card), `card.revealActions` (actions hidden until hover, focus inside the `group` or a touch screen)
   - `layout.ts` — `page` (`min-h-screen bg-canvas`), `container` (`max-w-[77.5rem] mx-auto px-6 sm:px-10 py-8 sm:py-9`), `grid`, `main`
   - `states.ts` — `empty`, `loading`, `error` (`accent-soft` banner), `warning` (`muted` banner)
 - **Import from `@/styles`** when using these constants
