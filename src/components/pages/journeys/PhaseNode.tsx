@@ -34,10 +34,6 @@ export function PhaseNode({
 }: PhaseNodeProps) {
   const status = JOURNEY_STATUS_CONFIG[derived]
   const BadgeIcon = status.icon
-  //: A base da fase e tingida pelo status, e nao mais um creme fixo. Sao tres elipses
-  //: empilhadas e, em cada uma, o topo e a espessura sao a cor do status diluida no
-  //: branco da marca em graus diferentes -- mais forte na de fora, quase branca na de
-  //: dentro, para a base parecer iluminada por baixo pelo proprio status.
   const base = {
     outerTop: soft(status.solid, 0.3),
     outerSide: soft(status.solid, 0.46),
