@@ -568,13 +568,19 @@ export function useJourneyBuilder(isAdmin: boolean, managedProjectIds: string[])
 
   const deleteCategory = useCallback(
     async (id: string) => {
-      const store = useJourneysStore.getState()
-      if (store.categories.length < 2) return
+      if (useJourneysStore.getState().categories.length < 2) return
       try {
         await phaseCategoriesAPI.remove(id)
+        const store = useJourneysStore.getState()
+        const moved = store.categories.find((c) => c.id === id)?.phase_count ?? 0
         const rest = store.categories.filter((c) => c.id !== id)
-        store.setCategories(rest)
         const fallback = rest[0]
+        store.setCategories(
+          rest.map((c) =>
+            c.id === fallback.id ? { ...c, phase_count: c.phase_count + moved } : c,
+          ),
+        )
+        store.invalidate()
         mutPhases((ps) =>
           ps.map((p) => (p.category_id === id ? { ...p, category_id: fallback.id } : p)),
         )

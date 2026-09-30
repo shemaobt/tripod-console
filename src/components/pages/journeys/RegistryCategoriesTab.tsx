@@ -1,6 +1,8 @@
+import { useState } from "react"
 import { Circle, Plus, Trash2 } from "lucide-react"
 import type { PhaseCategory } from "@/types"
 import { Button } from "@/components/ui/button"
+import { ConfirmDialog } from "@/components/common/ConfirmDialog"
 import { FieldError } from "@/components/common/FieldError"
 import {
   CATEGORY_ICONS,
@@ -31,7 +33,18 @@ export function RegistryCategoriesTab({
   onDelete,
   onAddCategory,
 }: RegistryCategoriesTabProps) {
+  const [deleteId, setDeleteId] = useState<string | null>(null)
   const canDelete = categories.length > 1
+  const target = categories.find((c) => c.id === deleteId)
+  const fallback = categories.find((c) => c.id !== deleteId)
+  const moving = target?.phase_count ?? 0
+  const confirmDescription = target
+    ? `Hard delete of "${target.name}". Categories are shared by every journey, and this cannot be undone.${
+        moving > 0 && fallback
+          ? ` Its ${moving} phase${moving === 1 ? "" : "s"}, across all journeys, will move to "${fallback.name}" and take its colour and icon.`
+          : ""
+      }`
+    : ""
 
   return (
     <div className="flex flex-col gap-[0.4375rem]">
@@ -43,12 +56,7 @@ export function RegistryCategoriesTab({
         const open = editingId === c.id
         const usage =
           c.phase_count === 0 ? "Unused" : c.phase_count === 1 ? "1 phase" : `${c.phase_count} phases`
-        const other = categories.find((x) => x.id !== c.id)
-        const deleteHint = !canDelete
-          ? "At least one category is required"
-          : c.phase_count > 0 && other
-            ? `Delete — phases move to ${other.name}`
-            : "Delete category"
+        const deleteHint = canDelete ? "Delete category" : "At least one category is required"
         return (
           <div key={c.id} className="flex flex-col gap-[0.5625rem] rounded-[0.875rem] bg-muted px-2.5 py-2">
             <div className="flex min-w-0 items-center gap-[0.5625rem]">
@@ -79,7 +87,7 @@ export function RegistryCategoriesTab({
                 <Button
                   variant="outline-destructive"
                   size="icon"
-                  onClick={() => onDelete(c.id)}
+                  onClick={() => setDeleteId(c.id)}
                   disabled={!canDelete}
                   aria-label="Delete category"
                   className="h-7 w-7 rounded-[0.5rem]"
@@ -155,6 +163,18 @@ export function RegistryCategoriesTab({
         <Plus className="h-3.5 w-3.5" strokeWidth={2.2} />
         New category
       </button>
+      <ConfirmDialog
+        open={deleteId !== null}
+        onOpenChange={(open) => {
+          if (!open) setDeleteId(null)
+        }}
+        title="Delete category"
+        description={confirmDescription}
+        confirmLabel="Delete category"
+        onConfirm={() => {
+          if (deleteId) onDelete(deleteId)
+        }}
+      />
     </div>
   )
 }
