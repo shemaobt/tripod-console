@@ -96,7 +96,7 @@ src/
 ├── contexts/                    # AuthContext, ThemeContext
 ├── stores/                      # Zustand stores:
 │                                #   onboardingStore — dismissed spotlights (localStorage persist)
-│                                #   languagesStore  — languages cache (5-min TTL) + getLanguageName; `failed` when the read did not answer
+│                                #   languagesStore  — languages cache (5-min TTL) + getLanguageName
 │                                #   phasesStore     — phases + dependencies cache (2-min TTL)
 ├── services/                    # api.ts — Single Axios client with namespaced APIs
 │                                #   logApiFailure.ts — the one place API failures reach the console
@@ -104,7 +104,8 @@ src/
 │                                #   role, phase, accessRequest, changeRequest, publicRequest; index barrel)
 ├── constants/                   # app.ts (token keys), platforms.ts (PLATFORM_OPTIONS, platformLabel, platformsError),
 │                                #   phaseStatus.ts, map.ts (tile URLs, OSM/CARTO attribution, pin icon)
-├── utils/                       # cn.ts (class merging), format.ts (formatDate, timeAgo), apiError.ts (isNotFound)
+├── utils/                       # cn.ts (class merging), format.ts (formatDate, timeAgo)
+│                                #   apiError.ts (isNotFound)
 └── styles/                      # Centralized style constants (cards, layout, states; index barrel)
 ```
 
@@ -248,7 +249,7 @@ Key distinction:
 - `appsAPI.myApps()` → `GET /api/apps/my-apps` — returns apps the current user has access to, with their roles. Used by DashboardPage (My Apps hub). Available to all authenticated users.
 - `appsAPI.list()` → `GET /api/apps` — returns all apps. Admin only. Used by AppsPage (Manage Apps).
 
-- **Failed reads are never drawn as empty** (OBT-258, 2026-09-28, levigft). Every failed request is logged once by the response interceptor through `services/logApiFailure.ts` (method, URL, status and the backend's `detail`) — that is the developer's channel. The user's channel is `components/common/LoadFailed`: one plain sentence naming what did not load, with **Try again**, and no status code or jargon. A section whose read failed holds `null`, not `[]`, so "the server said there is nothing" and "the server did not answer" stay distinguishable. A detail page tells the two failures apart too: a 404 still says "not found" (`utils/apiError.ts` → `isNotFound`), anything else is `LoadFailed`. It holds on every page read since #44 (2026-09-28, levigft). The one boundary: a list loaded on demand by the user's own gesture — the apps and roles behind the user page's assign picker — keeps a toast, because the notice lands at the moment and next to the control that asked.
+- **Failed reads are never drawn as empty** (OBT-258, 2026-09-28, levigft). Every failed request is logged once by the response interceptor through `services/logApiFailure.ts` (method, URL, status and the backend's `detail`) — that is the developer's channel. The user's channel is `components/common/LoadFailed`: one plain sentence naming what did not load, with **Try again**, and no status code or jargon. A section whose read failed holds `null`, not `[]`, so "the server said there is nothing" and "the server did not answer" stay distinguishable. A store that caches a read keeps the same distinction in a `failed` flag (`languagesStore`). A detail page tells the two failures apart too: a 404 still says "not found" (`utils/apiError.ts` → `isNotFound`), anything else is `LoadFailed`. It holds on every page read since #44 (2026-09-28, levigft). The one boundary: a list loaded on demand by the user's own gesture — the apps and roles behind the user page's assign picker — keeps a toast, because the notice lands at the moment and next to the control that asked.
 - **New endpoints**: Add methods to the appropriate namespace in `api.ts`; do not create a second axios client or duplicate auth handling.
 - **Types**: Prefer types from `src/types/`. Keep request/response types aligned with the backend schemas.
 
