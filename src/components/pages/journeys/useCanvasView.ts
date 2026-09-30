@@ -176,6 +176,7 @@ export function useCanvasView({
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (!keysRef.current) return
+      if (e.ctrlKey || e.metaKey || e.altKey) return
       const tag = (e.target as HTMLElement | null)?.tagName
       if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return
       if (e.key === "Escape") {
