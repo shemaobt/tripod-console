@@ -1,10 +1,8 @@
-import { useState } from "react"
+import { useRef, useState } from "react"
 import { ChevronDown, ChevronUp } from "lucide-react"
 import type { ProjectResponse } from "@/types"
 import { cn } from "@/utils/cn"
 import { SearchPill } from "@/components/common/FilterBar"
-
-const isNarrow = () => window.matchMedia("(max-width: 847.98px)").matches
 
 export type MapRow = {
   project: ProjectResponse
@@ -25,11 +23,13 @@ export function FieldMapPanel({
   countLabel: string
 }) {
   const [search, setSearch] = useState("")
-  const [collapsed, setCollapsed] = useState(isNarrow)
+  const [collapsed, setCollapsed] = useState(true)
+  const toggleRef = useRef<HTMLButtonElement>(null)
 
   function select(project: ProjectResponse) {
     onSelect(project)
-    if (isNarrow()) setCollapsed(true)
+    setCollapsed(true)
+    toggleRef.current?.focus()
   }
 
   const query = search.trim().toLowerCase()
@@ -56,6 +56,7 @@ export function FieldMapPanel({
           </span>
         </div>
         <button
+          ref={toggleRef}
           type="button"
           onClick={() => setCollapsed((c) => !c)}
           aria-expanded={!collapsed}
