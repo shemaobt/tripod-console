@@ -21,6 +21,11 @@ interface SettingsPopoverProps {
   onDelete: () => void
 }
 
+interface PendingToggle {
+  project: ProjectResponse
+  on: boolean
+}
+
 const ICON_BTN =
   "flex h-9 w-9 cursor-pointer items-center justify-center rounded-full text-fg-muted shadow-[inset_0_0_0_0.0625rem_var(--color-line-strong)] transition-colors hover:bg-muted hover:text-fg-strong"
 
@@ -39,6 +44,7 @@ export function SettingsPopover({
 }: SettingsPopoverProps) {
   const [query, setQuery] = useState("")
   const [confirmOpen, setConfirmOpen] = useState(false)
+  const [pendingToggle, setPendingToggle] = useState<PendingToggle | null>(null)
   const anchorRef = useRef<HTMLDivElement>(null)
 
   const setOpen = (next: boolean) => {
@@ -62,6 +68,19 @@ export function SettingsPopover({
           : ""
       }`
     : ""
+
+  const requestToggle = (p: ProjectResponse) => {
+    const on = p.journey_id === journey?.id
+    if (on || p.journey_id) setPendingToggle({ project: p, on: !on })
+    else onToggleProject(p.id, true)
+  }
+
+  const toggleDescription = !pendingToggle
+    ? ""
+    : pendingToggle.on
+      ? `"${pendingToggle.project.name}" follows "${journeyName(pendingToggle.project.journey_id)}" today. Moving it to "${journey?.name ?? ""}" removes the phase statuses it recorded there. This cannot be undone.`
+      : `"${pendingToggle.project.name}" will be left without a journey, and the phase statuses it recorded will be removed. This cannot be undone.`
+  const toggleLabel = pendingToggle?.on ? "Move project" : "Unlink project"
 
   return (
     <>
@@ -88,7 +107,7 @@ export function SettingsPopover({
         <PopoverContent
           align="start"
           onInteractOutside={(e) => {
-            if (anchorRef.current?.contains(e.target as Node)) e.preventDefault()
+            if (pendingToggle || anchorRef.current?.contains(e.target as Node)) e.preventDefault()
           }}
           className="flex max-h-[calc(100vh-8rem)] w-[22.5rem] flex-col gap-3.5 overflow-y-auto rounded-[1rem] p-[1.125rem]"
         >
@@ -157,7 +176,7 @@ export function SettingsPopover({
                 return (
                   <button
                     key={p.id}
-                    onClick={() => onToggleProject(p.id, !on)}
+                    onClick={() => requestToggle(p)}
                     aria-pressed={on}
                     className="flex w-full cursor-pointer items-center gap-2.5 rounded-[0.625rem] px-2.5 py-2 transition-colors hover:bg-muted"
                   >
@@ -215,6 +234,18 @@ export function SettingsPopover({
         description={confirmDescription}
         confirmLabel="Delete journey"
         onConfirm={onDelete}
+      />
+      <ConfirmDialog
+        open={pendingToggle !== null}
+        onOpenChange={(next) => {
+          if (!next) setPendingToggle(null)
+        }}
+        title={toggleLabel}
+        description={toggleDescription}
+        confirmLabel={toggleLabel}
+        onConfirm={() => {
+          if (pendingToggle) onToggleProject(pendingToggle.project.id, pendingToggle.on)
+        }}
       />
     </>
   )
