@@ -39,7 +39,7 @@ export default function LanguagesPage() {
   const [deleting, setDeleting] = useState(false)
   const [allLanguages, setAllLanguages] = useState<LanguageResponse[] | null>([])
   const [reactivatingId, setReactivatingId] = useState<string | null>(null)
-  const [projects, setProjects] = useState<ProjectResponse[] | null>(null)
+  const [projects, setProjects] = useState<ProjectResponse[] | null | undefined>(undefined)
   const usageRequestRef = useRef<string | null>(null)
 
   const loadProjects = useCallback(
@@ -160,7 +160,7 @@ export default function LanguagesPage() {
     } catch {
       if (usageRequestRef.current !== lang.id) return
       setDeleteUsage(
-        projects === null
+        !projects
           ? { status: "unknown" }
           : { status: "known", projects: projectsByLanguage.get(lang.id) ?? [] },
       )
@@ -243,7 +243,7 @@ export default function LanguagesPage() {
         )}
         <LanguagesTable
           languages={displayLanguages}
-          projectsByLanguage={projects === null ? null : projectsByLanguage}
+          projectsByLanguage={projects ? projectsByLanguage : null}
           currentUserId={user?.id}
           canEdit={isPlatformAdmin || canRequestEdit}
           canDeactivate={canDeactivate}
