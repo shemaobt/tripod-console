@@ -18,7 +18,9 @@ const roleLegend = [...roleChoices].reverse()
 export default function UsersPage() {
   const [users, setUsers] = useState<UserListResponse[] | null>([])
   const [apps, setApps] = useState<AppResponse[]>([])
-  const [userRolesMap, setUserRolesMap] = useState<Map<string, UserRoleResponse[]>>(new Map())
+  const [userRolesMap, setUserRolesMap] = useState<Map<string, UserRoleResponse[] | null>>(
+    new Map(),
+  )
   const [rolesFailed, setRolesFailed] = useState(0)
   const [loading, setLoading] = useState(true)
   const [filterApp, setFilterApp] = useState("all")
@@ -34,9 +36,6 @@ export default function UsersPage() {
   const loadUsers = useCallback(async () => {
     try {
       const [usersRes, appsRes] = await Promise.all([usersAPI.list(), appsAPI.list()])
-      setUsers(usersRes.data)
-      setApps(appsRes.data)
-
       const rolesEntries = await Promise.all(
         usersRes.data.map(async (u) => {
           try {
@@ -47,8 +46,10 @@ export default function UsersPage() {
           }
         }),
       )
+      setUsers(usersRes.data)
+      setApps(appsRes.data)
       setRolesFailed(rolesEntries.filter(([, roles]) => roles === null).length)
-      setUserRolesMap(new Map(rolesEntries.map(([id, roles]) => [id, roles ?? []])))
+      setUserRolesMap(new Map(rolesEntries))
     } catch {
       setUsers(null)
     } finally {
@@ -161,7 +162,7 @@ export default function UsersPage() {
                     <UserCard
                       key={user.id}
                       user={user}
-                      roles={userRolesMap.get(user.id) ?? []}
+                      roles={userRolesMap.get(user.id) ?? null}
                     />
                   ))}
                 </div>

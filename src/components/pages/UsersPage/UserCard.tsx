@@ -8,7 +8,7 @@ import { getUserRole, roleMeta } from "@/components/pages/userDetail/roles"
 
 interface UserCardProps {
   user: UserListResponse
-  roles: UserRoleResponse[]
+  roles: UserRoleResponse[] | null
 }
 
 export function UserCard({ user, roles }: UserCardProps) {
@@ -41,7 +41,7 @@ export function UserCard({ user, roles }: UserCardProps) {
             {label}
           </Badge>
           <span className="text-[0.6875rem] text-fg-subtle truncate">
-            {roles.length} app role{roles.length === 1 ? "" : "s"}
+            {roles ? `${roles.length} app role${roles.length === 1 ? "" : "s"}` : "— app roles"}
           </span>
           {!user.is_active && (
             <span className="inline-flex items-center gap-1.5 text-[0.6875rem] font-semibold text-st-warn shrink-0">
