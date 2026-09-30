@@ -79,5 +79,13 @@ export function useAdminDashboardData(enabled: boolean) {
     setAttempt((n) => n + 1)
   }, [])
 
-  return { data, languages: languagesFailed && languages.length === 0 ? null : languages, loading: enabled && !data && !failed, failed, pendingFailed, retry }
+  return {
+    data,
+    languages: languagesFailed && languages.length === 0 ? null : languages,
+    loading: enabled && !data && !failed,
+    failed,
+    pendingFailed,
+    retry,
+    retryLanguages: fetchLanguages,
+  }
 }
