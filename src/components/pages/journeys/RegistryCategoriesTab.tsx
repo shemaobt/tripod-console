@@ -117,7 +117,8 @@ export function RegistryCategoriesTab({
                           key={key}
                           onClick={() => onIcon(c.id, key)}
                           aria-pressed={on}
-                          aria-label="Icon"
+                          title={key}
+                          aria-label={key}
                           className={cn(
                             "flex h-8 w-8 cursor-pointer items-center justify-center rounded-[0.625rem]",
                             on
