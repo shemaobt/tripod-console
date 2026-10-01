@@ -13,6 +13,7 @@ export interface ProjectResponse {
   longitude: number | null
   location_display_name: string | null
   team_size: number
+  journey_id?: string | null
   image_url?: string | null
   phases_completed?: number
   phases_total?: number

@@ -72,7 +72,7 @@ src/
 │   │                            #     dashboard/   AdminDashboard, AppCard
 │   │                            #   LanguagesPage
 │   │                            #   ProjectsPage, ProjectDetailPage
-│   │                            #     ProjectAccessTab, ProjectPhasesTab
+│   │                            #     ProjectAccessTab
 │   │                            #     projects/      ProjectFormDialog
 │   │                            #     projectAccess/ UserAccessSection, GrantUserDialog, RevokeButton,
 │   │                            #                    managerLock (the "only an admin can undo" sentence)
@@ -82,8 +82,9 @@ src/
 │   │                            #   AppsPage, AppDetailPage                        [admin only]
 │   │                            #     apps/        AppCard, AppFormDialog, DetailsCard,
 │   │                            #                  RolesCard, AutoApproveCard, DangerZoneCard
-│   │                            #   PhasesPage                                     [admin only]
-│   │                            #     phases/      DependencyPanel, PhaseFlowGraph
+│   │                            #   JourneysPage (journeys/index)                  [admin edits · manager sets status]
+│   │                            #     journeys/    JourneyCanvas, PhaseNode, PhaseInspector, StatusChangeDialog,
+│   │                            #                  StatusHistory, RegistryDialog, useJourneyBuilder, useCanvasView
 │   │                            #   MapPage
 │   │                            #     map/         FieldMapPanel, ProjectPopupContent
 │   │                            #   PublicRequestPage                              [public /request]
@@ -98,13 +99,13 @@ src/
 ├── stores/                      # Zustand stores:
 │                                #   onboardingStore — dismissed spotlights (localStorage persist)
 │                                #   languagesStore  — languages cache (5-min TTL) + getLanguageName
-│                                #   phasesStore     — phases + dependencies cache (2-min TTL)
+│                                #   journeysStore   — journeys + phase categories cache (2-min TTL)
 ├── services/                    # api.ts — Single Axios client with namespaced APIs
 │                                #   logApiFailure.ts — the one place API failures reach the console
 ├── types/                       # TS interfaces (auth, user, app, language, project,
-│                                #   role, phase, accessRequest, changeRequest, publicRequest; index barrel)
+│                                #   role, phase, journey, accessRequest, changeRequest, publicRequest; index barrel)
 ├── constants/                   # app.ts (token keys), platforms.ts (PLATFORM_OPTIONS, platformLabel, platformsError),
-│                                #   phaseStatus.ts, map.ts (tile URLs, OSM/CARTO attribution, pin icon)
+│                                #   phaseStatus.ts, journeyStatus.ts, map.ts (tile URLs, OSM/CARTO attribution, pin icon)
 ├── utils/                       # cn.ts (class merging), format.ts (formatDate, timeAgo)
 │                                #   apiError.ts (isNotFound, isForbidden)
 └── styles/                      # Centralized style constants (cards, layout, states; index barrel)
@@ -144,19 +145,20 @@ Routes are defined in `App.tsx` under the `/app` shell (`AppShell`):
 | `/app/dashboard` | DashboardPage | My Apps hub + Platform Overview (admin) |
 | `/app/languages` | LanguagesPage | Languages table |
 | `/app/projects` | ProjectsPage | Projects list |
-| `/app/projects/:projectId` | ProjectDetailPage | Project detail (Info / Phases / Access) |
+| `/app/projects/:projectId` | ProjectDetailPage | Project detail (Info / Access) |
 | `/app/map` | MapPage | Global project map (Leaflet) |
 | `/app/users` | UsersPage | Users list (admin only) |
 | `/app/users/:userId` | UserDetailPage | User detail + role/status (admin only) |
 | `/app/apps` | AppsPage | Manage Apps CRUD (admin only) |
 | `/app/apps/:appId` | AppDetailPage | App detail + roles + metadata (admin only) |
-| `/app/phases` | PhasesPage | Global phase catalog + dependency graph (admin only) |
+| `/app/journeys` | JourneysPage | Journey builder — platform admins create and edit journeys and their phases; managers see the journeys of the projects they manage and set each phase's status, with a note that is required for delayed, blocked and cancelled |
+| `/app/phases` | → redirects to `/app/journeys` | The phase catalog moved into the journeys (OBT-418) |
 | `*` | NotFoundPage | 404 |
 
 **Role-aware views**:
 - **Console access gate**: the `/app` shell requires **platform admin or manager**. A signed-in user who is neither gets `AccessDeniedPage` (variant `logout`) — see `AppShell.tsx`. Plain members have no console access.
 - **Platform admin + manager** see: My Apps (dashboard), Languages, Projects, Map. (Organizations was removed from the console. Project access is granted to people only — the org grant/revoke section was removed too, OBT-258, 2026-09-28, levigft; `tripod-api` still grants access through organizations and stays as it is.)
-- **Admin-only routes** (`/app/users`, `/app/apps`, `/app/phases`): wrapped in `AdminRoute`, hidden from the sidebar, and return AccessDeniedPage for non-platform-admins.
+- **Admin-only routes** (`/app/users`, `/app/apps`): wrapped in `AdminRoute`, hidden from the sidebar, and return AccessDeniedPage for non-platform-admins.
 - **Managers** are scoped to the projects/orgs they manage (`managedProjectIds` / `managedOrgIds`). On the Access tab of a project they manage they can grant access as member **or manager**, and promote a member to manager from the row's role selector — but a manager's row stays read-only for them (no role change, no revoke), including one they just promoted: only a platform admin demotes or removes a manager. Because the step is one-way for them, the grant dialog (with Manager picked) and a "Make Manager" confirmation on the row say so before it happens, with the one sentence in `projectAccess/managerLock.ts`. A 403 from the API on a role change or revoke is a toast, never a silent success. Platform admins still can't be added to a project, and facilitator is not offered in the console (2026-10-01, product owner; replaces the #40 rule that hid the Manager option from managers).
 - **App admins** can manage roles for their specific app only. When viewing role assignment, the app dropdown is filtered to apps they admin.
 - **Platform admins** see all routes and can manage everything globally.
@@ -225,8 +227,8 @@ Use `isPlatformAdmin`, `isManager`, `managedProjectIds` / `managedOrgIds`, and `
 - **Zustand**: Use for **cross-page state** that needs to persist across navigation. Current stores:
   - `onboardingStore` — dismissed feature spotlights (persisted to localStorage `tc_onboarding`)
   - `languagesStore` — languages cache (5-min TTL) with a `getLanguageName` helper
-  - `phasesStore` — phases + dependency-graph cache (2-min TTL, via `phasesAPI.listWithDependencies`)
-  - Create one store per domain, `create` with optional `persist` middleware. Logout resets the languages/phases caches.
+  - `journeysStore` — journeys + phase categories cache (2-min TTL, via `journeysAPI.list` and `phaseCategoriesAPI.list`); `reset()` discards a fetch still in flight
+  - Create one store per domain, `create` with optional `persist` middleware. Logout resets the languages/journeys caches.
 - **React Context**: Use for **auth** (AuthContext: user, isPlatformAdmin, isManager, managedOrgIds/managedProjectIds/managedOrgId, appRoles, isAppAdmin, refreshUser, isLoading, login, logout) and **UI state** (ThemeContext: light/dark/system, persisted to `tc_theme`). Do not put domain data in Context; use Zustand for that.
 - **Local state**: Use `useState` / `useReducer` for component-local UI state (form fields, modals, table filters). Do not lift state to a global store unless it is shared across routes.
 
@@ -482,9 +484,9 @@ MAIN
 CONTENT                                   [admin + manager]
   Languages       (Languages)
   Projects        (FolderOpen)
+  Journeys        (Waypoints)
   Map             (Globe)
 ADMINISTRATION                            [admin only]
-  Phases          (GitBranch)
   Users           (Users)
   Manage Apps     (AppWindow)
 ─────────────
