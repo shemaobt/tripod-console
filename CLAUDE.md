@@ -106,7 +106,7 @@ src/
 ├── constants/                   # app.ts (token keys), platforms.ts (PLATFORM_OPTIONS, platformLabel, platformsError),
 │                                #   phaseStatus.ts, map.ts (tile URLs, OSM/CARTO attribution, pin icon)
 ├── utils/                       # cn.ts (class merging), format.ts (formatDate, timeAgo)
-│                                #   apiError.ts (isNotFound)
+│                                #   apiError.ts (isNotFound, isForbidden)
 └── styles/                      # Centralized style constants (cards, layout, states; index barrel)
 ```
 
