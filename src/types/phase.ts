@@ -2,6 +2,10 @@ export interface PhaseResponse {
   id: string
   name: string
   description: string | null
+  journey_id: string | null
+  category_id: string | null
+  sort_order: number
+  icon_url: string | null
   created_at: string
   updated_at: string
   project_ids?: string[]
@@ -10,11 +14,15 @@ export interface PhaseResponse {
 export interface PhaseCreate {
   name: string
   description?: string | null
+  journey_id: string
+  category_id?: string | null
 }
 
 export interface PhaseUpdate {
   name?: string
   description?: string | null
+  category_id?: string | null
+  icon_url?: string | null
 }
 
 export interface PhaseDependencyResponse {
@@ -23,13 +31,21 @@ export interface PhaseDependencyResponse {
   depends_on_id: string
 }
 
-export type PhaseStatus = "not_started" | "in_progress" | "completed" | "blocked"
+export type PhaseStatus =
+  | "not_started"
+  | "in_progress"
+  | "delayed"
+  | "blocked"
+  | "completed"
+  | "cancelled"
 
 export const PHASE_STATUSES: PhaseStatus[] = [
   "not_started",
   "in_progress",
-  "completed",
+  "delayed",
   "blocked",
+  "completed",
+  "cancelled",
 ]
 
 export interface ProjectPhaseResponse {
