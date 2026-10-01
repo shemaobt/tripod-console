@@ -8,9 +8,11 @@ import type {
 import { ConfirmDialog } from "@/components/common/ConfirmDialog"
 import { FeatureSpotlight } from "@/components/common/FeatureSpotlight"
 import { LoadFailed } from "@/components/common/LoadFailed"
+import { isForbidden } from "@/utils/apiError"
 import { useAuth } from "@/contexts/AuthContext"
 import { UserAccessSection } from "./projectAccess/UserAccessSection"
 import { GrantUserDialog } from "./projectAccess/GrantUserDialog"
+import { MANAGER_LOCK_NOTICE } from "./projectAccess/managerLock"
 
 export function ProjectAccessTab({ projectId }: { projectId: string }) {
   const { isPlatformAdmin, managedProjectIds } = useAuth()
@@ -25,6 +27,8 @@ export function ProjectAccessTab({ projectId }: { projectId: string }) {
   const [grantingUser, setGrantingUser] = useState(false)
 
   const [revokingUser, setRevokingUser] =
+    useState<ProjectUserAccessDetailResponse | null>(null)
+  const [promotingUser, setPromotingUser] =
     useState<ProjectUserAccessDetailResponse | null>(null)
 
   async function fetchUserAccess() {
@@ -80,8 +84,24 @@ export function ProjectAccessTab({ projectId }: { projectId: string }) {
       await projectsAPI.updateUserRole(projectId, userId, { role: newRole })
       toast.success("Role updated")
       await fetchUserAccess()
-    } catch {
-      toast.error("Failed to update role")
+    } catch (err: unknown) {
+      if (isForbidden(err)) {
+        toast.error("Only a platform admin can change this role")
+        await fetchUserAccess()
+      } else {
+        toast.error("Failed to update role")
+      }
+    }
+  }
+
+  function requestRoleChange(
+    user: ProjectUserAccessDetailResponse,
+    newRole: string,
+  ) {
+    if (newRole === "manager" && !isPlatformAdmin) {
+      setPromotingUser(user)
+    } else {
+      handleRoleChange(user.user_id, newRole)
     }
   }
 
@@ -92,8 +112,13 @@ export function ProjectAccessTab({ projectId }: { projectId: string }) {
       toast.success("User access revoked")
       setRevokingUser(null)
       await fetchUserAccess()
-    } catch {
-      toast.error("Failed to revoke user access")
+    } catch (err: unknown) {
+      if (isForbidden(err)) {
+        toast.error("Only a platform admin can revoke this access")
+        await fetchUserAccess()
+      } else {
+        toast.error("Failed to revoke user access")
+      }
     }
   }
 
@@ -116,7 +141,7 @@ export function ProjectAccessTab({ projectId }: { projectId: string }) {
             isProjectManager={isProjectManager}
             onGrant={openGrantUser}
             onRevoke={setRevokingUser}
-            onRoleChange={handleRoleChange}
+            onRoleChange={requestRoleChange}
           />
         )}
 
@@ -128,7 +153,7 @@ export function ProjectAccessTab({ projectId }: { projectId: string }) {
           excludeIds={(userAccess ?? []).map((u) => u.user_id)}
           grantRole={grantRole}
           onGrantRoleChange={setGrantRole}
-          canGrantManagerRole={isPlatformAdmin}
+          managerIsOneWay={!isPlatformAdmin}
           granting={grantingUser}
           onGrant={handleGrantUser}
         />
@@ -143,6 +168,20 @@ export function ProjectAccessTab({ projectId }: { projectId: string }) {
           confirmLabel="Revoke"
           variant="destructive"
           onConfirm={handleRevokeUser}
+        />
+
+        <ConfirmDialog
+          open={promotingUser !== null}
+          onOpenChange={(open) => {
+            if (!open) setPromotingUser(null)
+          }}
+          title="Make Manager"
+          description={`${promotingUser?.display_name || promotingUser?.email || "This person"} will become a manager of this project. ${MANAGER_LOCK_NOTICE}`}
+          confirmLabel="Make manager"
+          variant="default"
+          onConfirm={() => {
+            if (promotingUser) handleRoleChange(promotingUser.user_id, "manager")
+          }}
         />
 
       </div>

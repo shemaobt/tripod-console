@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router"
+import { Link } from "react-router-dom"
 import type { UserListResponse, UserRoleResponse } from "@/types"
 import { cn } from "@/utils/cn"
 import { Badge } from "@/components/ui/badge"
@@ -12,13 +12,12 @@ interface UserCardProps {
 }
 
 export function UserCard({ user, roles }: UserCardProps) {
-  const navigate = useNavigate()
   const { variant, label } = roleMeta[getUserRole(user)]
 
   return (
-    <div
+    <Link
+      to={`/app/users/${user.id}`}
       className={cn(card.interactive, "p-4 flex items-center gap-3")}
-      onClick={() => navigate(`/app/users/${user.id}`)}
     >
       <UserAvatar
         id={user.id}
@@ -51,6 +50,6 @@ export function UserCard({ user, roles }: UserCardProps) {
           )}
         </div>
       </div>
-    </div>
+    </Link>
   )
 }
