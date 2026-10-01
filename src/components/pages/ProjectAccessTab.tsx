@@ -85,10 +85,8 @@ export function ProjectAccessTab({ projectId }: { projectId: string }) {
       toast.success("Role updated")
       await fetchUserAccess()
     } catch (err: unknown) {
-      // A 403 means the row was stale (the person became a manager meanwhile):
-      // reload so it turns read-only instead of offering the same dead end again.
       if (isForbidden(err)) {
-        toast.error("Only a platform admin can change a manager's role")
+        toast.error("Only a platform admin can change this role")
         await fetchUserAccess()
       } else {
         toast.error("Failed to update role")
@@ -116,7 +114,7 @@ export function ProjectAccessTab({ projectId }: { projectId: string }) {
       await fetchUserAccess()
     } catch (err: unknown) {
       if (isForbidden(err)) {
-        toast.error("Only a platform admin can revoke a manager's access")
+        toast.error("Only a platform admin can revoke this access")
         await fetchUserAccess()
       } else {
         toast.error("Failed to revoke user access")
