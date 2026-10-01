@@ -45,16 +45,15 @@ export function UserAccessSection({
   isProjectManager: boolean
   onGrant: () => void
   onRevoke: (user: ProjectUserAccessDetailResponse) => void
-  onRoleChange: (userId: string, newRole: string) => void
+  onRoleChange: (user: ProjectUserAccessDetailResponse, newRole: string) => void
 }) {
   if (loading) {
     return <LoadingSpinner size="sm" />
   }
 
   const canGrant = isPlatformAdmin || isProjectManager
-  const canManageRole = (role: string) =>
+  const canEditRow = (role: string) =>
     isPlatformAdmin || (isProjectManager && role === "member")
-  const assignableRoles = PROJECT_ROLES.filter(canManageRole)
 
   return (
     <div className={cn(card.base, "overflow-hidden")}>
@@ -110,16 +109,16 @@ export function UserAccessSection({
                   </div>
                 </td>
                 <td className="px-5 py-3 border-b border-line">
-                  {canManageRole(user.role) && assignableRoles.length > 1 ? (
+                  {canEditRow(user.role) ? (
                     <Select
                       value={user.role}
-                      onValueChange={(value) => onRoleChange(user.user_id, value)}
+                      onValueChange={(value) => onRoleChange(user, value)}
                     >
                       <SelectTrigger className={cn(ROLE_PILL, roleTone(user.role))}>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        {assignableRoles.map((role) => (
+                        {PROJECT_ROLES.map((role) => (
                           <SelectItem key={role} value={role}>
                             {role}
                           </SelectItem>
@@ -136,7 +135,7 @@ export function UserAccessSection({
                   {formatDate(user.granted_at)}
                 </td>
                 <td className="px-5 py-3 border-b border-line text-right">
-                  {canManageRole(user.role) && (
+                  {canEditRow(user.role) && (
                     <RevokeButton
                       onClick={() => onRevoke(user)}
                       title="Revoke access"

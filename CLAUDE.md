@@ -74,7 +74,8 @@ src/
 │   │                            #   ProjectsPage, ProjectDetailPage
 │   │                            #     ProjectAccessTab, ProjectPhasesTab
 │   │                            #     projects/      ProjectFormDialog
-│   │                            #     projectAccess/ UserAccessSection, GrantUserDialog, RevokeButton
+│   │                            #     projectAccess/ UserAccessSection, GrantUserDialog, RevokeButton,
+│   │                            #                    managerLock (the "only an admin can undo" sentence)
 │   │                            #   UsersPage/    index, UserCard, UserAvatar      [admin only]
 │   │                            #   userDetail/   index (UserDetailPage), UserHeader, AccountCard,
 │   │                            #                 GlobalRoleCard, AppRolesCard, roles [admin only]
@@ -156,7 +157,7 @@ Routes are defined in `App.tsx` under the `/app` shell (`AppShell`):
 - **Console access gate**: the `/app` shell requires **platform admin or manager**. A signed-in user who is neither gets `AccessDeniedPage` (variant `logout`) — see `AppShell.tsx`. Plain members have no console access.
 - **Platform admin + manager** see: My Apps (dashboard), Languages, Projects, Map. (Organizations was removed from the console. Project access is granted to people only — the org grant/revoke section was removed too, OBT-258, 2026-09-28, levigft; `tripod-api` still grants access through organizations and stays as it is.)
 - **Admin-only routes** (`/app/users`, `/app/apps`, `/app/phases`): wrapped in `AdminRoute`, hidden from the sidebar, and return AccessDeniedPage for non-platform-admins.
-- **Managers** are scoped to the projects/orgs they manage (`managedProjectIds` / `managedOrgIds`) and can manage member roles on those projects.
+- **Managers** are scoped to the projects/orgs they manage (`managedProjectIds` / `managedOrgIds`). On the Access tab of a project they manage they can grant access as member **or manager**, and promote a member to manager from the row's role selector — but a manager's row stays read-only for them (no role change, no revoke), including one they just promoted: only a platform admin demotes or removes a manager. Because the step is one-way for them, the grant dialog (with Manager picked) and a "Make Manager" confirmation on the row say so before it happens, with the one sentence in `projectAccess/managerLock.ts`. A 403 from the API on a role change or revoke is a toast, never a silent success. Platform admins still can't be added to a project, and facilitator is not offered in the console (2026-10-01, product owner; replaces the #40 rule that hid the Manager option from managers).
 - **App admins** can manage roles for their specific app only. When viewing role assignment, the app dropdown is filtered to apps they admin.
 - **Platform admins** see all routes and can manage everything globally.
 
