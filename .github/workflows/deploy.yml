@@ -10,7 +10,9 @@ env:
   REGION: us-central1
   GAR_REPO: tripod-console
   FRONTEND_SERVICE: tripod-console
-  SECRETS_PROJECT: shemaobt-secrets
+  # The console talks to the shema-api `dev` deploy (Cloud Run tripod-backend-staging),
+  # not to the production backend stored in the tripod_console_backend_url secret.
+  BACKEND_URL: https://tripod-backend-staging-718681737495.us-central1.run.app
 
 jobs:
   deploy:
@@ -54,14 +56,6 @@ jobs:
       - name: Push frontend image
         run: docker push ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.GAR_REPO }}/frontend:${{ github.sha }}
 
-      - name: Fetch secrets from GCP Secret Manager
-        id: secrets
-        run: |
-          BACKEND_URL=$(gcloud secrets versions access latest \
-            --secret=tripod_console_backend_url \
-            --project=${{ env.SECRETS_PROJECT }} | tr -d '\n')
-          echo "backend_url=${BACKEND_URL}" >> "$GITHUB_OUTPUT"
-
       - name: Deploy to Cloud Run
         run: |
           gcloud run deploy ${{ env.FRONTEND_SERVICE }} \
@@ -74,7 +68,7 @@ jobs:
             --cpu=1 \
             --concurrency=80 \
             --timeout=60 \
-            --set-env-vars="BACKEND_URL=${{ steps.secrets.outputs.backend_url }}"
+            --set-env-vars="BACKEND_URL=${{ env.BACKEND_URL }}"
 
       - name: Show deployment URL
         run: |
