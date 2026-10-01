@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { LoadingSpinner } from "@/components/common/LoadingSpinner"
 import { InfoTooltip } from "@/components/common/InfoTooltip"
+import { LoadFailed } from "@/components/common/LoadFailed"
 
 export function UserSearchPicker({
   selectedUser,
@@ -25,11 +26,13 @@ export function UserSearchPicker({
   const [query, setQuery] = useState("")
   const [results, setResults] = useState<UserListResponse[]>([])
   const [searching, setSearching] = useState(false)
+  const [failed, setFailed] = useState(false)
   const [showResults, setShowResults] = useState(false)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
 
   const doSearch = useCallback(async (q: string) => {
+    setFailed(false)
     if (!q.trim()) {
       setResults([])
       return
@@ -39,7 +42,7 @@ export function UserSearchPicker({
       const { data } = await usersAPI.search(q)
       setResults(data)
     } catch {
-      // A failed search keeps the previous matches rather than emptying the list under the cursor.
+      setFailed(true)
     } finally {
       setSearching(false)
     }
@@ -132,6 +135,11 @@ export function UserSearchPicker({
                 <div className="flex items-center justify-center py-4">
                   <LoadingSpinner size="sm" />
                 </div>
+              ) : failed ? (
+                <LoadFailed
+                  what="the users matching your search"
+                  onRetry={() => doSearch(query)}
+                />
               ) : filtered.length === 0 ? (
                 <p className="text-sm text-fg-subtle text-center py-4">
                   {results.length > 0

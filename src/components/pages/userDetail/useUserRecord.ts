@@ -1,14 +1,15 @@
 import { useCallback, useEffect, useRef, useState } from "react"
-import { toast } from "sonner"
 import { usersAPI } from "@/services/api"
 import type { UserListResponse, UserRoleResponse } from "@/types"
+import { isNotFound } from "@/utils/apiError"
 
 // The route reuses the page across :userId, so a late response for the previous user is dropped.
 export function useUserRecord(userId: string | undefined) {
   const currentId = useRef(userId)
   const [user, setUserState] = useState<UserListResponse | null>(null)
   const [userLoading, setUserLoading] = useState(true)
-  const [roles, setRoles] = useState<UserRoleResponse[]>([])
+  const [userFailed, setUserFailed] = useState(false)
+  const [roles, setRoles] = useState<UserRoleResponse[] | null>([])
   const [rolesLoading, setRolesLoading] = useState(true)
   const [loadedFor, setLoadedFor] = useState(userId)
 
@@ -16,6 +17,7 @@ export function useUserRecord(userId: string | undefined) {
     setLoadedFor(userId)
     setUserState(null)
     setUserLoading(true)
+    setUserFailed(false)
     setRoles([])
     setRolesLoading(true)
   }
@@ -25,7 +27,9 @@ export function useUserRecord(userId: string | undefined) {
   }, [userId])
 
   const setUser = useCallback((data: UserListResponse) => {
-    if (data.id === currentId.current) setUserState(data)
+    if (data.id !== currentId.current) return
+    setUserState(data)
+    setUserFailed(false)
   }, [])
 
   const fetchUser = useCallback(async () => {
@@ -33,8 +37,8 @@ export function useUserRecord(userId: string | undefined) {
     try {
       const { data } = await usersAPI.get(userId)
       setUser(data)
-    } catch {
-      if (userId === currentId.current) toast.error("Failed to load user")
+    } catch (err) {
+      if (userId === currentId.current) setUserFailed(!isNotFound(err))
     } finally {
       if (userId === currentId.current) setUserLoading(false)
     }
@@ -46,7 +50,7 @@ export function useUserRecord(userId: string | undefined) {
       const { data } = await usersAPI.listRoles(userId)
       if (userId === currentId.current) setRoles(data)
     } catch {
-      if (userId === currentId.current) toast.error("Failed to load roles")
+      if (userId === currentId.current) setRoles(null)
     } finally {
       if (userId === currentId.current) setRolesLoading(false)
     }
@@ -57,5 +61,5 @@ export function useUserRecord(userId: string | undefined) {
     fetchRoles()
   }, [fetchUser, fetchRoles])
 
-  return { user, setUser, userLoading, roles, rolesLoading, fetchUser, fetchRoles }
+  return { user, setUser, userLoading, userFailed, roles, rolesLoading, fetchUser, fetchRoles }
 }

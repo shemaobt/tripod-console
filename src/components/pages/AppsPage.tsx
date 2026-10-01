@@ -7,6 +7,7 @@ import type { AppResponse } from "@/types"
 import { Button } from "@/components/ui/button"
 import { LoadingSpinner } from "@/components/common/LoadingSpinner"
 import { EmptyState } from "@/components/common/EmptyState"
+import { LoadFailed } from "@/components/common/LoadFailed"
 import { InfoTooltip } from "@/components/common/InfoTooltip"
 import { FeatureSpotlight } from "@/components/common/FeatureSpotlight"
 import { ConfirmDialog } from "@/components/common/ConfirmDialog"
@@ -41,7 +42,7 @@ function formFromApp(app: AppResponse): AppFormState {
 
 export default function AppsPage() {
   const navigate = useNavigate()
-  const [apps, setApps] = useState<AppResponse[]>([])
+  const [apps, setApps] = useState<AppResponse[] | null>([])
   const [loading, setLoading] = useState(true)
   const [dialogOpen, setDialogOpen] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -54,7 +55,7 @@ export default function AppsPage() {
       const { data } = await appsAPI.list()
       setApps(data)
     } catch {
-      toast.error("Failed to load apps")
+      setApps(null)
     } finally {
       setLoading(false)
     }
@@ -171,7 +172,9 @@ export default function AppsPage() {
         </FeatureSpotlight>
       </div>
 
-      {apps.length === 0 ? (
+      {apps === null ? (
+        <LoadFailed what="the apps" onRetry={fetchApps} />
+      ) : apps.length === 0 ? (
         <EmptyState
           icon={AppWindow}
           title="No apps registered"

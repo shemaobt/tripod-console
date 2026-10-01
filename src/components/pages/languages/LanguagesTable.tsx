@@ -10,7 +10,7 @@ const iconBtn = "w-[1.875rem] h-[1.875rem] rounded-[0.5625rem] inline-grid place
 
 interface LanguagesTableProps {
   languages: LanguageResponse[]
-  projectsByLanguage: Map<string, LanguageProjectRef[]>
+  projectsByLanguage: Map<string, LanguageProjectRef[]> | null
   currentUserId: string | undefined
   canEdit: boolean
   canDeactivate: boolean
@@ -60,7 +60,7 @@ export function LanguagesTable({
                 </span>
               </td>
               <td className={cn(tdClass, "text-fg-muted")}>
-                {projectsByLanguage.get(lang.id)?.length ?? 0}
+                {projectsByLanguage ? (projectsByLanguage.get(lang.id)?.length ?? 0) : "—"}
               </td>
               <td className={tdClass}>
                 <span className="inline-flex items-center gap-2 text-[0.8125rem] text-fg-muted">

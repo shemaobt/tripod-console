@@ -8,6 +8,7 @@ import { useRequestCountsStore } from "@/stores/requestCountsStore"
 import { useAuth } from "@/contexts/AuthContext"
 import { LoadingSpinner } from "@/components/common/LoadingSpinner"
 import { EmptyState } from "@/components/common/EmptyState"
+import { LoadFailed } from "@/components/common/LoadFailed"
 import { LanguagesHeader } from "./languages/LanguagesHeader"
 import { LanguagesTabs } from "./languages/LanguagesTabs"
 import { LanguagesTable } from "./languages/LanguagesTable"
@@ -19,8 +20,14 @@ const emptyForm: LanguageFormState = { name: "", code: "", description: "" }
 export default function LanguagesPage() {
   const { user, isPlatformAdmin, isManager } = useAuth()
   const canRequestEdit = isManager && !isPlatformAdmin
-  const { languages, loading: storeLoading, lastFetched, fetch: fetchLanguages } = useLanguagesStore()
-  const loading = (storeLoading || !lastFetched) && languages.length === 0
+  const {
+    languages,
+    loading: storeLoading,
+    failed: languagesFailed,
+    lastFetched,
+    fetch: fetchLanguages,
+  } = useLanguagesStore()
+  const loading = !languagesFailed && (storeLoading || !lastFetched) && languages.length === 0
   const [activeTab, setActiveTab] = useState("languages")
   const [showInactive, setShowInactive] = useState(false)
   const [dialogOpen, setDialogOpen] = useState(false)
@@ -30,22 +37,20 @@ export default function LanguagesPage() {
   const [deleteTarget, setDeleteTarget] = useState<LanguageResponse | null>(null)
   const [deleteUsage, setDeleteUsage] = useState<LanguageUsage>({ status: "checking" })
   const [deleting, setDeleting] = useState(false)
-  const [allLanguages, setAllLanguages] = useState<LanguageResponse[]>([])
+  const [allLanguages, setAllLanguages] = useState<LanguageResponse[] | null>([])
   const [reactivatingId, setReactivatingId] = useState<string | null>(null)
-  const [projects, setProjects] = useState<ProjectResponse[] | null>(null)
+  const [projects, setProjects] = useState<ProjectResponse[] | null | undefined>(undefined)
   const usageRequestRef = useRef<string | null>(null)
+
+  const loadProjects = useCallback(
+    () => projectsAPI.list().then(({ data }) => setProjects(data), () => setProjects(null)),
+    [],
+  )
 
   useEffect(() => {
     fetchLanguages()
-    projectsAPI
-      .list()
-      .then(({ data }) => setProjects(data))
-      .catch(() => {
-        setProjects(null)
-        toast.error("Failed to load projects")
-      })
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+    loadProjects()
+  }, [fetchLanguages, loadProjects])
 
   const projectsByLanguage = useMemo(() => {
     const byLanguage = new Map<string, LanguageProjectRef[]>()
@@ -63,7 +68,7 @@ export default function LanguagesPage() {
       const { data } = await languagesAPI.list({ include_inactive: true })
       setAllLanguages(data)
     } catch {
-      toast.error("Failed to load inactive languages")
+      setAllLanguages(null)
     }
   }, [isPlatformAdmin])
 
@@ -155,7 +160,7 @@ export default function LanguagesPage() {
     } catch {
       if (usageRequestRef.current !== lang.id) return
       setDeleteUsage(
-        projects === null
+        !projects
           ? { status: "unknown" }
           : { status: "known", projects: projectsByLanguage.get(lang.id) ?? [] },
       )
@@ -215,7 +220,11 @@ export default function LanguagesPage() {
   const displayLanguages = showInactive ? allLanguages : languages.filter((lang) => lang.is_active)
 
   const languagesView =
-    languages.length === 0 ? (
+    languagesFailed && languages.length === 0 ? (
+      <LoadFailed what="the languages" onRetry={fetchLanguages} />
+    ) : displayLanguages === null ? (
+      <LoadFailed what="the inactive languages" onRetry={loadAllLanguages} />
+    ) : languages.length === 0 ? (
       <EmptyState
         icon={Languages}
         title="No languages yet"
@@ -224,23 +233,32 @@ export default function LanguagesPage() {
         onAction={openCreateDialog}
       />
     ) : (
-      <LanguagesTable
-        languages={displayLanguages}
-        projectsByLanguage={projectsByLanguage}
-        currentUserId={user?.id}
-        canEdit={isPlatformAdmin || canRequestEdit}
-        canDeactivate={canDeactivate}
-        reactivatingId={reactivatingId}
-        onEdit={openEditDialog}
-        onDeactivate={openDeleteDialog}
-        onReactivate={handleReactivate}
-      />
+      <>
+        {projects === null && (
+          <LoadFailed
+            what="how many projects use each language"
+            onRetry={loadProjects}
+            className="mb-3"
+          />
+        )}
+        <LanguagesTable
+          languages={displayLanguages}
+          projectsByLanguage={projects ? projectsByLanguage : null}
+          currentUserId={user?.id}
+          canEdit={isPlatformAdmin || canRequestEdit}
+          canDeactivate={canDeactivate}
+          reactivatingId={reactivatingId}
+          onEdit={openEditDialog}
+          onDeactivate={openDeleteDialog}
+          onReactivate={handleReactivate}
+        />
+      </>
     )
 
   return (
     <div className="max-w-[77.5rem] mx-auto px-6 sm:px-10 pt-8 pb-14">
       <LanguagesHeader
-        languageCount={languages.length}
+        languageCount={languagesFailed && languages.length === 0 ? null : languages.length}
         isPlatformAdmin={isPlatformAdmin}
         showInactive={showInactive}
         onShowInactiveChange={setShowInactive}

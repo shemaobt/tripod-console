@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button"
 import { Switch } from "@/components/ui/switch"
 
 interface LanguagesHeaderProps {
-  languageCount: number
+  languageCount: number | null
   isPlatformAdmin: boolean
   showInactive: boolean
   onShowInactiveChange: (value: boolean) => void
@@ -23,7 +23,9 @@ export function LanguagesHeader({
         <span className="text-[0.8125rem] font-semibold tracking-[0.14em] uppercase text-fg-muted">Content</span>
         <h3 className="text-[1.5625rem] font-bold text-fg-strong tracking-tight">Languages</h3>
         <span className="text-[0.78125rem] text-fg-subtle">
-          {languageCount} language{languageCount !== 1 ? "s" : ""}
+          {languageCount === null
+            ? "—"
+            : `${languageCount} language${languageCount !== 1 ? "s" : ""}`}
         </span>
       </div>
       <div className="flex items-center gap-[1.125rem]">
