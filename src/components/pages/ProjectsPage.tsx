@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react"
-import { useNavigate } from "react-router"
 import { FolderOpen } from "lucide-react"
 import { projectsAPI } from "@/services/api"
 import { useAuth } from "@/contexts/AuthContext"
@@ -18,7 +17,6 @@ import { LoadFailed } from "@/components/common/LoadFailed"
 import { FilterBar } from "@/components/common/FilterBar"
 
 export default function ProjectsPage() {
-  const navigate = useNavigate()
   const { isPlatformAdmin, isManager } = useAuth()
   const [projects, setProjects] = useState<ProjectResponse[] | null>([])
   const [loading, setLoading] = useState(true)
@@ -126,7 +124,7 @@ export default function ProjectsPage() {
                   project={project}
                   langName={lang?.name}
                   langCode={lang?.code}
-                  onOpen={() => navigate(`/app/projects/${project.id}`)}
+                  to={`/app/projects/${project.id}`}
                   onEdit={(e) => openEditDialog(e, project)}
                 />
               )

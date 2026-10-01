@@ -1,17 +1,19 @@
+import { Link } from "react-router-dom"
 import { AppWindow, Pencil, Trash2 } from "lucide-react"
 import type { AppResponse } from "@/types"
 import { cn } from "@/utils/cn"
 import { avatarColors, initialsOf } from "@/utils/avatar"
 import { platformLabel } from "@/constants/platforms"
+import { card } from "@/styles"
 
 export function AppCard({
   app,
-  onOpen,
+  to,
   onEdit,
   onDelete,
 }: {
   app: AppResponse
-  onOpen: () => void
+  to: string
   onEdit: (e: React.MouseEvent) => void
   onDelete: (e: React.MouseEvent) => void
 }) {
@@ -24,9 +26,8 @@ export function AppCard({
 
   return (
     <div
-      onClick={onOpen}
       className={cn(
-        "group relative bg-elevated rounded-[1rem] shadow-[var(--shadow-card)] p-[1.125rem] flex flex-col gap-3 cursor-pointer transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[var(--shadow-md)]",
+        "group relative bg-elevated rounded-[1rem] shadow-[var(--shadow-card)] p-[1.125rem] flex flex-col gap-3 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[var(--shadow-md)]",
         !app.is_active && "opacity-70",
       )}
     >
@@ -46,9 +47,12 @@ export function AppCard({
           </span>
         )}
         <div className="flex flex-col gap-px min-w-0">
-          <span className="text-[0.90625rem] font-semibold text-fg-strong truncate">
+          <Link
+            to={to}
+            className={cn("text-[0.90625rem] font-semibold text-fg-strong truncate", card.stretchedLink)}
+          >
             {app.name}
-          </span>
+          </Link>
           <span className="font-mono text-[0.6875rem] text-fg-subtle truncate">
             {app.app_key}
           </span>
@@ -74,17 +78,21 @@ export function AppCard({
         </span>
       )}
 
-      <div className="absolute top-2.5 right-2.5 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+      <div className={cn("absolute top-2.5 right-2.5 z-10 flex items-center gap-1 transition-opacity", card.revealActions)}>
         <button
+          type="button"
           onClick={onEdit}
           title="Edit app"
+          aria-label={`Edit ${app.name}`}
           className="w-[1.875rem] h-[1.875rem] rounded-[0.5625rem] grid place-items-center text-fg-subtle hover:bg-muted hover:text-fg-strong transition-colors"
         >
           <Pencil className="w-[0.9375rem] h-[0.9375rem]" strokeWidth={1.75} />
         </button>
         <button
+          type="button"
           onClick={onDelete}
           title="Delete app"
+          aria-label={`Delete ${app.name}`}
           className="w-[1.875rem] h-[1.875rem] rounded-[0.5625rem] grid place-items-center text-fg-subtle hover:bg-accent-soft hover:text-on-accent-soft transition-colors"
         >
           <Trash2 className="w-[0.9375rem] h-[0.9375rem]" strokeWidth={1.75} />

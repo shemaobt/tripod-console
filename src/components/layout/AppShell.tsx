@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Navigate, Outlet } from "react-router-dom"
 import { useAuth } from "@/contexts/AuthContext"
 import { LoadingSpinner } from "@/components/common/LoadingSpinner"
@@ -9,6 +9,15 @@ import Sidebar from "./Sidebar"
 export default function AppShell() {
   const { user, isLoading, isPlatformAdmin, isManager } = useAuth()
   const [mobileOpen, setMobileOpen] = useState(false)
+
+  useEffect(() => {
+    const desktop = window.matchMedia("(min-width: 848px)")
+    const closeOnDesktop = () => {
+      if (desktop.matches) setMobileOpen(false)
+    }
+    desktop.addEventListener("change", closeOnDesktop)
+    return () => desktop.removeEventListener("change", closeOnDesktop)
+  }, [])
 
   if (isLoading) {
     return <LoadingSpinner size="lg" />
