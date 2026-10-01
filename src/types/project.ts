@@ -1,3 +1,9 @@
+export interface ProjectMemberPreview {
+  user_id: string
+  display_name: string | null
+  avatar_url: string | null
+}
+
 export interface ProjectResponse {
   id: string
   name: string
@@ -6,6 +12,11 @@ export interface ProjectResponse {
   latitude: number | null
   longitude: number | null
   location_display_name: string | null
+  team_size: number
+  image_url?: string | null
+  phases_completed?: number
+  phases_total?: number
+  members_preview?: ProjectMemberPreview[]
   created_at: string
   updated_at: string
 }
@@ -23,6 +34,7 @@ export interface ProjectUpdate {
   name?: string
   description?: string | null
   language_id?: string
+  image_url?: string | null
 }
 
 export interface ProjectLocationUpdate {
@@ -39,13 +51,6 @@ export interface ProjectUserAccessResponse {
   granted_at: string
 }
 
-export interface ProjectOrganizationAccessResponse {
-  id: string
-  project_id: string
-  organization_id: string
-  granted_at: string
-}
-
 export interface ProjectGrantUserAccess {
   user_id: string
   role?: string
@@ -53,10 +58,6 @@ export interface ProjectGrantUserAccess {
 
 export interface ProjectUserAccessRoleUpdate {
   role: string
-}
-
-export interface ProjectGrantOrganizationAccess {
-  organization_id: string
 }
 
 export interface ProjectUserAccessDetailResponse {
@@ -67,14 +68,5 @@ export interface ProjectUserAccessDetailResponse {
   display_name: string | null
   avatar_url: string | null
   role: string
-  granted_at: string
-}
-
-export interface ProjectOrganizationAccessDetailResponse {
-  id: string
-  project_id: string
-  organization_id: string
-  name: string
-  slug: string
   granted_at: string
 }

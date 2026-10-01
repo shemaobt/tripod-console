@@ -8,10 +8,11 @@ interface LanguagesStore {
   lastFetched: number | null
   fetch: () => Promise<LanguageResponse[]>
   invalidate: () => void
+  reset: () => void
   getLanguageName: (langId: string) => string
 }
 
-const CACHE_TTL = 5 * 60 * 1000 // 5 minutes
+const CACHE_TTL = 5 * 60 * 1000
 
 export const useLanguagesStore = create<LanguagesStore>((set, get) => ({
   languages: [],
@@ -20,11 +21,9 @@ export const useLanguagesStore = create<LanguagesStore>((set, get) => ({
 
   fetch: async () => {
     const state = get()
-    // Return cached if fresh
     if (state.lastFetched && Date.now() - state.lastFetched < CACHE_TTL && state.languages.length > 0) {
       return state.languages
     }
-    // Avoid duplicate fetches
     if (state.loading) {
       return new Promise<LanguageResponse[]>((resolve) => {
         const unsub = useLanguagesStore.subscribe((s) => {
@@ -48,6 +47,10 @@ export const useLanguagesStore = create<LanguagesStore>((set, get) => ({
 
   invalidate: () => {
     set({ lastFetched: null })
+  },
+
+  reset: () => {
+    set({ languages: [], loading: false, lastFetched: null })
   },
 
   getLanguageName: (langId: string) => {

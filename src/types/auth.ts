@@ -35,3 +35,7 @@ export interface MyRoleResponse {
 export interface MyManagedOrgsResponse {
   managed_org_ids: string[]
 }
+
+export interface MyManagedProjectsResponse {
+  managed_project_ids: string[]
+}

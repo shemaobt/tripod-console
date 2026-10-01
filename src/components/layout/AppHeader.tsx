@@ -6,17 +6,24 @@ interface AppHeaderProps {
 
 export default function AppHeader({ onToggleSidebar }: AppHeaderProps) {
   return (
-    <header className="h-14 border-b border-areia/30 bg-surface flex items-center px-4 lg:hidden">
+    <header className="h-14 border-b border-line bg-canvas flex items-center px-4 lg:hidden sticky top-0 z-30">
       <button
         onClick={onToggleSidebar}
-        className="p-2 rounded-md hover:bg-surface-alt text-verde transition-colors"
+        className="w-9 h-9 grid place-items-center rounded-[0.5625rem] hover:bg-muted text-fg-muted hover:text-fg-strong transition-colors"
         aria-label="Toggle sidebar"
       >
-        <Menu className="w-5 h-5" />
+        <Menu className="w-5 h-5" strokeWidth={1.75} />
       </button>
-      <span className="ml-3 text-lg font-semibold text-preto tracking-tight">
-        Tripod Console
-      </span>
+      <img
+        src="/assets/logo-verde.svg"
+        alt="Shemá"
+        className="ml-3 h-5 w-auto dark:hidden"
+      />
+      <img
+        src="/assets/logo-branco.svg"
+        alt="Shemá"
+        className="ml-3 h-5 w-auto hidden dark:block"
+      />
     </header>
   )
 }

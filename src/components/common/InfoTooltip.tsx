@@ -18,13 +18,13 @@ export function InfoTooltip({ content, side = "top" }: InfoTooltipProps) {
         <TooltipTrigger asChild>
           <button
             type="button"
-            className="ml-1 inline-flex items-center text-verde/40 hover:text-verde/60 transition-colors"
+            className="ml-1 inline-flex items-center text-fg-subtle hover:text-fg-muted transition-colors"
           >
-            <Info className="h-3.5 w-3.5" />
+            <Info className="h-3.5 w-3.5" strokeWidth={1.75} />
           </button>
         </TooltipTrigger>
         <TooltipContent side={side}>
-          <p className="max-w-xs text-sm">{content}</p>
+          <p className="max-w-xs">{content}</p>
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>

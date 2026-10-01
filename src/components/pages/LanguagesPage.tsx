@@ -1,62 +1,210 @@
-import { useEffect, useState } from "react"
-import { Languages, Plus } from "lucide-react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { Languages } from "lucide-react"
 import { toast } from "sonner"
-import { languagesAPI } from "@/services/api"
+import { languagesAPI, changeRequestsAPI, projectsAPI } from "@/services/api"
+import type { LanguageProjectRef, LanguageResponse, ProjectResponse } from "@/types"
 import { useLanguagesStore } from "@/stores/languagesStore"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
+import { useRequestCountsStore } from "@/stores/requestCountsStore"
+import { useAuth } from "@/contexts/AuthContext"
 import { LoadingSpinner } from "@/components/common/LoadingSpinner"
 import { EmptyState } from "@/components/common/EmptyState"
-import { InfoTooltip } from "@/components/common/InfoTooltip"
+import { LanguagesHeader } from "./languages/LanguagesHeader"
+import { LanguagesTabs } from "./languages/LanguagesTabs"
+import { LanguagesTable } from "./languages/LanguagesTable"
+import { LanguageFormDialog, type LanguageFormState } from "./languages/LanguageFormDialog"
+import { DeactivateLanguageDialog, type LanguageUsage } from "./languages/DeactivateLanguageDialog"
 
-import { formatDate } from "@/utils/format"
+const emptyForm: LanguageFormState = { name: "", code: "", description: "" }
 
 export default function LanguagesPage() {
+  const { user, isPlatformAdmin, isManager } = useAuth()
+  const canRequestEdit = isManager && !isPlatformAdmin
   const { languages, loading: storeLoading, lastFetched, fetch: fetchLanguages } = useLanguagesStore()
-  const loading = storeLoading || (!lastFetched && languages.length === 0)
+  const loading = (storeLoading || !lastFetched) && languages.length === 0
+  const [activeTab, setActiveTab] = useState("languages")
+  const [showInactive, setShowInactive] = useState(false)
   const [dialogOpen, setDialogOpen] = useState(false)
-  const [creating, setCreating] = useState(false)
-  const [name, setName] = useState("")
-  const [code, setCode] = useState("")
+  const [saving, setSaving] = useState(false)
+  const [editingLang, setEditingLang] = useState<LanguageResponse | null>(null)
+  const [form, setForm] = useState<LanguageFormState>(emptyForm)
+  const [deleteTarget, setDeleteTarget] = useState<LanguageResponse | null>(null)
+  const [deleteUsage, setDeleteUsage] = useState<LanguageUsage>({ status: "checking" })
+  const [deleting, setDeleting] = useState(false)
+  const [allLanguages, setAllLanguages] = useState<LanguageResponse[]>([])
+  const [reactivatingId, setReactivatingId] = useState<string | null>(null)
+  const [projects, setProjects] = useState<ProjectResponse[] | null>(null)
+  const usageRequestRef = useRef<string | null>(null)
 
   useEffect(() => {
     fetchLanguages()
+    projectsAPI
+      .list()
+      .then(({ data }) => setProjects(data))
+      .catch(() => {
+        setProjects(null)
+        toast.error("Failed to load projects")
+      })
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  function openDialog() {
-    setName("")
-    setCode("")
+  const projectsByLanguage = useMemo(() => {
+    const byLanguage = new Map<string, LanguageProjectRef[]>()
+    for (const project of projects ?? []) {
+      const refs = byLanguage.get(project.language_id) ?? []
+      refs.push({ id: project.id, name: project.name })
+      byLanguage.set(project.language_id, refs)
+    }
+    return byLanguage
+  }, [projects])
+
+  const loadAllLanguages = useCallback(async () => {
+    if (!isPlatformAdmin) return
+    try {
+      const { data } = await languagesAPI.list({ include_inactive: true })
+      setAllLanguages(data)
+    } catch {
+      toast.error("Failed to load inactive languages")
+    }
+  }, [isPlatformAdmin])
+
+  useEffect(() => {
+    if (showInactive) loadAllLanguages()
+  }, [showInactive, loadAllLanguages])
+
+  function refreshLanguages() {
+    useLanguagesStore.getState().invalidate()
+    if (showInactive) loadAllLanguages()
+    return fetchLanguages()
+  }
+
+  function handleReviewed() {
+    refreshLanguages()
+    useRequestCountsStore.getState().refresh()
+  }
+
+  const canDeactivate = isPlatformAdmin
+
+  function openCreateDialog() {
+    setEditingLang(null)
+    setForm(emptyForm)
     setDialogOpen(true)
   }
 
-  async function handleCreate() {
-    if (!name.trim() || code.trim().length !== 3) return
-    setCreating(true)
+  function openEditDialog(lang: LanguageResponse) {
+    setEditingLang(lang)
+    setForm({ name: lang.name, code: lang.code, description: "" })
+    setDialogOpen(true)
+  }
+
+  async function handleSave() {
+    const name = form.name.trim()
+    const code = form.code.trim().toLowerCase()
+    if (!name || code.length !== 3) return
+    setSaving(true)
     try {
-      await languagesAPI.create({ name: name.trim(), code: code.trim().toLowerCase() })
-      toast.success("Language created")
+      if (editingLang) {
+        if (isPlatformAdmin) {
+          await languagesAPI.update(editingLang.id, { name, code })
+          toast.success("Language updated")
+          await refreshLanguages()
+        } else {
+          await changeRequestsAPI.create({
+            kind: "edit_language",
+            language_id: editingLang.id,
+            name,
+            code,
+          })
+          toast.success("Edit request submitted for a platform admin to review")
+        }
+      } else if (isPlatformAdmin) {
+        await languagesAPI.create({ name, code })
+        toast.success("Language created")
+        await refreshLanguages()
+      } else {
+        await changeRequestsAPI.create({
+          kind: "create_language",
+          name,
+          code,
+          description: form.description.trim() || undefined,
+        })
+        toast.success("Request submitted for a platform admin to review")
+      }
       setDialogOpen(false)
-      useLanguagesStore.getState().invalidate()
-      await fetchLanguages()
     } catch (err: unknown) {
       const status = (err as { response?: { status?: number } })?.response?.status
       if (status === 409) {
         toast.error("A language with this code already exists")
+      } else if (status === 403) {
+        toast.error("You can only request edits for languages used by your projects")
       } else {
-        toast.error("Failed to create language")
+        toast.error("Something went wrong. Please try again.")
       }
     } finally {
-      setCreating(false)
+      setSaving(false)
+    }
+  }
+
+  async function openDeleteDialog(lang: LanguageResponse) {
+    setDeleteTarget(lang)
+    setDeleteUsage({ status: "checking" })
+    usageRequestRef.current = lang.id
+    try {
+      const { data } = await languagesAPI.stats(lang.id)
+      if (usageRequestRef.current !== lang.id) return
+      setDeleteUsage({ status: "known", projects: data.projects })
+    } catch {
+      if (usageRequestRef.current !== lang.id) return
+      setDeleteUsage(
+        projects === null
+          ? { status: "unknown" }
+          : { status: "known", projects: projectsByLanguage.get(lang.id) ?? [] },
+      )
+    }
+  }
+
+  function closeDeleteDialog() {
+    usageRequestRef.current = null
+    setDeleteTarget(null)
+  }
+
+  async function handleDeactivate() {
+    if (!deleteTarget || deleting) return
+    setDeleting(true)
+    try {
+      await languagesAPI.delete(deleteTarget.id)
+      toast.success("Language deactivated")
+      closeDeleteDialog()
+      await refreshLanguages()
+    } catch (err: unknown) {
+      const status = (err as { response?: { status?: number } })?.response?.status
+      if (status === 403) {
+        toast.error("Only platform admins can deactivate languages")
+      } else if (status === 409) {
+        toast.error("The API refused to deactivate a language that is in use")
+      } else {
+        toast.error("Failed to deactivate language")
+      }
+    } finally {
+      setDeleting(false)
+    }
+  }
+
+  async function handleReactivate(lang: LanguageResponse) {
+    if (reactivatingId) return
+    setReactivatingId(lang.id)
+    try {
+      await languagesAPI.reactivate(lang.id)
+      toast.success("Language reactivated")
+      await refreshLanguages()
+    } catch (err: unknown) {
+      const status = (err as { response?: { status?: number } })?.response?.status
+      if (status === 403) {
+        toast.error("Only platform admins can reactivate languages")
+      } else {
+        toast.error("Failed to reactivate language")
+      }
+    } finally {
+      setReactivatingId(null)
     }
   }
 
@@ -64,109 +212,72 @@ export default function LanguagesPage() {
     return <LoadingSpinner />
   }
 
-  return (
-    <div className="p-6 md:p-8 lg:p-10 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold text-preto tracking-tight flex items-center">
-            Languages
-            <InfoTooltip content="Manage the translation target languages for your projects." />
-          </h1>
-          <p className="text-sm text-verde/60 mt-1">
-            {languages.length} language{languages.length !== 1 ? "s" : ""} registered
-          </p>
-        </div>
-        <Button onClick={openDialog} className="rounded-xl">
-          <Plus className="h-4 w-4" />
-          New Language
-        </Button>
-      </div>
+  const displayLanguages = showInactive ? allLanguages : languages.filter((lang) => lang.is_active)
 
-      {languages.length === 0 ? (
-        <EmptyState
-          icon={Languages}
-          title="No languages yet"
-          description="Languages define the translation targets for your projects. Create one to get started."
-          actionLabel="Create Language"
-          onAction={openDialog}
-        />
+  const languagesView =
+    languages.length === 0 ? (
+      <EmptyState
+        icon={Languages}
+        title="No languages yet"
+        description="Languages define the translation targets for your projects. Create one to get started."
+        actionLabel={isPlatformAdmin ? "Create Language" : "Request Language"}
+        onAction={openCreateDialog}
+      />
+    ) : (
+      <LanguagesTable
+        languages={displayLanguages}
+        projectsByLanguage={projectsByLanguage}
+        currentUserId={user?.id}
+        canEdit={isPlatformAdmin || canRequestEdit}
+        canDeactivate={canDeactivate}
+        reactivatingId={reactivatingId}
+        onEdit={openEditDialog}
+        onDeactivate={openDeleteDialog}
+        onReactivate={handleReactivate}
+      />
+    )
+
+  return (
+    <div className="max-w-[77.5rem] mx-auto px-6 sm:px-10 pt-8 pb-14">
+      <LanguagesHeader
+        languageCount={languages.length}
+        isPlatformAdmin={isPlatformAdmin}
+        showInactive={showInactive}
+        onShowInactiveChange={setShowInactive}
+        onCreate={openCreateDialog}
+      />
+
+      {isPlatformAdmin || canRequestEdit ? (
+        <LanguagesTabs
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          isPlatformAdmin={isPlatformAdmin}
+          onReviewed={handleReviewed}
+        >
+          {languagesView}
+        </LanguagesTabs>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-          {languages.map((lang) => (
-            <div
-              key={lang.id}
-              className="group rounded-2xl border border-areia/20 bg-surface p-5 shadow-sm hover:shadow-md hover:border-telha/30 transition-all duration-200 cursor-default"
-            >
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-azul/15 to-azul/5 flex items-center justify-center mx-auto">
-                <span className="text-2xl font-mono font-bold text-azul">
-                  {lang.code}
-                </span>
-              </div>
-              <p className="text-sm font-medium text-preto text-center mt-3">
-                {lang.name}
-              </p>
-              <p className="text-xs text-verde/50 text-center mt-1">
-                {formatDate(lang.created_at)}
-              </p>
-            </div>
-          ))}
-        </div>
+        languagesView
       )}
 
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Create Language</DialogTitle>
-            <DialogDescription>
-              Add a new target language for your translation projects.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-5 pt-1">
-            <div className="space-y-1.5">
-              <Label htmlFor="lang-name">Name</Label>
-              <Input
-                id="lang-name"
-                placeholder="e.g. English"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="lang-code">
-                <span className="inline-flex items-center">
-                  Code
-                  <InfoTooltip content="Exactly 3 characters, ISO 639-3." />
-                </span>
-              </Label>
-              <Input
-                id="lang-code"
-                placeholder="e.g. eng"
-                maxLength={3}
-                value={code}
-                onChange={(e) => setCode(e.target.value)}
-              />
-              <p className="text-xs text-verde/50 mt-1.5">
-                Must be exactly 3 characters (ISO 639-3)
-              </p>
-            </div>
-          </div>
-          <DialogFooter className="border-t border-areia/10 pt-4 mt-2">
-            <Button
-              variant="outline"
-              onClick={() => setDialogOpen(false)}
-              disabled={creating}
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleCreate}
-              disabled={creating || !name.trim() || code.trim().length !== 3}
-            >
-              {creating ? "Creating..." : "Create"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <LanguageFormDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        editing={editingLang}
+        isPlatformAdmin={isPlatformAdmin}
+        form={form}
+        setForm={setForm}
+        saving={saving}
+        onSave={handleSave}
+      />
+
+      <DeactivateLanguageDialog
+        language={deleteTarget}
+        usage={deleteUsage}
+        deleting={deleting}
+        onCancel={closeDeleteDialog}
+        onConfirm={handleDeactivate}
+      />
     </div>
   )
 }
