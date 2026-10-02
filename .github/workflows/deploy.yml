@@ -58,10 +58,10 @@ jobs:
         id: secrets
         run: |
           BACKEND_URL=$(gcloud secrets versions access latest \
-            --secret=tripod_console_backend_url \
+            --secret=backend_url_staging \
             --project=${{ env.SECRETS_PROJECT }} | tr -d '\n')
           echo "backend_url_staging=${BACKEND_URL}" >> "$GITHUB_OUTPUT"
-      
+
       - name: Deploy to Cloud Run
         run: |
           gcloud run deploy ${{ env.FRONTEND_SERVICE }} \
