@@ -57,7 +57,6 @@ export default function JourneysPage() {
       setPop(null)
     },
     onEscape: () => {
-      if (document.body.style.pointerEvents === "none") return
       setSel(null)
       setPop(null)
     },

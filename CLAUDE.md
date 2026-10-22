@@ -55,7 +55,7 @@ src/
 │   │                            #   LoadingSpinner, EmptyState, ConfirmDialog, ErrorBoundary
 │   │                            #   LoadFailed         — plain-language "couldn't load X" + Try again
 │   │                            #   PageHeader         — eyebrow + the page's h1 + subtitle + actions; names the browser tab
-│   │                            #   FieldError         — inline validation message under a form field
+│   │                            #   FieldError         — inline validation message under a form field (`id` → the field's aria-describedby)
 │   │                            #   InfoTooltip        — (i) icon with hover/tap explanation popover
 │   │                            #   FeatureSpotlight   — one-time contextual highlight with dismiss
 │   │                            #   FilterBar          — reusable search + filters row
@@ -109,6 +109,7 @@ src/
 │                                #   phaseStatus.ts, journeyStatus.ts, map.ts (tile URLs, OSM/CARTO attribution, pin icon)
 ├── utils/                       # cn.ts (class merging), format.ts (formatDate, timeAgo)
 │                                #   apiError.ts (isNotFound, isForbidden)
+│                                #   uiScale.ts (useUiScale, REGULAR_WIDTH_QUERY), documentTitle.ts (useDocumentTitle)
 └── styles/                      # Centralized style constants (cards, layout, states; index barrel)
 ```
 
@@ -459,6 +460,7 @@ Do not override, reinterpret, or invent visual rules.
 - **Click**: `active:scale-[0.985]`
 - **Entrances**: keyframes in `index.css` — `animate-fade-in` (fadeIn 0.16s), `animate-pop-in` (popIn 0.2s, dialogs), `animate-rise-in` (tIn 0.24s, page/section entrances)
 - **Easing**: `--ease-out` = `cubic-bezier(0.2, 0.8, 0.25, 1)`
+- **Reduce motion**: `index.css` honours `prefers-reduced-motion: reduce` globally — animations and transitions become instant, the card hover lift is cancelled, the spinner keeps turning (it is the only sign something is loading). JS-driven motion checks the same query itself (the map's `flyTo` becomes `setView`). New motion needs no opt-in; motion that must survive the preference, like the spinner, is the exception to name there (HIG review, 2026-10-22, levigft)
 
 ### 9.8 Forms
 - **Inputs are underline-style**: transparent background, `border-0 border-b-[0.09375rem] border-input-border px-0`, no box, no ring
@@ -466,6 +468,7 @@ Do not override, reinterpret, or invent visual rules.
 - **Placeholders**: `placeholder:text-fg-subtle`
 - **Focus**: `focus:outline-none focus:border-accent` (underline/border shifts to accent)
 - **Labels**: `text-[0.8125rem] font-semibold text-fg-strong mb-1.5`
+- **Errors belong to their field**: a `FieldError` carries an `id`, and the field it refuses gets `aria-invalid` + `aria-describedby` pointing at it while the error shows (`role=alert` alone is announced once and then lost when focus returns to the field). A group of controls (the platform chips) is a `role=group` named by `aria-labelledby` — a `<label for>` cannot point at a `<div>` (HIG review, 2026-10-22, levigft)
 - **Touch screens**: a global rule in `index.css` sets every text field (`input`, `textarea`, `select`) to `max(1rem, 16px)` under `(pointer: coarse)` — below 16px iOS Safari zooms the whole page on focus and doesn't zoom back. Don't fight it with a smaller `text-*` on a field (responsividade HIG, 2026-10-22, levigft)
 
 ### 9.9 Tables
