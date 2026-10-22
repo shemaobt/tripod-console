@@ -7,8 +7,7 @@ import { useSyncExternalStore } from "react"
  */
 export const REGULAR_WIDTH_QUERY = "(min-width: 848px)"
 
-export function uiScale(): number {
-  if (typeof window === "undefined") return 1
+function uiScale(): number {
   const rootFontSize = parseFloat(
     window.getComputedStyle(document.documentElement).fontSize,
   )
@@ -21,10 +20,20 @@ function subscribe(onChange: () => void) {
   return () => mq.removeEventListener("change", onChange)
 }
 
+// The Journey Builder renders on every pan frame, and getComputedStyle there would force a
+// style recalc per frame; the root size only moves when the width crosses the query.
+let cached: { regular: boolean; scale: number } | null = null
+
+function snapshot(): number {
+  const regular = window.matchMedia(REGULAR_WIDTH_QUERY).matches
+  if (cached?.regular !== regular) cached = { regular, scale: uiScale() }
+  return cached.scale
+}
+
 /**
- * `uiScale()` that follows the window: the scale depends on the width, so a value read
- * once goes stale when an iPad leaves Split View or a desktop window is narrowed past lg.
+ * The interface scale (root font size / 16), following the window: it depends on the width,
+ * so a value read once goes stale when an iPad leaves Split View or a window narrows past lg.
  */
 export function useUiScale(): number {
-  return useSyncExternalStore(subscribe, uiScale, () => 1)
+  return useSyncExternalStore(subscribe, snapshot, () => 1)
 }

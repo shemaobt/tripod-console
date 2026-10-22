@@ -69,7 +69,7 @@ export default function JourneysPage() {
     if (phasesLoading) return
     const raf = requestAnimationFrame(fit)
     return () => cancelAnimationFrame(raf)
-  }, [phasesLoading, fit])
+  }, [phasesLoading, fit, scale])
 
   const projectId = builder.projectId
   const { loadLog } = builder
