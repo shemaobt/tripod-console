@@ -1,12 +1,13 @@
 import { Pencil, RotateCcw, Trash2 } from "lucide-react"
 import type { LanguageProjectRef, LanguageResponse } from "@/types"
 import { cn } from "@/utils/cn"
+import { touch } from "@/styles"
 import { formatDate } from "@/utils/format"
 
 const thClass =
   "text-left px-5 py-3 text-[0.6875rem] font-semibold tracking-[0.08em] uppercase text-fg-subtle border-b border-line"
 const tdClass = "px-5 py-3 border-b border-line"
-const iconBtn = "w-[1.875rem] h-[1.875rem] rounded-[0.5625rem] inline-grid place-items-center transition-colors"
+const iconBtn = cn("w-[1.875rem] h-[1.875rem] rounded-[0.5625rem] inline-grid place-items-center transition-colors", touch.icon)
 
 interface LanguagesTableProps {
   languages: LanguageResponse[]

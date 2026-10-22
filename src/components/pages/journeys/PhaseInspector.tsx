@@ -20,6 +20,7 @@ import {
 } from "@/constants/journeyStatus"
 import { orbGrad, soft } from "@/utils/color"
 import { cn } from "@/utils/cn"
+import { touch } from "@/styles"
 import { collectReachable } from "./layout"
 import { StatusHistory } from "./StatusHistory"
 import { deletePhaseDescription, usePhaseUsage } from "./usePhaseUsage"
@@ -127,7 +128,10 @@ export function PhaseInspector({
           onClick={onClose}
           title="Close (Esc)"
           aria-label="Close details"
-          className="ml-auto flex h-[1.875rem] w-[1.875rem] cursor-pointer items-center justify-center rounded-[0.5625rem] text-fg-muted transition-colors hover:bg-muted hover:text-fg-strong"
+          className={cn(
+            "ml-auto flex h-[1.875rem] w-[1.875rem] cursor-pointer items-center justify-center rounded-[0.5625rem] text-fg-muted transition-colors hover:bg-muted hover:text-fg-strong",
+            touch.icon,
+          )}
         >
           <X className="h-[0.9375rem] w-[0.9375rem]" strokeWidth={2} />
         </button>

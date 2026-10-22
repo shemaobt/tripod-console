@@ -1,4 +1,6 @@
 import { Maximize, Minus, Plus } from "lucide-react"
+import { touch } from "@/styles"
+import { cn } from "@/utils/cn"
 
 interface CanvasControlsProps {
   zoomPct: string
@@ -8,8 +10,10 @@ interface CanvasControlsProps {
   onFit: () => void
 }
 
-const CONTROL_BTN =
-  "flex h-[1.875rem] w-[1.875rem] cursor-pointer items-center justify-center rounded-[0.5rem] text-fg-muted transition-colors hover:bg-muted hover:text-fg-strong"
+const CONTROL_BTN = cn(
+  "flex h-[1.875rem] w-[1.875rem] cursor-pointer items-center justify-center rounded-[0.5rem] text-fg-muted transition-colors hover:bg-muted hover:text-fg-strong",
+  touch.icon,
+)
 
 export function CanvasControls({
   zoomPct,
@@ -30,7 +34,7 @@ export function CanvasControls({
         <button
           onClick={onResetZoom}
           title="Reset zoom to 100%"
-          className="min-w-[2.75rem] cursor-pointer rounded-[0.5rem] px-0.5 py-[0.4375rem] text-center font-mono text-[0.6875rem] font-semibold text-fg-muted transition-colors hover:bg-muted hover:text-fg-strong"
+          className="min-w-[2.75rem] touch:h-[44px] cursor-pointer rounded-[0.5rem] px-0.5 py-[0.4375rem] text-center font-mono text-[0.6875rem] font-semibold text-fg-muted transition-colors hover:bg-muted hover:text-fg-strong"
         >
           {zoomPct}
         </button>
@@ -42,7 +46,7 @@ export function CanvasControls({
           <Maximize className="h-[0.9375rem] w-[0.9375rem]" strokeWidth={2} />
         </button>
       </div>
-      <span className="pointer-events-none absolute bottom-[3.75rem] left-4 z-20 rounded-[0.5rem] bg-canvas/80 px-2 py-[0.1875rem] text-[0.65625rem] text-fg-subtle">
+      <span className="pointer-events-none absolute bottom-[3.75rem] touch:bottom-[76px] left-4 z-20 rounded-[0.5rem] bg-canvas/80 px-2 py-[0.1875rem] text-[0.65625rem] text-fg-subtle">
         Drag to pan · Ctrl + scroll to zoom
       </span>
     </>
