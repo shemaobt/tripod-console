@@ -142,10 +142,11 @@ export function AppFormDialog({
               <PlatformMultiSelect
                 id="app-platform"
                 labelledBy="app-platform-label"
+                errorId={triedSave && platformsProblem ? "app-platform-error" : undefined}
                 value={form.platforms}
                 onChange={(platforms) => setForm((f) => ({ ...f, platforms }))}
               />
-              {triedSave && platformsProblem && <FieldError>{platformsProblem}</FieldError>}
+              {triedSave && platformsProblem && <FieldError id="app-platform-error">{platformsProblem}</FieldError>}
             </div>
             <div className="space-y-1.5">
               <Label>App Icon</Label>

@@ -69,10 +69,11 @@ export function DetailsCard({
         <PlatformMultiSelect
           id="ap-platforms"
           labelledBy="ap-platforms-label"
+          errorId={triedSave && platformsProblem ? "ap-platforms-error" : undefined}
           value={form.platforms}
           onChange={(platforms) => setForm((f) => ({ ...f, platforms }))}
         />
-        {triedSave && platformsProblem && <FieldError>{platformsProblem}</FieldError>}
+        {triedSave && platformsProblem && <FieldError id="ap-platforms-error">{platformsProblem}</FieldError>}
       </div>
 
       <div className="space-y-1.5">

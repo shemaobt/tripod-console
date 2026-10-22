@@ -156,6 +156,8 @@ export function LocationSection({ project, onSave }: LocationSectionProps) {
           <Label htmlFor="pj-lat">Latitude</Label>
           <Input
             id="pj-lat"
+            aria-invalid={!!errors.latitude}
+            aria-describedby={errors.latitude ? "pj-lat-error" : undefined}
             className="font-mono"
             placeholder="-4.2523"
             value={manualLat}
@@ -169,6 +171,8 @@ export function LocationSection({ project, onSave }: LocationSectionProps) {
           <Label htmlFor="pj-lng">Longitude</Label>
           <Input
             id="pj-lng"
+            aria-invalid={!!errors.longitude}
+            aria-describedby={errors.longitude ? "pj-lng-error" : undefined}
             className="font-mono"
             placeholder="-69.9381"
             value={manualLng}
@@ -182,8 +186,8 @@ export function LocationSection({ project, onSave }: LocationSectionProps) {
           {saving ? "Applying..." : "Apply"}
         </Button>
       </div>
-      {errors.latitude && <FieldError>{errors.latitude}</FieldError>}
-      {errors.longitude && <FieldError>{errors.longitude}</FieldError>}
+      {errors.latitude && <FieldError id="pj-lat-error">{errors.latitude}</FieldError>}
+      {errors.longitude && <FieldError id="pj-lng-error">{errors.longitude}</FieldError>}
     </div>
   )
 }
