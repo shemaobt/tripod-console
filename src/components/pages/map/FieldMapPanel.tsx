@@ -50,7 +50,7 @@ export function FieldMapPanel({
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex flex-col gap-0.5">
-          <h4 className="text-[0.96875rem] font-semibold text-fg-strong">Field map</h4>
+          <h1 className="text-[0.96875rem] font-semibold text-fg-strong">Field map</h1>
           <span className="text-[0.71875rem] text-fg-subtle">
             {query ? `${filtered.length} of ${rows.length} shown` : countLabel}
           </span>

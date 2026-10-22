@@ -1,8 +1,10 @@
 import { Link } from "react-router-dom"
 import { touch } from "@/styles"
 import { cn } from "@/utils/cn"
+import { useDocumentTitle } from "@/utils/documentTitle"
 
 export default function NotFoundPage() {
+  useDocumentTitle("Page not found")
   return (
     <div className="min-h-dvh flex flex-col items-center justify-center bg-canvas px-6 text-center">
       <span className="text-[0.8125rem] font-semibold tracking-[0.14em] uppercase text-fg-muted mb-2">

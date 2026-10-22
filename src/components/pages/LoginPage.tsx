@@ -9,8 +9,10 @@ import { Button } from "@/components/ui/button"
 import { LoadingSpinner } from "@/components/common/LoadingSpinner"
 import { touch } from "@/styles"
 import { cn } from "@/utils/cn"
+import { useDocumentTitle } from "@/utils/documentTitle"
 
 export default function LoginPage() {
+  useDocumentTitle("Sign in")
   const { user, isLoading, login } = useAuth()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
@@ -73,7 +75,7 @@ export default function LoginPage() {
               <img src="/assets/logo-verde.svg" alt="Shemá" className="h-6 w-auto dark:hidden" />
               <img src="/assets/logo-branco.svg" alt="Shemá" className="h-6 w-auto hidden dark:block" />
             </div>
-            <h3 className="text-[1.625rem] font-bold text-fg-strong tracking-tight">Sign in</h3>
+            <h1 className="text-[1.625rem] font-bold text-fg-strong tracking-tight">Sign in</h1>
             <p className="text-sm text-fg-muted">Use your Shema account to manage the platform.</p>
           </div>
 

@@ -9,6 +9,7 @@ import { MapPreview } from "@/components/pages/dashboard/MapPreview"
 import { AdminStatsRow } from "@/components/pages/dashboard/AdminStatsRow"
 import { NeedsReviewPanel } from "@/components/pages/dashboard/NeedsReviewPanel"
 import { useAdminDashboardData } from "@/components/pages/dashboard/useAdminDashboardData"
+import { PageHeader } from "@/components/common/PageHeader"
 
 export default function DashboardPage() {
   const { user, isPlatformAdmin } = useAuth()
@@ -52,17 +53,14 @@ export default function DashboardPage() {
 
   return (
     <div className="max-w-[77.5rem] mx-auto px-6 sm:px-10 pt-8 pb-14 flex flex-col gap-[1.125rem]">
-      <div className="flex items-end justify-between gap-4">
-        <div className="flex flex-col gap-1">
-          <span className="text-[0.8125rem] font-semibold tracking-[0.14em] uppercase text-fg-muted">
-            Overview
-          </span>
-          <h3 className="text-[1.5625rem] font-bold text-fg-strong tracking-tight">
-            Welcome back{firstName ? `, ${firstName}` : ""}.
-          </h3>
-        </div>
-        <span className="hidden sm:block font-serif italic text-[0.84375rem] text-fg-subtle">{today}</span>
-      </div>
+      <PageHeader
+        eyebrow="Overview"
+        title={`Welcome back${firstName ? `, ${firstName}` : ""}.`}
+        documentTitle="Dashboard"
+        actions={<span className="font-serif italic text-[0.84375rem] text-fg-subtle">{today}</span>}
+        actionsClassName="hidden sm:flex"
+        className="mb-0"
+      />
 
       {isPlatformAdmin &&
         (adminFailed ? (

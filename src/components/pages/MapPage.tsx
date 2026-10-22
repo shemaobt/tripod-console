@@ -10,6 +10,7 @@ import { LoadFailed } from "@/components/common/LoadFailed"
 import { ProjectPopupContent } from "./map/ProjectPopupContent"
 import { FieldMapPanel, type MapRow } from "./map/FieldMapPanel"
 import { MAP_ATTRIBUTION, createProjectPinIcon, tileUrlForTheme } from "@/constants/map"
+import { useDocumentTitle } from "@/utils/documentTitle"
 
 const projectIcon = createProjectPinIcon({ popupAnchor: [0, -38] })
 
@@ -22,6 +23,7 @@ function FlyToProject({ lat, lng }: { lat: number; lng: number }) {
 }
 
 export default function MapPage() {
+  useDocumentTitle("Map")
   const [projects, setProjects] = useState<ProjectResponse[] | null>([])
   const [projectPhases, setProjectPhases] = useState<Map<string, ProjectPhaseResponse[] | null>>(
     new Map(),

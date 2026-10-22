@@ -3,12 +3,14 @@ import { ShieldX } from "lucide-react"
 import { useAuth } from "@/contexts/AuthContext"
 import { touch } from "@/styles"
 import { cn } from "@/utils/cn"
+import { useDocumentTitle } from "@/utils/documentTitle"
 
 interface AccessDeniedPageProps {
   variant?: "default" | "logout"
 }
 
 export default function AccessDeniedPage({ variant = "default" }: AccessDeniedPageProps) {
+  useDocumentTitle("Access denied")
   const { logout } = useAuth()
 
   return (

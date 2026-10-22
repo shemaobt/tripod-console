@@ -5,6 +5,7 @@ import { JourneyMenuPopover } from "./JourneyMenuPopover"
 import { SettingsPopover } from "./SettingsPopover"
 import { LegendPopover } from "./LegendPopover"
 import { ProjectPill } from "./ProjectPill"
+import { useDocumentTitle } from "@/utils/documentTitle"
 
 export type PopoverKind = "menu" | "settings" | "legend" | "project"
 
@@ -31,6 +32,7 @@ export function JourneyHeader({
   onOpenRegistry,
   onDeleteJourney,
 }: JourneyHeaderProps) {
+  useDocumentTitle("Journeys")
   const { journey, journeys, phases } = builder
   const assignedCount = journey ? builder.projectCountFor(journey.id) : 0
   const subtitle = journey

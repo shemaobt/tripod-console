@@ -41,9 +41,9 @@ export function UserHeader({
         )}
       </button>
       <div className="flex flex-col gap-[0.1875rem] min-w-0">
-        <h3 className="text-[1.4375rem] font-bold text-fg-strong tracking-tight truncate">
+        <h1 className="text-[1.4375rem] font-bold text-fg-strong tracking-tight truncate">
           {user.display_name || user.email}
-        </h3>
+        </h1>
         <div className="flex flex-wrap items-center gap-2.5">
           <span className="text-[0.8125rem] text-fg-muted">{user.email}</span>
           <Badge variant={variant} className="whitespace-nowrap">

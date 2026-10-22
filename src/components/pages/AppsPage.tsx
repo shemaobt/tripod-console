@@ -12,6 +12,7 @@ import { FeatureSpotlight } from "@/components/common/FeatureSpotlight"
 import { ConfirmDialog } from "@/components/common/ConfirmDialog"
 import { AppFormDialog, type AppFormState } from "./apps/AppFormDialog"
 import { AppCard } from "./apps/AppCard"
+import { PageHeader } from "@/components/common/PageHeader"
 
 const emptyForm: AppFormState = {
   app_key: "",
@@ -145,30 +146,29 @@ export default function AppsPage() {
 
   return (
     <div className="max-w-[77.5rem] mx-auto px-6 sm:px-10 pt-8 pb-14">
-      <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div className="flex flex-col gap-1">
-          <span className="text-[0.8125rem] font-semibold tracking-[0.14em] uppercase text-fg-muted">
-            Administration
-          </span>
-          <h3 className="text-[1.5625rem] font-bold text-fg-strong tracking-tight flex items-center">
+      <PageHeader
+        eyebrow="Administration"
+        title={
+          <>
             Manage apps
             <InfoTooltip content="Apps are the software products users can access. Manage their metadata, platforms, roles and status here." />
-          </h3>
-          <span className="text-[0.78125rem] text-fg-subtle">
-            Catalog of ecosystem apps — platforms, roles and auto-approval.
-          </span>
-        </div>
-        <FeatureSpotlight
-          featureKey="apps-admin-first-visit"
-          title="Apps Management"
-          description="Register and configure the apps in your platform. Each app can have roles assigned to users for access control."
-        >
-          <Button onClick={openCreateDialog}>
-            <Plus className="w-[1.0625rem] h-[1.0625rem]" strokeWidth={1.75} />
-            New app
-          </Button>
-        </FeatureSpotlight>
-      </div>
+          </>
+        }
+        documentTitle="Manage apps"
+        subtitle="Catalog of ecosystem apps — platforms, roles and auto-approval."
+        actions={
+          <FeatureSpotlight
+            featureKey="apps-admin-first-visit"
+            title="Apps Management"
+            description="Register and configure the apps in your platform. Each app can have roles assigned to users for access control."
+          >
+            <Button onClick={openCreateDialog}>
+              <Plus className="w-[1.0625rem] h-[1.0625rem]" strokeWidth={1.75} />
+              New app
+            </Button>
+          </FeatureSpotlight>
+        }
+      />
 
       {apps === null ? (
         <LoadFailed what="the apps" onRetry={fetchApps} />

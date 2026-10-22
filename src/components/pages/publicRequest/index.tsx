@@ -11,10 +11,12 @@ import { LanguageRequestForm } from "./LanguageRequestForm"
 import { ProjectRequestForm } from "./ProjectRequestForm"
 import { touch } from "@/styles"
 import { cn } from "@/utils/cn"
+import { useDocumentTitle } from "@/utils/documentTitle"
 
 const EMAIL_PATTERN = /^\S+@\S+\.\S+$/
 
 export default function PublicRequestPage() {
+  useDocumentTitle("Request access")
   const [requesterName, setRequesterName] = useState("")
   const [requesterEmail, setRequesterEmail] = useState("")
   const [languages, setLanguages] = useState<PublicLanguageOption[]>([])

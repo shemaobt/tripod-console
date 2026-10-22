@@ -12,6 +12,7 @@ import { AccessRequestsSection } from "@/components/pages/AccessRequestsSection"
 import { useRequestCountsStore } from "@/stores/requestCountsStore"
 import { roleChoices } from "@/components/pages/userDetail/roles"
 import { UserCard } from "./UserCard"
+import { PageHeader } from "@/components/common/PageHeader"
 
 const roleLegend = [...roleChoices].reverse()
 
@@ -79,40 +80,36 @@ export default function UsersPage() {
   return (
     <div className="max-w-[77.5rem] mx-auto px-6 sm:px-10 pt-8 pb-14">
       <Tabs defaultValue="users">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between mb-5">
-          <div className="flex flex-col gap-1">
-            <span className="text-[0.8125rem] font-semibold tracking-[0.14em] uppercase text-fg-muted">
-              Administration
-            </span>
-            <h3 className="text-[1.5625rem] font-bold text-fg-strong tracking-tight">Users</h3>
-            <span className="text-[0.78125rem] text-fg-subtle">
-              Global roles are derived from data — manager means managing at least one project or organization.
-            </span>
-            <div className="flex flex-wrap items-center gap-x-3.5 gap-y-1.5 mt-[0.1875rem]">
-              {roleLegend.map((r) => (
-                <span
-                  key={r.value}
-                  className="inline-flex items-center gap-1.5 text-[0.71875rem] text-fg-muted"
-                >
-                  <span className={cn("w-2 h-2 rounded-full shrink-0", r.dot)} />
-                  {r.label}
-                </span>
-              ))}
-            </div>
+        <PageHeader
+          eyebrow="Administration"
+          title="Users"
+          subtitle="Global roles are derived from data — manager means managing at least one project or organization."
+          actions={
+            <TabsList>
+              <TabsTrigger value="users">Users</TabsTrigger>
+              <TabsTrigger value="requests">
+                Access requests
+                {accessCount > 0 && (
+                  <span className="bg-telha text-on-dark rounded-full text-xs font-bold px-1.5 py-px">
+                    {accessCount}
+                  </span>
+                )}
+              </TabsTrigger>
+            </TabsList>
+          }
+        >
+          <div className="flex flex-wrap items-center gap-x-3.5 gap-y-1.5 mt-[0.1875rem]">
+            {roleLegend.map((r) => (
+              <span
+                key={r.value}
+                className="inline-flex items-center gap-1.5 text-[0.71875rem] text-fg-muted"
+              >
+                <span className={cn("w-2 h-2 rounded-full shrink-0", r.dot)} />
+                {r.label}
+              </span>
+            ))}
           </div>
-
-          <TabsList className="self-start sm:self-auto">
-            <TabsTrigger value="users">Users</TabsTrigger>
-            <TabsTrigger value="requests">
-              Access requests
-              {accessCount > 0 && (
-                <span className="bg-telha text-on-dark rounded-full text-xs font-bold px-1.5 py-px">
-                  {accessCount}
-                </span>
-              )}
-            </TabsTrigger>
-          </TabsList>
-        </div>
+        </PageHeader>
 
         <TabsContent value="users">
           {users === null ? (
