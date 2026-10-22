@@ -15,3 +15,9 @@ export function useDocumentTitle(title: string | null | undefined) {
     }
   }, [title])
 }
+
+/** The hook as an element, for a screen that knows its title only in the branch that has loaded. */
+export function DocumentTitle({ title }: { title: string }) {
+  useDocumentTitle(title)
+  return null
+}

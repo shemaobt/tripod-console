@@ -22,7 +22,7 @@ import { ProjectInfoForm } from "./projects/ProjectInfoForm"
 import { LocationSection } from "./projects/LocationSection"
 import { ProjectAccessTab } from "./ProjectAccessTab"
 import { touch } from "@/styles"
-import { useDocumentTitle } from "@/utils/documentTitle"
+import { DocumentTitle } from "@/utils/documentTitle"
 
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/svg+xml"]
 
@@ -151,8 +151,6 @@ export default function ProjectDetailPage() {
     }
   }
 
-  useDocumentTitle(project?.name)
-
   if (loading) {
     return <LoadingSpinner />
   }
@@ -227,6 +225,7 @@ export default function ProjectDetailPage() {
               </div>
             )}
             <div className="flex flex-col gap-1.5 min-w-0">
+              <DocumentTitle title={project.name} />
               <h1 className="flex items-center text-[1.5625rem] font-bold text-fg-strong tracking-tight">
                 {project.name}
                 <InfoTooltip content="View and manage this project's details, location, and access permissions." />

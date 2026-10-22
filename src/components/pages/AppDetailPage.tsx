@@ -16,7 +16,7 @@ import { AutoApproveCard } from "./apps/AutoApproveCard"
 import { DangerZoneCard } from "./apps/DangerZoneCard"
 import { RolesCard } from "./apps/RolesCard"
 import { touch } from "@/styles"
-import { useDocumentTitle } from "@/utils/documentTitle"
+import { DocumentTitle } from "@/utils/documentTitle"
 
 function formFromApp(app: AppResponse): AppFormState {
   return {
@@ -199,8 +199,6 @@ export default function AppDetailPage() {
     }
   }
 
-  useDocumentTitle(app?.name)
-
   if (appLoading) {
     return <LoadingSpinner />
   }
@@ -254,6 +252,7 @@ export default function AppDetailPage() {
             onChange={handleIconFile}
           />
           <div className="flex flex-col gap-[0.1875rem] min-w-0">
+            <DocumentTitle title={app.name} />
             <h1 className="text-[1.4375rem] font-bold text-fg-strong tracking-tight truncate">{app.name}</h1>
             <div className="flex items-center gap-2.5 flex-wrap">
               <span className="font-mono text-[0.71875rem] bg-muted rounded-md px-2 py-[0.1875rem] text-fg-muted">

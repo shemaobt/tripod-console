@@ -3,6 +3,7 @@ import { cn } from "@/utils/cn"
 import { avatarColors, initialsOf } from "@/utils/avatar"
 import { Badge } from "@/components/ui/badge"
 import { getUserRole, roleMeta } from "./roles"
+import { DocumentTitle } from "@/utils/documentTitle"
 
 export function UserHeader({
   user,
@@ -41,6 +42,7 @@ export function UserHeader({
         )}
       </button>
       <div className="flex flex-col gap-[0.1875rem] min-w-0">
+        <DocumentTitle title={user.display_name || user.email} />
         <h1 className="text-[1.4375rem] font-bold text-fg-strong tracking-tight truncate">
           {user.display_name || user.email}
         </h1>

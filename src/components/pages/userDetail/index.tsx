@@ -30,7 +30,6 @@ import { ManagerProjectsDialog } from "./ManagerProjectsDialog"
 import { useUserRecord } from "./useUserRecord"
 import { touch } from "@/styles"
 import { cn } from "@/utils/cn"
-import { useDocumentTitle } from "@/utils/documentTitle"
 
 export default function UserDetailPage() {
   const { userId } = useParams<{ userId: string }>()
@@ -258,8 +257,6 @@ export default function UserDetailPage() {
       toast.error("Failed to revoke role")
     }
   }
-
-  useDocumentTitle(user ? user.display_name || user.email : null)
 
   if (userLoading) {
     return <LoadingSpinner />
