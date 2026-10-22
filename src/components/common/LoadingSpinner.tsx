@@ -15,8 +15,9 @@ const sizeClasses = {
 
 export function LoadingSpinner({ size = "md", className }: LoadingSpinnerProps) {
   return (
-    <div className={cn(states.loading, className)}>
-      <Loader2 className={cn("animate-spin text-accent", sizeClasses[size])} />
+    <div role="status" className={cn(states.loading, className)}>
+      <Loader2 aria-hidden className={cn("animate-spin text-accent", sizeClasses[size])} />
+      <span className="sr-only">Loading…</span>
     </div>
   )
 }
