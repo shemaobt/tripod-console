@@ -273,6 +273,15 @@ body {
   border-radius: 0.375rem 0 0 0;
   padding: 0.125rem 0.5rem !important;
 }
+/* Os links de atribuicao tem uma linha de 10px; num dedo a area cresce para 28px (o minimo
+   do HIG) sem crescer a faixa, que fica por cima do mapa. Mesmo motivo do px acima. */
+@media (pointer: coarse) {
+  .leaflet-control-attribution a {
+    display: inline-block;
+    padding-block: 9px;
+    margin-block: -9px;
+  }
+}
 .dark .leaflet-control-attribution {
   background: rgba(20, 17, 9, 0.72) !important;
   color: #BDBA9E !important;
