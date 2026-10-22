@@ -48,10 +48,10 @@ export function JourneyCanvas({
   return (
     <div
       role="application"
-      aria-label="Journey graph. Drag to pan, Ctrl and scroll to zoom."
+      aria-label="Journey graph. Drag to pan; Ctrl and scroll, or pinch, to zoom."
       onMouseDown={onCanvasMouseDown}
       className={cn(
-        "absolute inset-0 overflow-hidden",
+        "absolute inset-0 touch-none overflow-hidden",
         view.panning ? "cursor-grabbing" : "cursor-grab",
       )}
     >

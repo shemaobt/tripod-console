@@ -44,8 +44,9 @@ export function CanvasMinimap({
 
   return (
     <div
+      data-canvas-ui
       onMouseDown={(e) => e.stopPropagation()}
-      className="absolute bottom-3.5 right-3.5 z-20 rounded-[0.75rem] border border-line bg-elevated p-1.5 shadow-[var(--shadow-md)]"
+      className="absolute bottom-3.5 right-3.5 z-20 hidden rounded-[0.75rem] sm:block border border-line bg-elevated p-1.5 shadow-[var(--shadow-md)]"
     >
       <svg
         width={mw}

@@ -25,6 +25,7 @@ export function CanvasControls({
   return (
     <>
       <div
+        data-canvas-ui
         onMouseDown={(e) => e.stopPropagation()}
         className="absolute bottom-3.5 left-3.5 z-20 flex items-center gap-0.5 rounded-[0.75rem] border border-line bg-elevated p-1 shadow-[var(--shadow-md)]"
       >
@@ -47,7 +48,8 @@ export function CanvasControls({
         </button>
       </div>
       <span className="pointer-events-none absolute bottom-[3.75rem] touch:bottom-[76px] left-4 z-20 rounded-[0.5rem] bg-canvas/80 px-2 py-[0.1875rem] text-[0.65625rem] text-fg-subtle">
-        Drag to pan · Ctrl + scroll to zoom
+        <span className="touch:hidden">Drag to pan · Ctrl + scroll to zoom</span>
+        <span className="hidden touch:inline">Drag to pan · Pinch to zoom</span>
       </span>
     </>
   )
