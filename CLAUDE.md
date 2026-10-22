@@ -521,7 +521,7 @@ interface InfoTooltipProps {
 }
 ```
 
-- Uses Radix `Tooltip` primitive
+- Uses Radix `Tooltip` primitive, controlled: Radix alone opens on any focus and never on a tap, so the component opens on hover, on **keyboard** focus (`:focus-visible`) and toggles on a **tap** — a dialog opened by mouse or tap that hands its first focus to an `(i)` no longer pops the tooltip over its title, and on a phone the text is reachable at all. Named "More information" for screen readers (HIG review, 2026-10-22, levigft)
 - Icon: `Info` from lucide-react, rendered in `text-verde/40` at 14-16px
 - Appears to the right of the label it explains, with `ml-1`
 - Keep text concise — link to external docs if more detail is needed
