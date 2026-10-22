@@ -145,7 +145,7 @@ export default function AppsPage() {
 
   return (
     <div className="max-w-[77.5rem] mx-auto px-6 sm:px-10 pt-8 pb-14">
-      <div className="flex items-end justify-between gap-4 mb-5">
+      <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div className="flex flex-col gap-1">
           <span className="text-[0.8125rem] font-semibold tracking-[0.14em] uppercase text-fg-muted">
             Administration

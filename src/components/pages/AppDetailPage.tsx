@@ -226,8 +226,8 @@ export default function AppDetailPage() {
         Manage apps
       </button>
 
-      <div className="flex items-center justify-between gap-4 mb-6">
-        <div className="flex items-center gap-3.5">
+      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex min-w-0 items-center gap-3.5">
           <button
             type="button"
             onClick={() => iconInputRef.current?.click()}

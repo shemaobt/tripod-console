@@ -18,7 +18,7 @@ export function LanguagesHeader({
   onCreate,
 }: LanguagesHeaderProps) {
   return (
-    <div className="flex items-end justify-between gap-4 mb-5">
+    <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
       <div className="flex flex-col gap-1">
         <span className="text-[0.8125rem] font-semibold tracking-[0.14em] uppercase text-fg-muted">Content</span>
         <h3 className="text-[1.5625rem] font-bold text-fg-strong tracking-tight">Languages</h3>
@@ -28,7 +28,7 @@ export function LanguagesHeader({
             : `${languageCount} language${languageCount !== 1 ? "s" : ""}`}
         </span>
       </div>
-      <div className="flex items-center gap-[1.125rem]">
+      <div className="flex flex-wrap items-center gap-[1.125rem]">
         {isPlatformAdmin && (
           <div className="flex items-center gap-[0.5625rem]">
             <Switch checked={showInactive} onCheckedChange={onShowInactiveChange} aria-label="Include inactive" />
