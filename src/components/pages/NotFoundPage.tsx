@@ -2,7 +2,7 @@ import { Link } from "react-router-dom"
 
 export default function NotFoundPage() {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-canvas px-6 text-center">
+    <div className="min-h-dvh flex flex-col items-center justify-center bg-canvas px-6 text-center">
       <span className="text-[0.8125rem] font-semibold tracking-[0.14em] uppercase text-fg-muted mb-2">
         Not found
       </span>

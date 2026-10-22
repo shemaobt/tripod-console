@@ -112,7 +112,7 @@ export function SettingsPopover({
           onInteractOutside={(e) => {
             if (pendingToggle || anchorRef.current?.contains(e.target as Node)) e.preventDefault()
           }}
-          className="flex max-h-[calc(100vh-8rem)] w-[22.5rem] flex-col gap-3.5 overflow-y-auto rounded-[1rem] p-[1.125rem]"
+          className="flex max-h-[calc(100dvh-8rem)] w-[22.5rem] flex-col gap-3.5 overflow-y-auto rounded-[1rem] p-[1.125rem]"
         >
           <div className="text-[0.625rem] font-bold uppercase tracking-[0.08em] text-fg-muted">
             Journey settings

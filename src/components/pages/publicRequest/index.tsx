@@ -50,7 +50,7 @@ export default function PublicRequestPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-canvas">
+    <div className="min-h-dvh flex flex-col bg-canvas">
       <header className="sticky top-0 z-30 bg-canvas flex items-center justify-between px-6 sm:px-11 py-[1.125rem] border-b border-line">
         <div className="flex items-center gap-3">
           <img

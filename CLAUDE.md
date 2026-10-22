@@ -206,7 +206,7 @@ Use `isPlatformAdmin`, `isManager`, `managedProjectIds` / `managedOrgIds`, and `
 
 - **Use `src/styles/`** for reusable style constants. This directory contains TypeScript objects with Tailwind class strings organized by purpose:
   - `cards.ts` — `card.base` (`bg-elevated rounded-[1.125rem] shadow-[var(--shadow-card)]`), `card.hover` (lift + shadow), `card.interactive` (base + hover + cursor), `card.padded` (base + `p-5 sm:p-6`), `card.stretchedLink` (`after:absolute after:inset-0`, for a title link that covers a `relative` card), `card.revealActions` (actions hidden until hover, focus inside the `group` or a touch screen)
-  - `layout.ts` — `page` (`min-h-screen bg-canvas`), `container` (`max-w-[77.5rem] mx-auto px-6 sm:px-10 py-8 sm:py-9`), `grid`, `main`
+  - `layout.ts` — `page` (`min-h-dvh bg-canvas` — `dvh`, never `vh`/`h-screen`: on iOS Safari `100vh` counts the area behind the address bar, so the bottom of a full-height layout hides under it), `container` (`max-w-[77.5rem] mx-auto px-6 sm:px-10 py-8 sm:py-9`), `grid`, `main`
   - `states.ts` — `empty`, `loading`, `error` (`accent-soft` banner), `warning` (`muted` banner)
 - **Import from `@/styles`** when using these constants
 - **Prefer centralized styles** over repeating the same class strings across components

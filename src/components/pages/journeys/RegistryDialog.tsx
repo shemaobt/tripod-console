@@ -42,7 +42,7 @@ export function RegistryDialog({ open, onOpenChange, builder, stepNums }: Regist
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent
         aria-label="Phase and category registry"
-        className="flex max-h-[calc(100vh-2.5rem)] flex-col gap-0 overflow-hidden rounded-[1.375rem] p-0 sm:p-0 sm:max-w-[49.375rem]"
+        className="flex max-h-[calc(100dvh-2.5rem)] flex-col gap-0 overflow-hidden rounded-[1.375rem] p-0 sm:p-0 sm:max-w-[49.375rem]"
       >
         <div className="flex flex-none items-center gap-3.5 border-b border-line py-[0.9375rem] pl-[1.125rem] pr-12">
           <span className="flex flex-col gap-px">

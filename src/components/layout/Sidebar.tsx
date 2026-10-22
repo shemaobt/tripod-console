@@ -332,7 +332,7 @@ export default function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
     <>
       <aside
         className={cn(
-          "hidden lg:flex shrink-0 h-screen sticky top-0 bg-shell text-shell-fg flex-col pt-[1.375rem] pb-4 transition-[width] duration-200",
+          "hidden lg:flex shrink-0 h-dvh sticky top-0 bg-shell text-shell-fg flex-col pt-[1.375rem] pb-4 transition-[width] duration-200",
           collapsed ? "w-[4.5rem] px-2" : "w-[16.125rem] px-3.5",
         )}
       >
