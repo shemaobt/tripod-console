@@ -471,7 +471,7 @@ Do not override, reinterpret, or invent visual rules.
 - **Header cells**: `text-left px-5 py-3 text-[0.6875rem] font-semibold tracking-[0.08em] uppercase text-fg-subtle border-b border-line`
 - **Body cells**: `px-5 py-3 border-b border-line`; row hover `hover:bg-muted`; first-column names `font-semibold text-fg-strong`
 - **Code chips**: `font-mono text-xs bg-muted rounded-md px-2 py-0.5 text-fg-muted`
-- **Action buttons**: `w-[1.875rem] h-[1.875rem] rounded-[0.5625rem] grid place-items-center text-fg-subtle` icon buttons — `hover:bg-muted hover:text-fg-strong` (edit) or `hover:bg-accent-soft hover:text-on-accent-soft` (delete)
+- **Action buttons**: `w-[1.875rem] h-[1.875rem] rounded-[0.5625rem] grid place-items-center text-fg-subtle` icon buttons — `hover:bg-muted hover:text-fg-strong` (edit) or `hover:bg-accent-soft hover:text-on-accent-soft` (delete), plus `touch.icon` from `@/styles` so they reach 44×44 on a touch screen (see Section 3, `touch.ts`)
 
 ---
 
