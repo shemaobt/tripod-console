@@ -8,16 +8,19 @@
      aqui e o que fez alguem acreditar que dava para escalar os breakpoints com a
      interface quando nao dava.
 
-     Sao o padrao do Tailwind (640/768/1024/1280/1536) multiplicado pela escala da
-     interface, hoje 0.828. O motivo: o breakpoint existe para dizer quando o
-     CONTEUDO tem espaco para uma coluna a mais, e o conteudo esta a 82.8% do
-     tamanho para o qual esses numeros foram calibrados. Sem esta conta o layout
-     troca tarde demais: numa janela de 1212px o grid de projetos ficava em 2
-     colunas por 68px, com sobra de espaco visivel dos dois lados.
+     Cada um e o padrao do Tailwind (640/768/1024/1280/1536) multiplicado pela
+     escala que a interface tem NAQUELA largura (ver `html` mais abaixo). O motivo:
+     o breakpoint existe para dizer quando o CONTEUDO tem espaco para uma coluna a
+     mais, e o conteudo esta na escala para a qual esses numeros foram calibrados
+     vezes a escala da raiz. Sem esta conta o layout troca tarde demais: numa
+     janela de 1212px o grid de projetos ficava em 2 colunas por 68px, com sobra
+     de espaco visivel dos dois lados.
 
-     SE A ESCALA MUDAR, estes cinco numeros mudam junto: padrao x escala nova. */
-  --breakpoint-sm: 530px;
-  --breakpoint-md: 636px;
+     Abaixo de lg a raiz esta a 100% (largura compacta), entao sm e md sao o
+     padrao puro; de lg para cima ela esta a 82.8%, entao lg/xl/2xl sao padrao x
+     0.828. SE UMA DAS DUAS ESCALAS MUDAR, os numeros da faixa dela mudam junto. */
+  --breakpoint-sm: 640px;
+  --breakpoint-md: 768px;
   --breakpoint-lg: 848px;
   --breakpoint-xl: 1060px;
   --breakpoint-2xl: 1272px;
@@ -157,9 +160,24 @@
    multiplica a interface toda. 100% = padrao do navegador (1rem = 16px).
    Calibrado em duas passadas com o usuario: 137.5% -> 92% (o zoom bom era 67%)
    -> 82.8% (o zoom bom era 90%). Para calibrar de novo: escala nova = escala
-   atual x (o zoom em que a tela ficou boa). */
+   atual x (o zoom em que a tela ficou boa).
+
+   Essa calibracao foi feita em desktop e vale a partir de lg (848px), onde o
+   menu lateral fica fixo. Abaixo disso, que e a largura compacta do HIG (celular
+   em pe ou deitado, iPad em Split View), a raiz volta a 100%: a 82.8% o texto de
+   legenda do console chegava a 7.9px e o corpo a 11.6px num iPhone, abaixo dos
+   11pt minimos e longe dos 17pt de corpo (apple-hig, foundations/typography.md),
+   e todo alvo de toque encolhia junto. A troca e por largura e nao por tipo de
+   aparelho (foundations/layout.md: "Determine layout based on size classes, not
+   device type or orientation"). O utils/uiScale.ts le esta mesma consulta. */
 html {
-  font-size: 82.8%;
+  font-size: 100%;
+}
+
+@media (min-width: 848px) {
+  html {
+    font-size: 82.8%;
+  }
 }
 
 body {
