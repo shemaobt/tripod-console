@@ -17,6 +17,7 @@ import {
 } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 import { cn } from "@/utils/cn"
+import { touch } from "@/styles"
 import { useAuth } from "@/contexts/AuthContext"
 import { useTheme } from "@/contexts/ThemeContext"
 import { ProfileDialog } from "@/components/common/ProfileDialog"
@@ -87,7 +88,7 @@ function NavItem({
 function ThemeToggle() {
   const { resolvedTheme, setTheme } = useTheme()
   return (
-    <div className="inline-flex bg-on-dark/7 rounded-full p-[0.1875rem] shrink-0">
+    <div className="inline-flex bg-on-dark/7 rounded-full p-[0.1875rem] shrink-0 touch:hidden">
       <button
         onClick={() => setTheme("light")}
         title="Light theme"
@@ -118,7 +119,7 @@ function ThemeToggle() {
   )
 }
 
-function ThemeToggleIcon() {
+function ThemeToggleIcon({ className }: { className?: string }) {
   const { resolvedTheme, setTheme } = useTheme()
   const isDark = resolvedTheme === "dark"
   return (
@@ -126,7 +127,7 @@ function ThemeToggleIcon() {
       onClick={() => setTheme(isDark ? "light" : "dark")}
       title={isDark ? "Light theme" : "Dark theme"}
       aria-label="Toggle theme"
-      className="w-9 h-9 rounded-[0.5625rem] grid place-items-center text-[var(--shell-dim)] hover:bg-[var(--shell-active)] hover:text-shell-fg transition-colors"
+      className={cn("w-9 h-9 rounded-[0.5625rem] grid place-items-center text-[var(--shell-dim)] hover:bg-[var(--shell-active)] hover:text-shell-fg transition-colors", className)}
     >
       {isDark ? <Sun className="w-4 h-4" strokeWidth={2} /> : <Moon className="w-4 h-4" strokeWidth={2} />}
     </button>
@@ -172,16 +173,17 @@ function SidebarContent({
           </button>
         </div>
       ) : (
-        <div className="flex items-center justify-between gap-2.5 px-2.5 pb-1">
+        <div className={cn("flex items-center justify-between gap-2.5 px-2.5 pb-1", !onToggleCollapse && "pr-9")}>
           <img src="/assets/logo-branco.svg" alt="Shemá" className="h-[1.375rem] w-auto" />
           <div className="flex items-center gap-1.5">
             <ThemeToggle />
+            <ThemeToggleIcon className="hidden touch:grid" />
             {onToggleCollapse && (
               <button
                 onClick={onToggleCollapse}
                 title="Collapse sidebar"
                 aria-label="Collapse sidebar"
-                className="w-8 h-8 rounded-[0.5625rem] grid place-items-center text-[var(--shell-dim)] hover:bg-[var(--shell-active)] hover:text-shell-fg transition-colors shrink-0"
+                className="w-8 h-8 touch:w-9 touch:h-9 rounded-[0.5625rem] grid place-items-center text-[var(--shell-dim)] hover:bg-[var(--shell-active)] hover:text-shell-fg transition-colors shrink-0"
               >
                 <PanelLeftClose className="w-[1.0625rem] h-[1.0625rem]" strokeWidth={1.75} />
               </button>
@@ -264,7 +266,7 @@ function SidebarContent({
               onClick={onLogout}
               title="Sign out"
               aria-label="Sign out"
-              className="w-8 h-8 rounded-[0.5625rem] grid place-items-center text-[var(--shell-dim)] hover:bg-[var(--shell-active)] hover:text-shell-fg transition-colors shrink-0"
+              className={cn(touch.target, "w-8 h-8 touch:w-9 touch:h-9 rounded-[0.5625rem] grid place-items-center text-[var(--shell-dim)] hover:bg-[var(--shell-active)] hover:text-shell-fg transition-colors shrink-0")}
             >
               <LogOut className="w-4 h-4" strokeWidth={1.75} />
             </button>
@@ -360,7 +362,7 @@ export default function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
             type="button"
             onClick={onMobileClose}
             aria-label="Close menu"
-            className="absolute right-3 top-3 w-8 h-8 rounded-[0.5625rem] grid place-items-center text-[var(--shell-dim)] hover:bg-[var(--shell-active)] hover:text-shell-fg transition-colors"
+            className={cn(touch.target, "absolute right-3 top-3 w-8 h-8 rounded-[0.5625rem] grid place-items-center text-[var(--shell-dim)] hover:bg-[var(--shell-active)] hover:text-shell-fg transition-colors")}
           >
             <X className="w-4 h-4" strokeWidth={2} />
           </button>
