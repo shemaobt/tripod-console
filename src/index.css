@@ -2,6 +2,9 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* Tela de toque (dedo, nao mouse). As regras de tamanho de alvo moram em styles/touch.ts. */
+@custom-variant touch (@media (pointer: coarse));
+
 @theme {
   /* Os pontos de troca de layout, em px de propósito: dentro de uma media query o
      rem vale SEMPRE 16px, nunca o font-size da raiz logo abaixo, e escrever rem

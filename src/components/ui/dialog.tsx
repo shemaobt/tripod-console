@@ -2,6 +2,7 @@ import * as React from "react"
 import * as DialogPrimitive from "@radix-ui/react-dialog"
 import { X } from "lucide-react"
 import { cn } from "@/utils/cn"
+import { touch } from "@/styles"
 
 const Dialog = DialogPrimitive.Root
 const DialogTrigger = DialogPrimitive.Trigger
@@ -59,7 +60,12 @@ const DialogContent = React.forwardRef<
       )}
     >
       {children}
-      <DialogPrimitive.Close className="absolute right-4 top-4 w-8 h-8 rounded-[0.5625rem] grid place-items-center text-fg-subtle hover:bg-muted hover:text-fg-strong transition-colors focus:outline-none disabled:pointer-events-none">
+      <DialogPrimitive.Close
+        className={cn(
+          touch.target,
+          "absolute right-4 top-4 w-8 h-8 rounded-[0.5625rem] grid place-items-center text-fg-subtle hover:bg-muted hover:text-fg-strong transition-colors focus:outline-none disabled:pointer-events-none",
+        )}
+      >
         <X className="h-4 w-4" />
         <span className="sr-only">Close</span>
       </DialogPrimitive.Close>

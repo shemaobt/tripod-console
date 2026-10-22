@@ -5,6 +5,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import { touch } from "@/styles"
+import { cn } from "@/utils/cn"
 
 interface InfoTooltipProps {
   content: string
@@ -18,7 +20,7 @@ export function InfoTooltip({ content, side = "top" }: InfoTooltipProps) {
         <TooltipTrigger asChild>
           <button
             type="button"
-            className="ml-1 inline-flex items-center text-fg-subtle hover:text-fg-muted transition-colors"
+            className={cn(touch.target, "ml-1 inline-flex items-center text-fg-subtle hover:text-fg-muted transition-colors")}
           >
             <Info className="h-3.5 w-3.5" strokeWidth={1.75} />
           </button>
