@@ -230,6 +230,28 @@ body {
 .shell-scroll::-webkit-scrollbar-thumb { background: rgba(246, 245, 235, 0.22); border-radius: 999px }
 .shell-scroll::-webkit-scrollbar-thumb:hover { background: rgba(246, 245, 235, 0.36) }
 
+/* Reduzir movimento (o "Reduce Motion" do HIG, prefers-reduced-motion na web): entradas,
+   pulsos e transicoes viram troca instantanea, e o card deixa de subir no hover - o
+   estado ainda muda, so nao se move. O spinner continua girando: e o unico sinal de que
+   algo esta carregando, e parar ele diria que a tela travou. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .animate-spin {
+    animation-duration: 1s !important;
+    animation-iteration-count: infinite !important;
+  }
+  [class*="hover:-translate-y"]:hover {
+    translate: none !important;
+  }
+}
+
 .animate-fade-in { animation: fadeIn 0.16s ease-out }
 .animate-pop-in { animation: popIn 0.2s var(--ease-out) }
 .animate-rise-in { animation: tIn 0.24s var(--ease-out) }

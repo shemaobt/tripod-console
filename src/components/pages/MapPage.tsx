@@ -17,7 +17,8 @@ const projectIcon = createProjectPinIcon({ popupAnchor: [0, -38] })
 function FlyToProject({ lat, lng }: { lat: number; lng: number }) {
   const map = useMap()
   useEffect(() => {
-    map.flyTo([lat, lng], 10, { duration: 1.5 })
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) map.setView([lat, lng], 10)
+    else map.flyTo([lat, lng], 10, { duration: 1.5 })
   }, [map, lat, lng])
   return null
 }
