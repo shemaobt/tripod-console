@@ -158,7 +158,7 @@ export function RegistryCategoriesTab({
       })}
       <button
         onClick={onAddCategory}
-        className="mt-[0.1875rem] flex cursor-pointer items-center gap-2 self-start rounded-full px-3.5 py-[0.5625rem] text-[0.78125rem] font-bold text-accent transition-colors hover:bg-accent-soft"
+        className="mt-[0.1875rem] flex cursor-pointer items-center gap-2 self-start rounded-full px-3.5 py-[0.5625rem] text-[0.78125rem] font-bold text-link transition-colors hover:bg-accent-soft"
       >
         <Plus className="h-3.5 w-3.5" strokeWidth={2.2} />
         New category

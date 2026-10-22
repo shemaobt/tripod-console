@@ -177,6 +177,7 @@ Use `isPlatformAdmin`, `isManager`, `managedProjectIds` / `managedOrgIds`, and `
   - **Text**: `fg` (body), `fg-strong` (headings/emphasis), `fg-muted` (secondary), `fg-subtle` (tertiary/captions), `on-dark` (text on dark backgrounds)
   - **Lines**: `line`, `line-strong` (hairlines/dividers), `input-border` (input underlines)
   - **Accent states**: `accent-hover`, `accent-press`, `accent-soft` + `on-accent-soft` (soft telha for destructive hovers and callouts)
+  - **Link ink**: `link` / `link-hover` — telha *as small text* (links, text buttons, the `link` button variant). Light it is telha itself; dark it is `#E08145` / `#E8935A`, because `accent` stays telha in dark (it is a fill) and as 10–13px ink it measured 3.44:1 on `elevated`. `text-accent` is for icons and fills only; text over `bg-muted` that must read as active uses `on-accent-soft` (HIG review, 2026-10-22, levigft)
   - **Status**: `st-ok`, `st-warn`, `st-info`, `st-idle`
   - **Shadows** via CSS vars (arbitrary values): `shadow-[var(--shadow-card)]`, `shadow-[var(--shadow-sm)]`, `shadow-[var(--shadow-md)]`, `shadow-[var(--shadow-lg)]`. Other `:root` vars: `--shell-dim`/`--shell-line`/`--shell-active` (sidebar), `--edge`, `--ease-out`, `--focus-ring`.
   - The **legacy Shema tokens** (`branco`, `areia`, `azul`, `telha`, `verde`, `verde-claro`, `preto`, `surface`, `surface-alt`) still exist for compatibility and adapt to dark mode, but prefer the semantic tokens in new code.
@@ -289,7 +290,7 @@ The Button component (`components/ui/button.tsx`) supports `asChild` via Radix S
 | `ghost` | Inline / table actions | `text-fg-muted hover:bg-muted hover:text-fg-strong` |
 | `outline-destructive` | Inline text delete | `text-on-accent-soft hover:bg-accent-soft` |
 | `destructive` | Delete / danger CTAs | `bg-accent text-white hover:bg-accent-hover` |
-| `link` | Inline links | `text-accent underline-offset-4 hover:underline rounded-none` |
+| `link` | Inline links | `text-link underline-offset-4 hover:underline hover:text-link-hover rounded-none` |
 
 Sizes: `default` (h-11 px-5), `sm` (h-9 px-4 text-[13px]), `lg` (h-12 px-6 text-base), `icon` (h-10 w-10).
 

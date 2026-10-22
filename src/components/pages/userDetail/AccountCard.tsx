@@ -50,7 +50,7 @@ export function AccountCard({
             type="button"
             disabled={avatarUploading}
             onClick={onPickPhoto}
-            className={cn(touch.target, "text-[0.78125rem] font-semibold text-accent hover:underline disabled:opacity-50")}
+            className={cn(touch.target, "text-[0.78125rem] font-semibold text-link hover:underline disabled:opacity-50")}
           >
             {avatarUploading ? "Uploading…" : "Upload"}
           </button>

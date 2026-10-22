@@ -143,7 +143,7 @@ export function ImageUpload({
               type="button"
               onClick={() => fileInputRef.current?.click()}
               disabled={uploading}
-              className={cn(touch.target, "text-[0.8125rem] font-semibold text-accent hover:underline disabled:opacity-50")}
+              className={cn(touch.target, "text-[0.8125rem] font-semibold text-link hover:underline disabled:opacity-50")}
             >
               {uploading
                 ? "Uploading..."

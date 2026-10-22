@@ -91,7 +91,7 @@ export function FilterBar({ filters = [], search, resultLabel, className }: Filt
               aria-label={filter.label}
               className={cn(
                 "w-full sm:w-48 rounded-full bg-muted shadow-none",
-                active && "text-accent",
+                active && "text-on-accent-soft",
                 filter.className,
               )}
             >

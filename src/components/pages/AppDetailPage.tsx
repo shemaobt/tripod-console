@@ -264,7 +264,7 @@ export default function AppDetailPage() {
                 type="button"
                 onClick={() => iconInputRef.current?.click()}
                 disabled={iconBusy}
-                className={cn(touch.target, "text-[0.8125rem] font-semibold text-accent hover:text-accent-hover hover:underline disabled:opacity-50")}
+                className={cn(touch.target, "text-[0.8125rem] font-semibold text-link hover:text-link-hover hover:underline disabled:opacity-50")}
               >
                 {form.icon_url ? "Change icon" : "Upload icon"}
               </button>

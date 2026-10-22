@@ -249,7 +249,7 @@ export default function ProjectDetailPage() {
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
                     disabled={imageBusy}
-                    className={cn(touch.target, "text-[0.8125rem] font-semibold text-accent hover:text-accent-hover hover:underline disabled:opacity-50")}
+                    className={cn(touch.target, "text-[0.8125rem] font-semibold text-link hover:text-link-hover hover:underline disabled:opacity-50")}
                   >
                     {project.image_url ? "Change image" : "Upload image"}
                   </button>

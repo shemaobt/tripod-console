@@ -115,7 +115,7 @@ export default function LoginPage() {
             <span className="text-[0.8125rem] text-fg-muted">Need access? Contact your administrator.</span>
             <Link
               to="/request"
-              className={cn(touch.target, "text-[0.84375rem] font-semibold text-accent hover:text-accent-hover hover:underline self-start")}
+              className={cn(touch.target, "text-[0.84375rem] font-semibold text-link hover:text-link-hover hover:underline self-start")}
             >
               Submit a public request →
             </Link>

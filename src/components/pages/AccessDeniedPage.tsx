@@ -24,14 +24,14 @@ export default function AccessDeniedPage({ variant = "default" }: AccessDeniedPa
         <button
           type="button"
           onClick={() => logout()}
-          className={cn(touch.target, "text-[0.84375rem] font-semibold text-accent hover:underline")}
+          className={cn(touch.target, "text-[0.84375rem] font-semibold text-link hover:underline")}
         >
           Sign out →
         </button>
       ) : (
         <Link
           to="/app/dashboard"
-          className={cn(touch.target, "text-[0.84375rem] font-semibold text-accent hover:underline")}
+          className={cn(touch.target, "text-[0.84375rem] font-semibold text-link hover:underline")}
         >
           Go to dashboard →
         </Link>

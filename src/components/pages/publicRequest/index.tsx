@@ -93,7 +93,7 @@ export default function PublicRequestPage() {
             <button
               type="button"
               onClick={handleReset}
-              className={cn(touch.target, "mt-2.5 text-[0.875rem] font-semibold text-accent hover:underline")}
+              className={cn(touch.target, "mt-2.5 text-[0.875rem] font-semibold text-link hover:underline")}
             >
               Submit another request
             </button>

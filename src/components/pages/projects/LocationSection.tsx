@@ -102,7 +102,7 @@ export function LocationSection({ project, onSave }: LocationSectionProps) {
           <button
             type="button"
             onClick={handleClearLocation}
-            className={cn(touch.target, "text-[0.78125rem] font-semibold text-accent hover:underline")}
+            className={cn(touch.target, "text-[0.78125rem] font-semibold text-link hover:underline")}
           >
             Clear location
           </button>
