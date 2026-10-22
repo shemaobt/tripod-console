@@ -9,6 +9,8 @@ import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { LanguageRequestForm } from "./LanguageRequestForm"
 import { ProjectRequestForm } from "./ProjectRequestForm"
+import { touch } from "@/styles"
+import { cn } from "@/utils/cn"
 
 const EMAIL_PATTERN = /^\S+@\S+\.\S+$/
 
@@ -69,7 +71,7 @@ export default function PublicRequestPage() {
         </div>
         <Link
           to="/login"
-          className="text-[0.84375rem] font-semibold text-fg-muted hover:text-fg-strong"
+          className={cn(touch.target, "text-[0.84375rem] font-semibold text-fg-muted hover:text-fg-strong")}
         >
           Sign in →
         </Link>
@@ -89,7 +91,7 @@ export default function PublicRequestPage() {
             <button
               type="button"
               onClick={handleReset}
-              className="mt-2.5 text-[0.875rem] font-semibold text-accent hover:underline"
+              className={cn(touch.target, "mt-2.5 text-[0.875rem] font-semibold text-accent hover:underline")}
             >
               Submit another request
             </button>

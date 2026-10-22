@@ -21,6 +21,7 @@ import { InfoTooltip } from "@/components/common/InfoTooltip"
 import { ProjectInfoForm } from "./projects/ProjectInfoForm"
 import { LocationSection } from "./projects/LocationSection"
 import { ProjectAccessTab } from "./ProjectAccessTab"
+import { touch } from "@/styles"
 
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/svg+xml"]
 
@@ -188,7 +189,7 @@ export default function ProjectDetailPage() {
     <div className="max-w-[77.5rem] mx-auto px-6 sm:px-10 pt-8 pb-14">
       <button
         onClick={() => navigate("/app/projects")}
-        className="inline-flex items-center gap-1.5 text-[0.8125rem] font-semibold text-fg-muted hover:text-fg-strong transition-colors mb-4"
+        className={cn(touch.target, "inline-flex items-center gap-1.5 text-[0.8125rem] font-semibold text-fg-muted hover:text-fg-strong transition-colors mb-4")}
       >
         <ArrowLeft className="w-[0.9375rem] h-[0.9375rem]" strokeWidth={1.75} />
         Projects
@@ -245,7 +246,7 @@ export default function ProjectDetailPage() {
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
                     disabled={imageBusy}
-                    className="text-[0.8125rem] font-semibold text-accent hover:text-accent-hover hover:underline disabled:opacity-50"
+                    className={cn(touch.target, "text-[0.8125rem] font-semibold text-accent hover:text-accent-hover hover:underline disabled:opacity-50")}
                   >
                     {project.image_url ? "Change image" : "Upload image"}
                   </button>

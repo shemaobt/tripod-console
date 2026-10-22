@@ -31,13 +31,13 @@ export function LanguagesHeader({
       <div className="flex flex-wrap items-center gap-[1.125rem]">
         {isPlatformAdmin && (
           <div className="flex items-center gap-[0.5625rem]">
-            <Switch checked={showInactive} onCheckedChange={onShowInactiveChange} aria-label="Include inactive" />
-            <span
-              className="text-[0.8125rem] text-fg-muted cursor-pointer select-none"
-              onClick={() => onShowInactiveChange(!showInactive)}
+            <Switch id="languages-include-inactive" checked={showInactive} onCheckedChange={onShowInactiveChange} />
+            <label
+              htmlFor="languages-include-inactive"
+              className="text-[0.8125rem] text-fg-muted cursor-pointer select-none py-2"
             >
               Include inactive
-            </span>
+            </label>
           </div>
         )}
         <Button onClick={onCreate}>

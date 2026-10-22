@@ -4,6 +4,7 @@ import { toast } from "sonner"
 import { uploadsAPI } from "@/services/api"
 import { cn } from "@/utils/cn"
 import { Button } from "@/components/ui/button"
+import { touch } from "@/styles"
 
 interface ImageUploadProps {
   value: string | null
@@ -142,7 +143,7 @@ export function ImageUpload({
               type="button"
               onClick={() => fileInputRef.current?.click()}
               disabled={uploading}
-              className="text-[0.8125rem] font-semibold text-accent hover:underline disabled:opacity-50"
+              className={cn(touch.target, "text-[0.8125rem] font-semibold text-accent hover:underline disabled:opacity-50")}
             >
               {uploading
                 ? "Uploading..."

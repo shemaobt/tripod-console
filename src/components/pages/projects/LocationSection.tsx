@@ -4,7 +4,7 @@ import "leaflet/dist/leaflet.css"
 import { MapPin } from "lucide-react"
 import type { ProjectResponse } from "@/types"
 import { useTheme } from "@/contexts/ThemeContext"
-import { card } from "@/styles"
+import { card, touch } from "@/styles"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -13,6 +13,7 @@ import { InfoTooltip } from "@/components/common/InfoTooltip"
 import { FieldError } from "@/components/common/FieldError"
 import { parseCoordinates, type CoordinateField } from "@/utils/coordinates"
 import { MAP_ATTRIBUTION, createProjectPinIcon, tileUrlForTheme } from "@/constants/map"
+import { cn } from "@/utils/cn"
 
 const locationIcon = createProjectPinIcon({ shadow: false })
 
@@ -101,7 +102,7 @@ export function LocationSection({ project, onSave }: LocationSectionProps) {
           <button
             type="button"
             onClick={handleClearLocation}
-            className="text-[0.78125rem] font-semibold text-accent hover:underline"
+            className={cn(touch.target, "text-[0.78125rem] font-semibold text-accent hover:underline")}
           >
             Clear location
           </button>

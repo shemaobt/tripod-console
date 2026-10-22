@@ -1,4 +1,6 @@
 import { Link } from "react-router-dom"
+import { touch } from "@/styles"
+import { cn } from "@/utils/cn"
 
 export default function NotFoundPage() {
   return (
@@ -10,7 +12,7 @@ export default function NotFoundPage() {
       <p className="font-serif italic text-fg-muted mb-7">This page could not be found.</p>
       <Link
         to="/app/dashboard"
-        className="text-[0.84375rem] font-semibold text-accent hover:underline"
+        className={cn(touch.target, "text-[0.84375rem] font-semibold text-accent hover:underline")}
       >
         Go to dashboard →
       </Link>

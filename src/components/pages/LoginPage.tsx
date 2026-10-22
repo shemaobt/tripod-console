@@ -7,6 +7,8 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { LoadingSpinner } from "@/components/common/LoadingSpinner"
+import { touch } from "@/styles"
+import { cn } from "@/utils/cn"
 
 export default function LoginPage() {
   const { user, isLoading, login } = useAuth()
@@ -111,7 +113,7 @@ export default function LoginPage() {
             <span className="text-[0.8125rem] text-fg-muted">Need access? Contact your administrator.</span>
             <Link
               to="/request"
-              className="text-[0.84375rem] font-semibold text-accent hover:text-accent-hover hover:underline self-start"
+              className={cn(touch.target, "text-[0.84375rem] font-semibold text-accent hover:text-accent-hover hover:underline self-start")}
             >
               Submit a public request →
             </Link>

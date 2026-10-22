@@ -1,5 +1,5 @@
 import type { UserListResponse } from "@/types"
-import { card } from "@/styles"
+import { card, touch } from "@/styles"
 import { cn } from "@/utils/cn"
 import { Button } from "@/components/ui/button"
 import { Switch } from "@/components/ui/switch"
@@ -50,7 +50,7 @@ export function AccountCard({
             type="button"
             disabled={avatarUploading}
             onClick={onPickPhoto}
-            className="text-[0.78125rem] font-semibold text-accent hover:underline disabled:opacity-50"
+            className={cn(touch.target, "text-[0.78125rem] font-semibold text-accent hover:underline disabled:opacity-50")}
           >
             {avatarUploading ? "Uploading…" : "Upload"}
           </button>

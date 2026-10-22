@@ -4,6 +4,8 @@ import type { UserAppResponse } from "@/types"
 import { EmptyState } from "@/components/common/EmptyState"
 import { LoadFailed } from "@/components/common/LoadFailed"
 import { AppCard } from "./AppCard"
+import { touch } from "@/styles"
+import { cn } from "@/utils/cn"
 
 export function MyAppsCard({
   apps,
@@ -19,7 +21,7 @@ export function MyAppsCard({
       <div className="flex items-center justify-between mb-3.5">
         <h4 className="text-[0.96875rem] font-semibold text-fg-strong">My apps</h4>
         {showManageLink && (
-          <Link to="/app/apps" className="text-[0.78125rem] font-semibold text-accent hover:underline">
+          <Link to="/app/apps" className={cn(touch.target, "text-[0.78125rem] font-semibold text-accent hover:underline")}>
             Manage apps →
           </Link>
         )}

@@ -3,6 +3,7 @@ import type { UserAppResponse } from "@/types"
 import { cn } from "@/utils/cn"
 import { avatarColors, initialsOf } from "@/utils/avatar"
 import { platformLabel } from "@/constants/platforms"
+import { touch } from "@/styles"
 
 interface LaunchLink {
   label: string
@@ -63,7 +64,7 @@ export function AppCard({ app }: { app: UserAppResponse }) {
             href={link.href}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 bg-inverse text-on-dark rounded-full px-2.5 py-1 text-[0.6875rem] font-semibold hover:bg-preto transition-colors"
+            className={cn(touch.target, "inline-flex items-center gap-1 bg-inverse text-on-dark rounded-full px-2.5 py-1 text-[0.6875rem] font-semibold hover:bg-preto transition-colors")}
           >
             {link.label}
             <ArrowUpRight className="w-2.5 h-2.5" strokeWidth={2.4} />

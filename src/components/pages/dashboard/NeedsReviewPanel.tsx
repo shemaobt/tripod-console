@@ -4,6 +4,8 @@ import { UserAvatar } from "@/components/common/UserAvatar"
 import { LoadFailed } from "@/components/common/LoadFailed"
 import { formatDate } from "@/utils/format"
 import type { AdminDashboardData } from "./useAdminDashboardData"
+import { touch } from "@/styles"
+import { cn } from "@/utils/cn"
 
 interface ReviewItem {
   id: string
@@ -90,7 +92,7 @@ export function NeedsReviewPanel({ data, loading, failed, onRetry }: NeedsReview
     <div className="bg-elevated rounded-[1.125rem] shadow-[var(--shadow-card)] p-5 min-w-0">
       <div className="flex items-center justify-between mb-3">
         <h4 className="text-[0.96875rem] font-semibold text-fg-strong">Needs review</h4>
-        <Link to="/app/users" className="text-[0.78125rem] font-semibold text-accent hover:underline">
+        <Link to="/app/users" className={cn(touch.target, "text-[0.78125rem] font-semibold text-accent hover:underline")}>
           All requests →
         </Link>
       </div>
@@ -122,7 +124,7 @@ export function NeedsReviewPanel({ data, loading, failed, onRetry }: NeedsReview
               </div>
               <Link
                 to={item.to}
-                className="text-[0.78125rem] font-semibold text-accent hover:underline shrink-0"
+                className={cn(touch.target, "text-[0.78125rem] font-semibold text-accent hover:underline shrink-0")}
               >
                 Review →
               </Link>
