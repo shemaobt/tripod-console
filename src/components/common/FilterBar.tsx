@@ -56,6 +56,7 @@ export function SearchPill({
     // a label, so a tap anywhere on the pill focuses the field — the input itself is one line tall
     <label className={cn("flex min-w-0 cursor-text items-center gap-2 rounded-full bg-muted", sizing.pill, className)}>
       <Search className={cn("shrink-0 text-fg-subtle", sizing.icon)} strokeWidth={2} />
+      <span className="sr-only">{placeholder.replace(/(…|\.\.\.)$/, "")}</span>
       <input
         placeholder={placeholder}
         value={value}

@@ -20,6 +20,7 @@ export function InfoTooltip({ content, side = "top" }: InfoTooltipProps) {
         <TooltipTrigger asChild>
           <button
             type="button"
+            aria-label="More information"
             className={cn(touch.target, "ml-1 inline-flex items-center text-fg-subtle hover:text-fg-muted transition-colors")}
           >
             <Info className="h-3.5 w-3.5" strokeWidth={1.75} />

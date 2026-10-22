@@ -81,14 +81,14 @@ export function ProjectInfoForm({
         />
       </div>
       <div className="space-y-1.5">
-        <Label>Language</Label>
+        <Label htmlFor="pj-language">Language</Label>
         {languagesLoading ? (
           <p className="text-sm text-fg-muted">Loading languages...</p>
         ) : languagesFailed && languages.length === 0 ? (
           <LoadFailed what="the languages" onRetry={onRetryLanguages} />
         ) : (
           <Select value={languageId} onValueChange={setLanguageId}>
-            <SelectTrigger>
+            <SelectTrigger id="pj-language">
               <SelectValue placeholder="Select a language" />
             </SelectTrigger>
             <SelectContent>

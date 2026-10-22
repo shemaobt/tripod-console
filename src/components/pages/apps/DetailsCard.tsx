@@ -63,10 +63,12 @@ export function DetailsCard({
       </div>
 
       <div className="space-y-2">
-        <Label>
+        <Label id="ap-platforms-label">
           Platforms <span className="font-normal text-fg-subtle">(minimum 1)</span>
         </Label>
         <PlatformMultiSelect
+          id="ap-platforms"
+          labelledBy="ap-platforms-label"
           value={form.platforms}
           onChange={(platforms) => setForm((f) => ({ ...f, platforms }))}
         />

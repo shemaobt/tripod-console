@@ -117,6 +117,7 @@ export default function MapPage() {
             key={project.id}
             position={[project.latitude!, project.longitude!]}
             icon={projectIcon}
+            title={project.name}
             eventHandlers={{
               click: () => setActiveProject(project),
             }}

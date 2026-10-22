@@ -112,8 +112,8 @@ export function ProfileDialog({ open, onOpenChange }: ProfileDialogProps) {
           </div>
 
           <div className="space-y-1.5">
-            <Label>Email</Label>
-            <Input value={user?.email || ""} disabled />
+            <Label htmlFor="profile-email">Email</Label>
+            <Input id="profile-email" value={user?.email || ""} disabled />
             <p className="text-xs text-fg-subtle mt-1.5">
               Email cannot be changed.
             </p>

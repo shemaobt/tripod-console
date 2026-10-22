@@ -133,7 +133,7 @@ export function AppFormDialog({
 
           <FormSection label="Platform & Icon">
             <div className="space-y-1.5">
-              <Label htmlFor="app-platform">
+              <Label id="app-platform-label">
                 <span className="inline-flex items-center">
                   Platforms
                   <InfoTooltip content="The platforms this app targets. Select one or more (Web, Android, iOS)." />
@@ -141,6 +141,7 @@ export function AppFormDialog({
               </Label>
               <PlatformMultiSelect
                 id="app-platform"
+                labelledBy="app-platform-label"
                 value={form.platforms}
                 onChange={(platforms) => setForm((f) => ({ ...f, platforms }))}
               />

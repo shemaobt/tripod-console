@@ -193,7 +193,7 @@ export function ProjectFormDialog({
             />
           </div>
           <div className="space-y-1.5">
-            <Label>
+            <Label htmlFor="project-language">
               <span className="inline-flex items-center">
                 Language
                 {!isEditing && (
@@ -207,7 +207,7 @@ export function ProjectFormDialog({
               <LoadFailed what="the languages" onRetry={fetchLanguages} />
             ) : (
               <Select value={languageId} onValueChange={setLanguageId}>
-                <SelectTrigger>
+                <SelectTrigger id="project-language">
                   <SelectValue placeholder="Select a language" />
                 </SelectTrigger>
                 <SelectContent>

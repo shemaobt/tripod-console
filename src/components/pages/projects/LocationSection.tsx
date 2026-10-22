@@ -136,7 +136,7 @@ export function LocationSection({ project, onSave }: LocationSectionProps) {
             >
               <AttributionControl prefix={false} />
               <TileLayer key={tileUrl} url={tileUrl} attribution={MAP_ATTRIBUTION} maxZoom={20} />
-              <Marker position={[location.latitude, location.longitude]} icon={locationIcon} />
+              <Marker position={[location.latitude, location.longitude]} icon={locationIcon} interactive={false} keyboard={false} />
             </MapContainer>
           </div>
         </div>
@@ -147,8 +147,8 @@ export function LocationSection({ project, onSave }: LocationSectionProps) {
       )}
 
       <div className="space-y-1.5">
-        <Label>Search a place</Label>
-        <LocationSearchInput value={location} onChange={handleLocationChange} />
+        <Label htmlFor="pj-place">Search a place</Label>
+        <LocationSearchInput id="pj-place" value={location} onChange={handleLocationChange} />
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-[1fr_1fr_auto] gap-3.5 sm:items-end">
