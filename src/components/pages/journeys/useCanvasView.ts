@@ -231,6 +231,8 @@ export function useCanvasView({
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
+      // a Radix layer (dialog, popover) that handled this key already closed itself and said so
+      if (e.defaultPrevented) return
       if (!keysRef.current) return
       if (e.ctrlKey || e.metaKey || e.altKey) return
       const tag = (e.target as HTMLElement | null)?.tagName

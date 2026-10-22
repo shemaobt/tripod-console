@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useRef, useState } from "react"
 import { ArrowRight } from "lucide-react"
 import {
   Dialog,
@@ -35,6 +35,7 @@ export function StatusChangeDialog({
   onSave,
 }: StatusChangeDialogProps) {
   const [note, setNote] = useState("")
+  const noteRef = useRef<HTMLTextAreaElement>(null)
 
   const fromConfig = JOURNEY_STATUS_CONFIG[from]
   const toConfig = JOURNEY_STATUS_CONFIG[to]
@@ -45,7 +46,14 @@ export function StatusChangeDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent aria-label="Record status change" className="max-w-[30.625rem] gap-[0.9375rem]">
+      <DialogContent
+        aria-label="Record status change"
+        className="max-w-[30.625rem] gap-[0.9375rem]"
+        onOpenAutoFocus={(e) => {
+          e.preventDefault()
+          noteRef.current?.focus()
+        }}
+      >
         <div className="flex flex-col gap-1">
           <div className="text-[0.625rem] font-bold uppercase tracking-[0.08em] text-fg-muted">
             Status change
@@ -87,7 +95,7 @@ export function StatusChangeDialog({
           </label>
           <textarea
             id="st_note"
-            autoFocus
+            ref={noteRef}
             value={note}
             onChange={(e) => setNote(e.target.value)}
             placeholder={placeholder}
