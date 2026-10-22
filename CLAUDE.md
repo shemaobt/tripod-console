@@ -463,6 +463,7 @@ Do not override, reinterpret, or invent visual rules.
 - **Placeholders**: `placeholder:text-fg-subtle`
 - **Focus**: `focus:outline-none focus:border-accent` (underline/border shifts to accent)
 - **Labels**: `text-[0.8125rem] font-semibold text-fg-strong mb-1.5`
+- **Touch screens**: a global rule in `index.css` sets every text field (`input`, `textarea`, `select`) to `max(1rem, 16px)` under `(pointer: coarse)` — below 16px iOS Safari zooms the whole page on focus and doesn't zoom back. Don't fight it with a smaller `text-*` on a field (responsividade HIG, 2026-10-22, levigft)
 
 ### 9.9 Tables
 - **Container**: `bg-elevated rounded-[1.125rem] shadow-[var(--shadow-card)] overflow-hidden` (no border). When the columns can outgrow a phone, use `overflow-x-auto` instead, so the last columns scroll rather than get cut off — the Languages table does (OBT-258, 2026-09-28, levigft).

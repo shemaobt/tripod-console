@@ -190,6 +190,20 @@ body {
   outline-offset: 0.125rem;
 }
 
+/* O Safari do iOS da zoom na pagina inteira ao focar um campo com fonte abaixo de
+   16px de CSS e nao desfaz ao sair, e o resto do formulario fica fora da tela. O
+   limiar e do navegador e em px, por isso o max() com px aqui, a excecao a regra de
+   "so rem". Fora de @layer de proposito, como o foco acima: vence o text-* de cada
+   componente sem precisar de um utilitario em cada um. So em ponteiro de toque - no
+   desktop o campo continua no tamanho do design. */
+@media (pointer: coarse) {
+  input:not([type="checkbox"], [type="radio"], [type="range"], [type="file"], [type="color"]),
+  textarea,
+  select {
+    font-size: max(1rem, 16px);
+  }
+}
+
 @keyframes tIn { from { opacity: 0; transform: translateY(0.625rem) } to { opacity: 1; transform: none } }
 @keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
 @keyframes popIn { from { opacity: 0; transform: translateY(0.375rem) scale(0.985) } to { opacity: 1; transform: none } }
