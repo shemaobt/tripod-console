@@ -78,7 +78,7 @@ export default function DashboardPage() {
         ))}
 
       {isPlatformAdmin ? (
-        <div className="grid grid-cols-1 lg:grid-cols-[1.65fr_1fr] gap-[1.125rem] items-start">
+        <div className="grid grid-cols-1 @min-[62rem]:grid-cols-[1.65fr_1fr] gap-[1.125rem] items-start">
           <div className="flex flex-col gap-[1.125rem] min-w-0">
             <MyAppsCard apps={apps} onRetry={loadApps} showManageLink />
             <MapPreview projects={projects} onRetry={loadProjects} />

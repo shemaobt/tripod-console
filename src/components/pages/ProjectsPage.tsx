@@ -116,7 +116,7 @@ export default function ProjectsPage() {
             No projects match “{query}”.
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 @2xl:grid-cols-2 @4xl:grid-cols-3">
             {filtered.map((project) => {
               const lang = langOf(project.language_id)
               return (

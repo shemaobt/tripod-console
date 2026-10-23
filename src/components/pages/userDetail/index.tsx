@@ -309,7 +309,7 @@ export default function UserDetailPage() {
         />
       )}
 
-      <div className="mb-[1.125rem] grid grid-cols-1 items-start gap-[1.125rem] lg:grid-cols-[1fr_1.3fr]">
+      <div className="mb-[1.125rem] grid grid-cols-1 items-start gap-[1.125rem] @4xl:grid-cols-[1fr_1.3fr]">
         <AccountCard
           user={user}
           isSelf={isSelf}

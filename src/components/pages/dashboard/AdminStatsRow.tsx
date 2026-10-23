@@ -26,7 +26,7 @@ export function AdminStatsRow({
 
   return (
     <>
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
+      <div className="grid grid-cols-2 @4xl:grid-cols-4 gap-3.5">
         <StatCard label="Users" value={data.users.length} subtitle={`${activeCount} active`} />
         <StatCard
           label="Projects"

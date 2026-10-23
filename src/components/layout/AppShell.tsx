@@ -46,7 +46,7 @@ export default function AppShell() {
       <div className="flex-1 flex flex-col min-w-0">
         <AppHeader onToggleSidebar={() => setMobileOpen((o) => !o)} />
 
-        <main className="flex-1 overflow-auto isolate">
+        <main className="@container flex-1 overflow-auto isolate">
           <Outlet />
         </main>
       </div>

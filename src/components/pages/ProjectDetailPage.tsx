@@ -274,7 +274,7 @@ export default function ProjectDetailPage() {
         </div>
 
         <TabsContent value="info">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-[1.125rem] items-start">
+          <div className="grid grid-cols-1 @4xl:grid-cols-2 gap-[1.125rem] items-start">
             <ProjectInfoForm
               project={project}
               languages={languages}
