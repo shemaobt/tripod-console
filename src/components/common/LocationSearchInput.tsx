@@ -24,12 +24,14 @@ interface Suggestion {
 interface LocationSearchInputProps {
   value: LocationResult | null
   onChange: (location: LocationResult | null) => void
+  id?: string
   className?: string
 }
 
 export function LocationSearchInput({
   value,
   onChange,
+  id,
   className,
 }: LocationSearchInputProps) {
   const [query, setQuery] = useState("")
@@ -133,6 +135,7 @@ export function LocationSearchInput({
           <button
             type="button"
             onClick={handleClear}
+            aria-label={`Clear ${value.displayName}`}
             className="flex items-center justify-center h-7 w-7 rounded-[0.5625rem] text-fg-subtle hover:text-on-accent-soft hover:bg-accent-soft transition-colors shrink-0"
           >
             <X className="h-4 w-4" />
@@ -147,6 +150,7 @@ export function LocationSearchInput({
               <Search className="h-4 w-4 text-fg-subtle shrink-0" />
             )}
             <input
+              id={id}
               value={query}
               onChange={(e) => handleInputChange(e.target.value)}
               onFocus={() =>

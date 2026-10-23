@@ -3,6 +3,7 @@ import { Navigate, Outlet } from "react-router-dom"
 import { useAuth } from "@/contexts/AuthContext"
 import { LoadingSpinner } from "@/components/common/LoadingSpinner"
 import AccessDeniedPage from "@/components/pages/AccessDeniedPage"
+import { REGULAR_WIDTH_QUERY } from "@/utils/uiScale"
 import AppHeader from "./AppHeader"
 import Sidebar from "./Sidebar"
 
@@ -11,7 +12,7 @@ export default function AppShell() {
   const [mobileOpen, setMobileOpen] = useState(false)
 
   useEffect(() => {
-    const desktop = window.matchMedia("(min-width: 848px)")
+    const desktop = window.matchMedia(REGULAR_WIDTH_QUERY)
     const closeOnDesktop = () => {
       if (desktop.matches) setMobileOpen(false)
     }
@@ -29,14 +30,14 @@ export default function AppShell() {
 
   if (!isPlatformAdmin && !isManager) {
     return (
-      <div className="min-h-screen bg-canvas flex">
+      <div className="min-h-dvh bg-canvas flex">
         <AccessDeniedPage variant="logout" />
       </div>
     )
   }
 
   return (
-    <div className="h-screen overflow-hidden bg-canvas flex">
+    <div className="h-dvh overflow-hidden bg-canvas flex">
       <Sidebar
         mobileOpen={mobileOpen}
         onMobileClose={() => setMobileOpen(false)}

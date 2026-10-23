@@ -6,7 +6,7 @@ import { LoadingSpinner } from "@/components/common/LoadingSpinner"
 import { LoadFailed } from "@/components/common/LoadFailed"
 import { layout as pageLayout } from "@/styles"
 import type { PhaseStatus } from "@/types"
-import { uiScale } from "@/utils/uiScale"
+import { useUiScale } from "@/utils/uiScale"
 import { useJourneyBuilder } from "./useJourneyBuilder"
 import { useCanvasView } from "./useCanvasView"
 import { buildChildren, buildLayout, dependencyChain, stepNumbers } from "./layout"
@@ -28,7 +28,7 @@ export default function JourneysPage() {
   const { isPlatformAdmin, managedProjectIds } = useAuth()
   const isAdmin = isPlatformAdmin
   const builder = useJourneyBuilder(isAdmin, managedProjectIds)
-  const scale = useMemo(() => uiScale(), [])
+  const scale = useUiScale()
 
   const [sel, setSel] = useState<string | null>(null)
   const [hover, setHover] = useState<string | null>(null)
@@ -57,7 +57,6 @@ export default function JourneysPage() {
       setPop(null)
     },
     onEscape: () => {
-      if (document.body.style.pointerEvents === "none") return
       setSel(null)
       setPop(null)
     },
@@ -69,7 +68,7 @@ export default function JourneysPage() {
     if (phasesLoading) return
     const raf = requestAnimationFrame(fit)
     return () => cancelAnimationFrame(raf)
-  }, [phasesLoading, fit])
+  }, [phasesLoading, fit, scale])
 
   const projectId = builder.projectId
   const { loadLog } = builder

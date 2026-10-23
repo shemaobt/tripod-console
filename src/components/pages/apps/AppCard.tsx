@@ -4,7 +4,7 @@ import type { AppResponse } from "@/types"
 import { cn } from "@/utils/cn"
 import { avatarColors, initialsOf } from "@/utils/avatar"
 import { platformLabel } from "@/constants/platforms"
-import { card } from "@/styles"
+import { card, touch } from "@/styles"
 
 export function AppCard({
   app,
@@ -31,7 +31,9 @@ export function AppCard({
         !app.is_active && "opacity-70",
       )}
     >
-      <div className="flex items-center gap-3">
+      {/* On a screen without hover the actions never hide (card.revealActions), so the name
+          stops short of them: 2 × 44px buttons + gap from right-2.5, minus the card padding. */}
+      <div className="flex items-center gap-3 [@media(hover:none)]:pr-[88px]">
         {app.icon_url ? (
           <img
             src={app.icon_url}
@@ -84,7 +86,7 @@ export function AppCard({
           onClick={onEdit}
           title="Edit app"
           aria-label={`Edit ${app.name}`}
-          className="w-[1.875rem] h-[1.875rem] rounded-[0.5625rem] grid place-items-center text-fg-subtle hover:bg-muted hover:text-fg-strong transition-colors"
+          className={cn("w-[1.875rem] h-[1.875rem] rounded-[0.5625rem] grid place-items-center text-fg-subtle hover:bg-muted hover:text-fg-strong transition-colors", touch.icon)}
         >
           <Pencil className="w-[0.9375rem] h-[0.9375rem]" strokeWidth={1.75} />
         </button>
@@ -93,7 +95,7 @@ export function AppCard({
           onClick={onDelete}
           title="Delete app"
           aria-label={`Delete ${app.name}`}
-          className="w-[1.875rem] h-[1.875rem] rounded-[0.5625rem] grid place-items-center text-fg-subtle hover:bg-accent-soft hover:text-on-accent-soft transition-colors"
+          className={cn("w-[1.875rem] h-[1.875rem] rounded-[0.5625rem] grid place-items-center text-fg-subtle hover:bg-accent-soft hover:text-on-accent-soft transition-colors", touch.icon)}
         >
           <Trash2 className="w-[0.9375rem] h-[0.9375rem]" strokeWidth={1.75} />
         </button>

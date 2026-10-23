@@ -10,18 +10,21 @@ import { LoadFailed } from "@/components/common/LoadFailed"
 import { ProjectPopupContent } from "./map/ProjectPopupContent"
 import { FieldMapPanel, type MapRow } from "./map/FieldMapPanel"
 import { MAP_ATTRIBUTION, createProjectPinIcon, tileUrlForTheme } from "@/constants/map"
+import { useDocumentTitle } from "@/utils/documentTitle"
 
 const projectIcon = createProjectPinIcon({ popupAnchor: [0, -38] })
 
 function FlyToProject({ lat, lng }: { lat: number; lng: number }) {
   const map = useMap()
   useEffect(() => {
-    map.flyTo([lat, lng], 10, { duration: 1.5 })
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) map.setView([lat, lng], 10)
+    else map.flyTo([lat, lng], 10, { duration: 1.5 })
   }, [map, lat, lng])
   return null
 }
 
 export default function MapPage() {
+  useDocumentTitle("Map")
   const [projects, setProjects] = useState<ProjectResponse[] | null>([])
   const [projectPhases, setProjectPhases] = useState<Map<string, ProjectPhaseResponse[] | null>>(
     new Map(),
@@ -115,6 +118,7 @@ export default function MapPage() {
             key={project.id}
             position={[project.latitude!, project.longitude!]}
             icon={projectIcon}
+            title={project.name}
             eventHandlers={{
               click: () => setActiveProject(project),
             }}

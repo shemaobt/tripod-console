@@ -6,9 +6,13 @@ interface PlatformMultiSelectProps {
   value: string[]
   onChange: (platforms: string[]) => void
   id?: string
+  /** id of the visible caption; a <label for> cannot name a group of buttons */
+  labelledBy?: string
+  /** id of the FieldError that explains the problem, while there is one */
+  errorId?: string
 }
 
-export function PlatformMultiSelect({ value, onChange, id }: PlatformMultiSelectProps) {
+export function PlatformMultiSelect({ value, onChange, id, labelledBy, errorId }: PlatformMultiSelectProps) {
   function toggle(platform: string) {
     onChange(
       value.includes(platform)
@@ -18,7 +22,14 @@ export function PlatformMultiSelect({ value, onChange, id }: PlatformMultiSelect
   }
 
   return (
-    <div id={id} className="flex flex-wrap gap-2">
+    <div
+      id={id}
+      role="group"
+      aria-labelledby={labelledBy}
+      aria-invalid={errorId ? true : undefined}
+      aria-describedby={errorId}
+      className="flex flex-wrap gap-2"
+    >
       {PLATFORM_OPTIONS.map((opt) => {
         const active = value.includes(opt.value)
         return (

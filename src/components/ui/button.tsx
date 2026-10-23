@@ -16,7 +16,7 @@ const buttonVariants = cva(
           "bg-elevated text-fg-strong shadow-[inset_0_0_0_0.0625rem_var(--color-line-strong)] hover:bg-muted",
         "outline-destructive": "text-on-accent-soft hover:bg-accent-soft",
         ghost: "text-fg-muted hover:bg-muted hover:text-fg-strong",
-        link: "text-accent underline-offset-4 hover:underline rounded-none",
+        link: "text-link underline-offset-4 hover:underline hover:text-link-hover rounded-none",
       },
       size: {
         default: "h-11 px-5 py-2",

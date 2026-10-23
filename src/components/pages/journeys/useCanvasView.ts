@@ -154,6 +154,62 @@ export function useCanvasView({
     return () => container.removeEventListener("wheel", onWheel)
   }, [container, zoomAt])
 
+  // Touch: one finger pans, two fingers pinch-zoom around their midpoint. The mouse path
+  // above can't serve a finger — a browser only turns a tap into mouse events, never a drag —
+  // so without this the graph couldn't be moved on a phone or an iPad. A tap still reaches
+  // the mouse handlers (node select, background clear) through those compatibility events.
+  // Every finger added or lifted re-baselines from the current view, so 2 → 1 keeps panning.
+  useEffect(() => {
+    if (!container) return
+    let base: { view: CanvasViewState; x: number; y: number; dist: number; moved: boolean } | null = null
+    const read = (e: TouchEvent) => {
+      const r = container.getBoundingClientRect()
+      const [a, b] = [e.touches[0], e.touches[1]]
+      if (!b) return { x: a.clientX - r.left, y: a.clientY - r.top, dist: 0 }
+      return {
+        x: (a.clientX + b.clientX) / 2 - r.left,
+        y: (a.clientY + b.clientY) / 2 - r.top,
+        dist: Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY),
+      }
+    }
+    const rebase = (e: TouchEvent) => {
+      if (e.touches.length === 0) {
+        if (base?.moved) setView((v) => ({ ...v, panning: false }))
+        base = null
+        return
+      }
+      if (!base) return
+      base = { view: viewRef.current, ...read(e), moved: base.moved }
+    }
+    const onStart = (e: TouchEvent) => {
+      // a gesture starts on the graph, not on the controls; a second finger joins it anywhere
+      if (!base && e.target instanceof Element && e.target.closest("[data-canvas-ui]")) return
+      base = { view: viewRef.current, ...read(e), moved: base?.moved ?? false }
+    }
+    const onMove = (e: TouchEvent) => {
+      if (!base) return
+      const now = read(e)
+      if (!base.moved && !now.dist && Math.abs(now.x - base.x) + Math.abs(now.y - base.y) <= 4) return
+      base.moved = true
+      const { view: v0, x, y, dist } = base
+      const k = Math.min(MAX_K, Math.max(MIN_K, dist && now.dist ? v0.k * (now.dist / dist) : v0.k))
+      // the world point that was under the fingers stays under them
+      const wx = (x - v0.tx) / v0.k
+      const wy = (y - v0.ty) / v0.k
+      setView((v) => ({ ...v, panning: true, k, tx: now.x - wx * k, ty: now.y - wy * k }))
+    }
+    container.addEventListener("touchstart", onStart, { passive: true })
+    container.addEventListener("touchmove", onMove, { passive: true })
+    container.addEventListener("touchend", rebase)
+    container.addEventListener("touchcancel", rebase)
+    return () => {
+      container.removeEventListener("touchstart", onStart)
+      container.removeEventListener("touchmove", onMove)
+      container.removeEventListener("touchend", rebase)
+      container.removeEventListener("touchcancel", rebase)
+    }
+  }, [container])
+
   useEffect(() => {
     if (!container) return
     const measure = () => {
@@ -175,6 +231,8 @@ export function useCanvasView({
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
+      // a Radix layer (dialog, popover) that handled this key already closed itself and said so
+      if (e.defaultPrevented) return
       if (!keysRef.current) return
       if (e.ctrlKey || e.metaKey || e.altKey) return
       const tag = (e.target as HTMLElement | null)?.tagName

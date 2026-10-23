@@ -28,6 +28,8 @@ import { GlobalRoleCard } from "./GlobalRoleCard"
 import { AppRolesCard } from "./AppRolesCard"
 import { ManagerProjectsDialog } from "./ManagerProjectsDialog"
 import { useUserRecord } from "./useUserRecord"
+import { touch } from "@/styles"
+import { cn } from "@/utils/cn"
 
 export default function UserDetailPage() {
   const { userId } = useParams<{ userId: string }>()
@@ -279,7 +281,7 @@ export default function UserDetailPage() {
       <button
         type="button"
         onClick={() => navigate("/app/users")}
-        className="mb-4 inline-flex items-center gap-1.5 text-[0.8125rem] font-semibold text-fg-muted transition-colors hover:text-fg-strong"
+        className={cn(touch.target, "mb-4 inline-flex items-center gap-1.5 text-[0.8125rem] font-semibold text-fg-muted transition-colors hover:text-fg-strong")}
       >
         <ArrowLeft className="h-[0.9375rem] w-[0.9375rem]" strokeWidth={1.75} />
         Users

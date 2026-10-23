@@ -54,7 +54,8 @@ src/
 │   ├── common/                  # Shared UI:
 │   │                            #   LoadingSpinner, EmptyState, ConfirmDialog, ErrorBoundary
 │   │                            #   LoadFailed         — plain-language "couldn't load X" + Try again
-│   │                            #   FieldError         — inline validation message under a form field
+│   │                            #   PageHeader         — eyebrow + the page's h1 + subtitle + actions; names the browser tab
+│   │                            #   FieldError         — inline validation message under a form field (`id` → the field's aria-describedby)
 │   │                            #   InfoTooltip        — (i) icon with hover/tap explanation popover
 │   │                            #   FeatureSpotlight   — one-time contextual highlight with dismiss
 │   │                            #   FilterBar          — reusable search + filters row
@@ -108,6 +109,7 @@ src/
 │                                #   phaseStatus.ts, journeyStatus.ts, map.ts (tile URLs, OSM/CARTO attribution, pin icon)
 ├── utils/                       # cn.ts (class merging), format.ts (formatDate, timeAgo)
 │                                #   apiError.ts (isNotFound, isForbidden)
+│                                #   uiScale.ts (useUiScale, REGULAR_WIDTH_QUERY), documentTitle.ts (useDocumentTitle)
 └── styles/                      # Centralized style constants (cards, layout, states; index barrel)
 ```
 
@@ -176,6 +178,7 @@ Use `isPlatformAdmin`, `isManager`, `managedProjectIds` / `managedOrgIds`, and `
   - **Text**: `fg` (body), `fg-strong` (headings/emphasis), `fg-muted` (secondary), `fg-subtle` (tertiary/captions), `on-dark` (text on dark backgrounds)
   - **Lines**: `line`, `line-strong` (hairlines/dividers), `input-border` (input underlines)
   - **Accent states**: `accent-hover`, `accent-press`, `accent-soft` + `on-accent-soft` (soft telha for destructive hovers and callouts)
+  - **Link ink**: `link` / `link-hover` — telha *as small text* (links, text buttons, the `link` button variant). Light it is telha itself; dark it is `#E08145` / `#E8935A`, because `accent` stays telha in dark (it is a fill) and as 10–13px ink it measured 3.44:1 on `elevated`. `text-accent` is for icons and fills only; text over `bg-muted` that must read as active uses `on-accent-soft` (HIG review, 2026-10-22, levigft)
   - **Status**: `st-ok`, `st-warn`, `st-info`, `st-idle`
   - **Shadows** via CSS vars (arbitrary values): `shadow-[var(--shadow-card)]`, `shadow-[var(--shadow-sm)]`, `shadow-[var(--shadow-md)]`, `shadow-[var(--shadow-lg)]`. Other `:root` vars: `--shell-dim`/`--shell-line`/`--shell-active` (sidebar), `--edge`, `--ease-out`, `--focus-ring`.
   - The **legacy Shema tokens** (`branco`, `areia`, `azul`, `telha`, `verde`, `verde-claro`, `preto`, `surface`, `surface-alt`) still exist for compatibility and adapt to dark mode, but prefer the semantic tokens in new code.
@@ -206,8 +209,9 @@ Use `isPlatformAdmin`, `isManager`, `managedProjectIds` / `managedOrgIds`, and `
 
 - **Use `src/styles/`** for reusable style constants. This directory contains TypeScript objects with Tailwind class strings organized by purpose:
   - `cards.ts` — `card.base` (`bg-elevated rounded-[1.125rem] shadow-[var(--shadow-card)]`), `card.hover` (lift + shadow), `card.interactive` (base + hover + cursor), `card.padded` (base + `p-5 sm:p-6`), `card.stretchedLink` (`after:absolute after:inset-0`, for a title link that covers a `relative` card), `card.revealActions` (actions hidden until hover, focus inside the `group` or a touch screen)
-  - `layout.ts` — `page` (`min-h-screen bg-canvas`), `container` (`max-w-[77.5rem] mx-auto px-6 sm:px-10 py-8 sm:py-9`), `grid`, `main`
+  - `layout.ts` — `page` (`min-h-dvh bg-canvas` — `dvh`, never `vh`/`h-screen`: on iOS Safari `100vh` counts the area behind the address bar, so the bottom of a full-height layout hides under it), `container` (`max-w-[77.5rem] mx-auto px-6 sm:px-10 py-8 sm:py-9`), `grid`, `main`
   - `states.ts` — `empty`, `loading`, `error` (`accent-soft` banner), `warning` (`muted` banner)
+  - `touch.ts` — touch-target sizing, active only under the `touch:` variant (`(pointer: coarse)`, declared in `index.css`): `touch.target` adds an invisible ≥ 44×44 hit area (`::after`) without changing the drawing — for text links, switches, tab segments, the (i) icon, a dialog's ×; `touch.icon` grows 30×30 icon buttons that sit side by side (edit beside delete) to 44×44 for real, since an invisible area would hand a tap on one to its neighbour. HIG: 44×44pt standard, 28×28pt minimum (apple-hig `foundations/accessibility.md`). Any new control under 44px on either side takes one of the two (responsividade HIG, 2026-10-22, levigft)
 - **Import from `@/styles`** when using these constants
 - **Prefer centralized styles** over repeating the same class strings across components
 - **Extend the central styles** when adding new patterns
@@ -287,7 +291,7 @@ The Button component (`components/ui/button.tsx`) supports `asChild` via Radix S
 | `ghost` | Inline / table actions | `text-fg-muted hover:bg-muted hover:text-fg-strong` |
 | `outline-destructive` | Inline text delete | `text-on-accent-soft hover:bg-accent-soft` |
 | `destructive` | Delete / danger CTAs | `bg-accent text-white hover:bg-accent-hover` |
-| `link` | Inline links | `text-accent underline-offset-4 hover:underline rounded-none` |
+| `link` | Inline links | `text-link underline-offset-4 hover:underline hover:text-link-hover rounded-none` |
 
 Sizes: `default` (h-11 px-5), `sm` (h-9 px-4 text-[13px]), `lg` (h-12 px-6 text-base), `icon` (h-10 w-10).
 
@@ -383,7 +387,7 @@ interface AuthContextValue {
 All UI, styling, layout, spacing, colors, typography, and visual decisions MUST strictly follow these rules.
 Do not override, reinterpret, or invent visual rules.
 
-**Units and the interface scale.** `src/index.css` sets `html { font-size: 82.8% }`, so `1rem` renders as **13.248px**. Every size in this codebase is authored in `rem`, and the px figures named in this section and in Section 10 are **authoring values at 1rem = 16px** — what reaches the screen is 82.8% of them (the `w-[16.125rem]` sidebar rail is 258px authored, 213.6px rendered). Copy the `rem` form quoted here; never mix a raw `px` size in beside it, or your component will not line up with its neighbours. The single exception is the breakpoints in `@theme`: inside a media query `1rem` is always 16px, so those are declared in px and already carry the scale.
+**Units and the interface scale.** From `lg` (848px) up, `src/index.css` sets `html { font-size: 82.8% }`, so `1rem` renders as **13.248px**; below `lg` — the compact width, phones and iPad Split View — the root is **100%** (`1rem` = 16px), because at 82.8% captions reached 7.9px and body text 11.6px on an iPhone, under the HIG's 11pt minimum, and every touch target shrank with them. Every size in this codebase is authored in `rem`, and the px figures named in this section and in Section 10 are **authoring values at 1rem = 16px** — on desktop what reaches the screen is 82.8% of them (the `w-[16.125rem]` sidebar rail is 258px authored, 213.6px rendered). Copy the `rem` form quoted here; never mix a raw `px` size in beside it, or your component will not line up with its neighbours. The single exception is the breakpoints in `@theme`: inside a media query `1rem` is always 16px, so those are declared in px and each carries the scale of its own range — `sm`/`md` are Tailwind's 640/768 (root at 100%), `lg`/`xl`/`2xl` are 1024/1280/1536 × 0.828. JS that needs the scale reads `useUiScale()` and the switch point `REGULAR_WIDTH_QUERY`, both in `utils/uiScale.ts` (responsividade HIG, 2026-10-22, levigft).
 
 ### 9.1 Typography
 - **Montserrat**: Entire interface (UI, buttons, navigation, labels, headings).
@@ -419,7 +423,7 @@ Do not override, reinterpret, or invent visual rules.
 ### 9.3 Spacing & Layout
 - **Base unit**: Tailwind's default spacing scale — `1` = `0.25rem` (4px authored)
 - **Page wrapper**: `max-w-[77.5rem] mx-auto px-6 sm:px-10 pt-8 pb-14` (or `layout.container` from `@/styles`)
-- **Page header row**: left = eyebrow (`text-[0.8125rem] font-semibold tracking-[0.14em] uppercase text-fg-muted`) above an `h3` title (`text-[1.5625rem] font-bold text-fg-strong tracking-tight`), optional subtitle/count (`text-[0.78125rem] text-fg-subtle`); right = actions
+- **Page header row**: `<PageHeader>` from `components/common/` — left = eyebrow (`text-[0.8125rem] font-semibold tracking-[0.14em] uppercase text-fg-muted`) above the page's **`h1`** (`text-[1.5625rem] font-bold text-fg-strong tracking-tight`), optional subtitle/count (`text-[0.78125rem] text-fg-subtle`); right = actions, stacked under the title below `sm`. It also sets the tab title (`useDocumentTitle` in `utils/documentTitle.ts`, `"<screen> · Tripod Console"`); detail screens without the component render `<DocumentTitle title={record.name} />` (same file) in the branch that has loaded, plus their own `h1`. One `h1` per screen — every route used to have none (HIG review, 2026-10-22, levigft)
 - **Card padding**: `p-5` (or `p-5 sm:p-6`)
 - **Section gaps**: `space-y-6` or `space-y-8` for vertical rhythm
 - **Form spacing**: `space-y-4` between form groups, `space-y-2` between label and input
@@ -456,6 +460,7 @@ Do not override, reinterpret, or invent visual rules.
 - **Click**: `active:scale-[0.985]`
 - **Entrances**: keyframes in `index.css` — `animate-fade-in` (fadeIn 0.16s), `animate-pop-in` (popIn 0.2s, dialogs), `animate-rise-in` (tIn 0.24s, page/section entrances)
 - **Easing**: `--ease-out` = `cubic-bezier(0.2, 0.8, 0.25, 1)`
+- **Reduce motion**: `index.css` honours `prefers-reduced-motion: reduce` globally — animations and transitions become instant, the card hover lift is cancelled, the spinner keeps turning (it is the only sign something is loading). JS-driven motion checks the same query itself (the map's `flyTo` becomes `setView`). New motion needs no opt-in; motion that must survive the preference, like the spinner, is the exception to name there (HIG review, 2026-10-22, levigft)
 
 ### 9.8 Forms
 - **Inputs are underline-style**: transparent background, `border-0 border-b-[0.09375rem] border-input-border px-0`, no box, no ring
@@ -463,13 +468,15 @@ Do not override, reinterpret, or invent visual rules.
 - **Placeholders**: `placeholder:text-fg-subtle`
 - **Focus**: `focus:outline-none focus:border-accent` (underline/border shifts to accent)
 - **Labels**: `text-[0.8125rem] font-semibold text-fg-strong mb-1.5`
+- **Errors belong to their field**: a `FieldError` carries an `id`, and the field it refuses gets `aria-invalid` + `aria-describedby` pointing at it while the error shows (`role=alert` alone is announced once and then lost when focus returns to the field). A group of controls (the platform chips) is a `role=group` named by `aria-labelledby` — a `<label for>` cannot point at a `<div>` (HIG review, 2026-10-22, levigft)
+- **Touch screens**: a global rule in `index.css` sets every text field (`input`, `textarea`, `select`) to `max(1rem, 16px)` under `(pointer: coarse)` — below 16px iOS Safari zooms the whole page on focus and doesn't zoom back. Don't fight it with a smaller `text-*` on a field (responsividade HIG, 2026-10-22, levigft)
 
 ### 9.9 Tables
 - **Container**: `bg-elevated rounded-[1.125rem] shadow-[var(--shadow-card)] overflow-hidden` (no border). When the columns can outgrow a phone, use `overflow-x-auto` instead, so the last columns scroll rather than get cut off — the Languages table does (OBT-258, 2026-09-28, levigft).
 - **Header cells**: `text-left px-5 py-3 text-[0.6875rem] font-semibold tracking-[0.08em] uppercase text-fg-subtle border-b border-line`
 - **Body cells**: `px-5 py-3 border-b border-line`; row hover `hover:bg-muted`; first-column names `font-semibold text-fg-strong`
 - **Code chips**: `font-mono text-xs bg-muted rounded-md px-2 py-0.5 text-fg-muted`
-- **Action buttons**: `w-[1.875rem] h-[1.875rem] rounded-[0.5625rem] grid place-items-center text-fg-subtle` icon buttons — `hover:bg-muted hover:text-fg-strong` (edit) or `hover:bg-accent-soft hover:text-on-accent-soft` (delete)
+- **Action buttons**: `w-[1.875rem] h-[1.875rem] rounded-[0.5625rem] grid place-items-center text-fg-subtle` icon buttons — `hover:bg-muted hover:text-fg-strong` (edit) or `hover:bg-accent-soft hover:text-on-accent-soft` (delete), plus `touch.icon` from `@/styles` so they reach 44×44 on a touch screen (see Section 3, `touch.ts`)
 
 ---
 
@@ -517,7 +524,7 @@ interface InfoTooltipProps {
 }
 ```
 
-- Uses Radix `Tooltip` primitive
+- Uses Radix `Tooltip` primitive, controlled: Radix alone opens on any focus and never on a tap, so the component opens on hover, on **keyboard** focus (`:focus-visible`) and toggles on a **tap** — a dialog opened by mouse or tap that hands its first focus to an `(i)` no longer pops the tooltip over its title, and on a phone the text is reachable at all. Named "More information" for screen readers (HIG review, 2026-10-22, levigft)
 - Icon: `Info` from lucide-react, rendered in `text-verde/40` at 14-16px
 - Appears to the right of the label it explains, with `ml-1`
 - Keep text concise — link to external docs if more detail is needed

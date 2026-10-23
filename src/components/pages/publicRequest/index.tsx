@@ -9,10 +9,14 @@ import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { LanguageRequestForm } from "./LanguageRequestForm"
 import { ProjectRequestForm } from "./ProjectRequestForm"
+import { touch } from "@/styles"
+import { cn } from "@/utils/cn"
+import { useDocumentTitle } from "@/utils/documentTitle"
 
 const EMAIL_PATTERN = /^\S+@\S+\.\S+$/
 
 export default function PublicRequestPage() {
+  useDocumentTitle("Request access")
   const [requesterName, setRequesterName] = useState("")
   const [requesterEmail, setRequesterEmail] = useState("")
   const [languages, setLanguages] = useState<PublicLanguageOption[]>([])
@@ -50,7 +54,7 @@ export default function PublicRequestPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-canvas">
+    <div className="min-h-dvh flex flex-col bg-canvas">
       <header className="sticky top-0 z-30 bg-canvas flex items-center justify-between px-6 sm:px-11 py-[1.125rem] border-b border-line">
         <div className="flex items-center gap-3">
           <img
@@ -69,7 +73,7 @@ export default function PublicRequestPage() {
         </div>
         <Link
           to="/login"
-          className="text-[0.84375rem] font-semibold text-fg-muted hover:text-fg-strong"
+          className={cn(touch.target, "text-[0.84375rem] font-semibold text-fg-muted hover:text-fg-strong")}
         >
           Sign in →
         </Link>
@@ -89,7 +93,7 @@ export default function PublicRequestPage() {
             <button
               type="button"
               onClick={handleReset}
-              className="mt-2.5 text-[0.875rem] font-semibold text-accent hover:underline"
+              className={cn(touch.target, "mt-2.5 text-[0.875rem] font-semibold text-link hover:underline")}
             >
               Submit another request
             </button>

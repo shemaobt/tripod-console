@@ -2,22 +2,28 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* Tela de toque (dedo, nao mouse). As regras de tamanho de alvo moram em styles/touch.ts. */
+@custom-variant touch (@media (pointer: coarse));
+
 @theme {
   /* Os pontos de troca de layout, em px de propósito: dentro de uma media query o
      rem vale SEMPRE 16px, nunca o font-size da raiz logo abaixo, e escrever rem
      aqui e o que fez alguem acreditar que dava para escalar os breakpoints com a
      interface quando nao dava.
 
-     Sao o padrao do Tailwind (640/768/1024/1280/1536) multiplicado pela escala da
-     interface, hoje 0.828. O motivo: o breakpoint existe para dizer quando o
-     CONTEUDO tem espaco para uma coluna a mais, e o conteudo esta a 82.8% do
-     tamanho para o qual esses numeros foram calibrados. Sem esta conta o layout
-     troca tarde demais: numa janela de 1212px o grid de projetos ficava em 2
-     colunas por 68px, com sobra de espaco visivel dos dois lados.
+     Cada um e o padrao do Tailwind (640/768/1024/1280/1536) multiplicado pela
+     escala que a interface tem NAQUELA largura (ver `html` mais abaixo). O motivo:
+     o breakpoint existe para dizer quando o CONTEUDO tem espaco para uma coluna a
+     mais, e o conteudo esta na escala para a qual esses numeros foram calibrados
+     vezes a escala da raiz. Sem esta conta o layout troca tarde demais: numa
+     janela de 1212px o grid de projetos ficava em 2 colunas por 68px, com sobra
+     de espaco visivel dos dois lados.
 
-     SE A ESCALA MUDAR, estes cinco numeros mudam junto: padrao x escala nova. */
-  --breakpoint-sm: 530px;
-  --breakpoint-md: 636px;
+     Abaixo de lg a raiz esta a 100% (largura compacta), entao sm e md sao o
+     padrao puro; de lg para cima ela esta a 82.8%, entao lg/xl/2xl sao padrao x
+     0.828. SE UMA DAS DUAS ESCALAS MUDAR, os numeros da faixa dela mudam junto. */
+  --breakpoint-sm: 640px;
+  --breakpoint-md: 768px;
   --breakpoint-lg: 848px;
   --breakpoint-xl: 1060px;
   --breakpoint-2xl: 1272px;
@@ -55,6 +61,11 @@
   --color-accent-press: #872F00;
   --color-accent-soft: #F2D8C2;
   --color-on-accent-soft: #A23E00;
+  /* Tinta de link e de botao de texto: no claro e o proprio telha (4.6:1 no canvas,
+     5.04:1 no elevated); no escuro o accent continua telha porque e preenchimento,
+     e como tinta pequena ele dava 3.44:1 no elevated - ver o bloco .dark. */
+  --color-link: #BE4A01;
+  --color-link-hover: #A23E00;
 
   --color-shell: #33321A;
   --color-shell-fg: #F6F5EB;
@@ -134,6 +145,10 @@
     --color-accent-press: #A23E00;
     --color-accent-soft: #3B2413;
     --color-on-accent-soft: #E08145;
+    /* 6.11:1 no elevated, 6.64:1 no canvas; o hover clareia (7.23:1) em vez de escurecer
+       para o accent-hover, que no escuro desce a 4.52:1. */
+    --color-link: #E08145;
+    --color-link-hover: #E8935A;
 
     --color-shell: #100D07;
 
@@ -157,9 +172,24 @@
    multiplica a interface toda. 100% = padrao do navegador (1rem = 16px).
    Calibrado em duas passadas com o usuario: 137.5% -> 92% (o zoom bom era 67%)
    -> 82.8% (o zoom bom era 90%). Para calibrar de novo: escala nova = escala
-   atual x (o zoom em que a tela ficou boa). */
+   atual x (o zoom em que a tela ficou boa).
+
+   Essa calibracao foi feita em desktop e vale a partir de lg (848px), onde o
+   menu lateral fica fixo. Abaixo disso, que e a largura compacta do HIG (celular
+   em pe ou deitado, iPad em Split View), a raiz volta a 100%: a 82.8% o texto de
+   legenda do console chegava a 7.9px e o corpo a 11.6px num iPhone, abaixo dos
+   11pt minimos e longe dos 17pt de corpo (apple-hig, foundations/typography.md),
+   e todo alvo de toque encolhia junto. A troca e por largura e nao por tipo de
+   aparelho (foundations/layout.md: "Determine layout based on size classes, not
+   device type or orientation"). O utils/uiScale.ts le esta mesma consulta. */
 html {
-  font-size: 82.8%;
+  font-size: 100%;
+}
+
+@media (min-width: 848px) {
+  html {
+    font-size: 82.8%;
+  }
 }
 
 body {
@@ -170,6 +200,20 @@ body {
 *:focus-visible {
   outline: 0.15625rem solid var(--focus-ring);
   outline-offset: 0.125rem;
+}
+
+/* O Safari do iOS da zoom na pagina inteira ao focar um campo com fonte abaixo de
+   16px de CSS e nao desfaz ao sair, e o resto do formulario fica fora da tela. O
+   limiar e do navegador e em px, por isso o max() com px aqui, a excecao a regra de
+   "so rem". Fora de @layer de proposito, como o foco acima: vence o text-* de cada
+   componente sem precisar de um utilitario em cada um. So em ponteiro de toque - no
+   desktop o campo continua no tamanho do design. */
+@media (pointer: coarse) {
+  input:not([type="checkbox"], [type="radio"], [type="range"], [type="file"], [type="color"]),
+  textarea,
+  select {
+    font-size: max(1rem, 16px);
+  }
 }
 
 @keyframes tIn { from { opacity: 0; transform: translateY(0.625rem) } to { opacity: 1; transform: none } }
@@ -185,6 +229,28 @@ body {
 .shell-scroll::-webkit-scrollbar-track { background: transparent }
 .shell-scroll::-webkit-scrollbar-thumb { background: rgba(246, 245, 235, 0.22); border-radius: 999px }
 .shell-scroll::-webkit-scrollbar-thumb:hover { background: rgba(246, 245, 235, 0.36) }
+
+/* Reduzir movimento (o "Reduce Motion" do HIG, prefers-reduced-motion na web): entradas,
+   pulsos e transicoes viram troca instantanea, e o card deixa de subir no hover - o
+   estado ainda muda, so nao se move. O spinner continua girando: e o unico sinal de que
+   algo esta carregando, e parar ele diria que a tela travou. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .animate-spin {
+    animation-duration: 1s !important;
+    animation-iteration-count: infinite !important;
+  }
+  [class*="hover:-translate-y"]:hover {
+    translate: none !important;
+  }
+}
 
 .animate-fade-in { animation: fadeIn 0.16s ease-out }
 .animate-pop-in { animation: popIn 0.2s var(--ease-out) }
@@ -237,6 +303,22 @@ body {
   font-size: 0.625rem !important;
   border-radius: 0.375rem 0 0 0;
   padding: 0.125rem 0.5rem !important;
+}
+/* O azul padrao do Leaflet (#0078a8) dava 4.26:1 na faixa clara e 1.8:1 na escura: os
+   links herdam a tinta da faixa, que ja e fg-muted em cada tema, e o sublinhado e o que
+   os separa do texto em volta. */
+.leaflet-control-attribution a {
+  color: inherit !important;
+  text-decoration: underline;
+}
+/* Os links de atribuicao tem uma linha de 10px; num dedo a area cresce para 28px (o minimo
+   do HIG) sem crescer a faixa, que fica por cima do mapa. Mesmo motivo do px acima. */
+@media (pointer: coarse) {
+  .leaflet-control-attribution a {
+    display: inline-block;
+    padding-block: 9px;
+    margin-block: -9px;
+  }
 }
 .dark .leaflet-control-attribution {
   background: rgba(20, 17, 9, 0.72) !important;

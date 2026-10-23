@@ -5,7 +5,7 @@ import { UserAvatar } from "@/components/common/UserAvatar"
 import { avatarColors, initialsOf } from "@/utils/avatar"
 import { formatDate } from "@/utils/format"
 import { cn } from "@/utils/cn"
-import { card } from "@/styles"
+import { card, touch } from "@/styles"
 
 const MEMBER_STYLES = ["bg-azul", "bg-verde-claro", "bg-quiet"]
 
@@ -35,7 +35,9 @@ export function ProjectCard({ project, langName, langCode, to, onEdit }: Project
     <article
       className="group relative flex flex-col gap-2.5 rounded-[1.125rem] bg-elevated p-5 shadow-[var(--shadow-card)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[var(--shadow-md)]"
     >
-      <div className="flex items-start justify-between gap-2.5">
+      {/* Without hover the edit button never hides (card.revealActions) and sat on top of the
+          language code: the row stops short of it (44px button from right-2.5, minus padding). */}
+      <div className="flex items-start justify-between gap-2.5 [@media(hover:none)]:pr-[40px]">
         <div className="flex min-w-0 items-center gap-2.5">
           {project.image_url ? (
             <img
@@ -131,6 +133,7 @@ export function ProjectCard({ project, langName, langCode, to, onEdit }: Project
         onClick={onEdit}
         aria-label={`Edit ${project.name}`}
         className={cn(
+          touch.icon,
           "absolute right-2.5 top-2.5 z-10 grid h-[1.875rem] w-[1.875rem] place-items-center rounded-[0.5625rem] bg-elevated text-fg-subtle shadow-[var(--shadow-sm)] transition-all hover:bg-muted hover:text-fg-strong",
           card.revealActions,
         )}

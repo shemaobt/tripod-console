@@ -119,7 +119,7 @@ export function ChangeRequestCard({ req, onApprove, onReject }: ChangeRequestCar
         {canReview && (
           <div className="flex items-center gap-2.5 text-[0.8125rem] font-semibold">
             {onApprove && (
-              <button type="button" onClick={onApprove} className="text-accent hover:underline">
+              <button type="button" onClick={onApprove} className="text-link hover:underline">
                 Accept
               </button>
             )}

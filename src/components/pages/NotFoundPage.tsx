@@ -1,8 +1,12 @@
 import { Link } from "react-router-dom"
+import { touch } from "@/styles"
+import { cn } from "@/utils/cn"
+import { useDocumentTitle } from "@/utils/documentTitle"
 
 export default function NotFoundPage() {
+  useDocumentTitle("Page not found")
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-canvas px-6 text-center">
+    <div className="min-h-dvh flex flex-col items-center justify-center bg-canvas px-6 text-center">
       <span className="text-[0.8125rem] font-semibold tracking-[0.14em] uppercase text-fg-muted mb-2">
         Not found
       </span>
@@ -10,7 +14,7 @@ export default function NotFoundPage() {
       <p className="font-serif italic text-fg-muted mb-7">This page could not be found.</p>
       <Link
         to="/app/dashboard"
-        className="text-[0.84375rem] font-semibold text-accent hover:underline"
+        className={cn(touch.target, "text-[0.84375rem] font-semibold text-link hover:underline")}
       >
         Go to dashboard →
       </Link>

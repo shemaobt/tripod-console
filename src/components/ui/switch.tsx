@@ -1,6 +1,7 @@
 import * as React from "react"
 import * as SwitchPrimitive from "@radix-ui/react-switch"
 import { cn } from "@/utils/cn"
+import { touch } from "@/styles"
 
 const Switch = React.forwardRef<
   React.ComponentRef<typeof SwitchPrimitive.Root>,
@@ -9,6 +10,7 @@ const Switch = React.forwardRef<
   <SwitchPrimitive.Root
     ref={ref}
     className={cn(
+      touch.target,
       "peer inline-flex h-[1.375rem] w-[2.375rem] shrink-0 cursor-pointer items-center rounded-full p-[0.125rem] transition-colors",
       "disabled:cursor-not-allowed disabled:opacity-50",
       "data-[state=checked]:bg-accent data-[state=unchecked]:bg-st-idle",

@@ -1,12 +1,16 @@
 import { Link } from "react-router-dom"
 import { ShieldX } from "lucide-react"
 import { useAuth } from "@/contexts/AuthContext"
+import { touch } from "@/styles"
+import { cn } from "@/utils/cn"
+import { useDocumentTitle } from "@/utils/documentTitle"
 
 interface AccessDeniedPageProps {
   variant?: "default" | "logout"
 }
 
 export default function AccessDeniedPage({ variant = "default" }: AccessDeniedPageProps) {
+  useDocumentTitle("Access denied")
   const { logout } = useAuth()
 
   return (
@@ -20,14 +24,14 @@ export default function AccessDeniedPage({ variant = "default" }: AccessDeniedPa
         <button
           type="button"
           onClick={() => logout()}
-          className="text-[0.84375rem] font-semibold text-accent hover:underline"
+          className={cn(touch.target, "text-[0.84375rem] font-semibold text-link hover:underline")}
         >
           Sign out →
         </button>
       ) : (
         <Link
           to="/app/dashboard"
-          className="text-[0.84375rem] font-semibold text-accent hover:underline"
+          className={cn(touch.target, "text-[0.84375rem] font-semibold text-link hover:underline")}
         >
           Go to dashboard →
         </Link>

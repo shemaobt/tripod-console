@@ -15,6 +15,8 @@ import { DetailsCard, type AppFormState } from "./apps/DetailsCard"
 import { AutoApproveCard } from "./apps/AutoApproveCard"
 import { DangerZoneCard } from "./apps/DangerZoneCard"
 import { RolesCard } from "./apps/RolesCard"
+import { touch } from "@/styles"
+import { DocumentTitle } from "@/utils/documentTitle"
 
 function formFromApp(app: AppResponse): AppFormState {
   return {
@@ -220,14 +222,14 @@ export default function AppDetailPage() {
     <div className="max-w-[77.5rem] mx-auto px-6 sm:px-10 pt-7 pb-14">
       <button
         onClick={() => navigate("/app/apps")}
-        className="inline-flex items-center gap-[0.4375rem] text-[0.8125rem] font-semibold text-fg-muted hover:text-fg-strong transition-colors mb-4"
+        className={cn(touch.target, "inline-flex items-center gap-[0.4375rem] text-[0.8125rem] font-semibold text-fg-muted hover:text-fg-strong transition-colors mb-4")}
       >
         <ArrowLeft className="w-[0.9375rem] h-[0.9375rem]" strokeWidth={1.75} />
         Manage apps
       </button>
 
-      <div className="flex items-center justify-between gap-4 mb-6">
-        <div className="flex items-center gap-3.5">
+      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex min-w-0 items-center gap-3.5">
           <button
             type="button"
             onClick={() => iconInputRef.current?.click()}
@@ -250,7 +252,8 @@ export default function AppDetailPage() {
             onChange={handleIconFile}
           />
           <div className="flex flex-col gap-[0.1875rem] min-w-0">
-            <h3 className="text-[1.4375rem] font-bold text-fg-strong tracking-tight truncate">{app.name}</h3>
+            <DocumentTitle title={app.name} />
+            <h1 className="text-[1.4375rem] font-bold text-fg-strong tracking-tight truncate">{app.name}</h1>
             <div className="flex items-center gap-2.5 flex-wrap">
               <span className="font-mono text-[0.71875rem] bg-muted rounded-md px-2 py-[0.1875rem] text-fg-muted">
                 {app.app_key}
@@ -260,7 +263,7 @@ export default function AppDetailPage() {
                 type="button"
                 onClick={() => iconInputRef.current?.click()}
                 disabled={iconBusy}
-                className="text-[0.8125rem] font-semibold text-accent hover:text-accent-hover hover:underline disabled:opacity-50"
+                className={cn(touch.target, "text-[0.8125rem] font-semibold text-link hover:text-link-hover hover:underline disabled:opacity-50")}
               >
                 {form.icon_url ? "Change icon" : "Upload icon"}
               </button>
@@ -269,7 +272,7 @@ export default function AppDetailPage() {
                   type="button"
                   onClick={handleRemoveIcon}
                   disabled={iconBusy}
-                  className="text-[0.8125rem] font-semibold text-fg-subtle hover:text-st-warn hover:underline disabled:opacity-50"
+                  className={cn(touch.target, "text-[0.8125rem] font-semibold text-fg-subtle hover:text-st-warn hover:underline disabled:opacity-50")}
                 >
                   Remove icon
                 </button>
@@ -287,8 +290,11 @@ export default function AppDetailPage() {
           </div>
         </div>
         <div className="flex items-center gap-2.5 shrink-0">
-          <span className="text-[0.8125rem] text-fg-muted">Active</span>
+          <label htmlFor="app-detail-active" className="cursor-pointer py-2 text-[0.8125rem] text-fg-muted">
+            Active
+          </label>
           <Switch
+            id="app-detail-active"
             checked={form.is_active}
             onCheckedChange={(checked) => setForm((f) => ({ ...f, is_active: checked }))}
           />

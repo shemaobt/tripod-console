@@ -1,6 +1,7 @@
 import * as React from "react"
 import * as TabsPrimitive from "@radix-ui/react-tabs"
 import { cn } from "@/utils/cn"
+import { touch } from "@/styles"
 
 const Tabs = TabsPrimitive.Root
 
@@ -26,6 +27,7 @@ const TabsTrigger = React.forwardRef<
   <TabsPrimitive.Trigger
     ref={ref}
     className={cn(
+      touch.target,
       "inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-full px-4 py-1.5 text-[0.8125rem] font-semibold text-fg-muted transition-all hover:text-fg-strong data-[state=active]:bg-elevated data-[state=active]:text-fg-strong data-[state=active]:shadow-[var(--shadow-sm)] disabled:pointer-events-none disabled:opacity-50",
       className
     )}

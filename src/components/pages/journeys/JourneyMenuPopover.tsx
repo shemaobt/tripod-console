@@ -69,7 +69,7 @@ export function JourneyMenuPopover({
         <div className="mx-1 mb-0.5 mt-1.5 border-t border-line pt-1.5">
           <button
             onClick={onNew}
-            className="flex w-full cursor-pointer items-center gap-2 rounded-[0.625rem] px-3 py-[0.5625rem] text-[0.8125rem] font-bold text-accent transition-colors hover:bg-accent-soft"
+            className="flex w-full cursor-pointer items-center gap-2 rounded-[0.625rem] px-3 py-[0.5625rem] text-[0.8125rem] font-bold text-link transition-colors hover:bg-accent-soft"
           >
             <Plus className="h-3.5 w-3.5" strokeWidth={2.2} />
             New journey

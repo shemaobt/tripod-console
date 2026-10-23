@@ -15,6 +15,7 @@ import { LoadingSpinner } from "@/components/common/LoadingSpinner"
 import { EmptyState } from "@/components/common/EmptyState"
 import { LoadFailed } from "@/components/common/LoadFailed"
 import { FilterBar } from "@/components/common/FilterBar"
+import { PageHeader } from "@/components/common/PageHeader"
 
 export default function ProjectsPage() {
   const { isPlatformAdmin, isManager } = useAuth()
@@ -139,24 +140,20 @@ export default function ProjectsPage() {
 
   return (
     <div className="mx-auto max-w-[77.5rem] px-6 pb-14 pt-8 sm:px-10">
-      <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div className="flex flex-col gap-1">
-          <span className="text-[0.8125rem] font-semibold uppercase tracking-[0.14em] text-fg-muted">
-            Content
-          </span>
-          <h3 className="text-[1.5625rem] font-bold tracking-tight text-fg-strong">Projects</h3>
-          <span className="text-[0.78125rem] text-fg-subtle">
-            {projects === null
-              ? "—"
-              : `${projects.length} project${projects.length !== 1 ? "s" : ""} total`}
-          </span>
-        </div>
-        <div className="flex items-center">
+      <PageHeader
+        eyebrow="Content"
+        title="Projects"
+        subtitle={
+          projects === null
+            ? "—"
+            : `${projects.length} project${projects.length !== 1 ? "s" : ""} total`
+        }
+        actions={
           <Button onClick={openCreateDialog}>
             {isPlatformAdmin ? "New project" : "Request project"}
           </Button>
-        </div>
-      </div>
+        }
+      />
 
       {hasTabs ? (
         <Tabs defaultValue="projects">

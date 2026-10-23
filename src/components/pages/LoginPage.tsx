@@ -7,8 +7,12 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { LoadingSpinner } from "@/components/common/LoadingSpinner"
+import { touch } from "@/styles"
+import { cn } from "@/utils/cn"
+import { useDocumentTitle } from "@/utils/documentTitle"
 
 export default function LoginPage() {
+  useDocumentTitle("Sign in")
   const { user, isLoading, login } = useAuth()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
@@ -39,7 +43,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen grid lg:grid-cols-[1.05fr_1fr] bg-canvas">
+    <div className="min-h-dvh grid lg:grid-cols-[1.05fr_1fr] bg-canvas">
       <div className="hidden lg:flex relative overflow-hidden bg-inverse text-on-dark flex-col justify-between px-[3.25rem] py-11">
         <img src="/assets/logo-branco.svg" alt="Shemá" className="h-7 w-auto self-start relative z-10" />
         <div className="relative z-10 max-w-[29.375rem] flex flex-col gap-[1.125rem] pb-8">
@@ -71,7 +75,7 @@ export default function LoginPage() {
               <img src="/assets/logo-verde.svg" alt="Shemá" className="h-6 w-auto dark:hidden" />
               <img src="/assets/logo-branco.svg" alt="Shemá" className="h-6 w-auto hidden dark:block" />
             </div>
-            <h3 className="text-[1.625rem] font-bold text-fg-strong tracking-tight">Sign in</h3>
+            <h1 className="text-[1.625rem] font-bold text-fg-strong tracking-tight">Sign in</h1>
             <p className="text-sm text-fg-muted">Use your Shema account to manage the platform.</p>
           </div>
 
@@ -111,7 +115,7 @@ export default function LoginPage() {
             <span className="text-[0.8125rem] text-fg-muted">Need access? Contact your administrator.</span>
             <Link
               to="/request"
-              className="text-[0.84375rem] font-semibold text-accent hover:text-accent-hover hover:underline self-start"
+              className={cn(touch.target, "text-[0.84375rem] font-semibold text-link hover:text-link-hover hover:underline self-start")}
             >
               Submit a public request →
             </Link>

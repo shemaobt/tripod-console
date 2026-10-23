@@ -1,9 +1,10 @@
 import type { ReactNode } from "react"
 import { cn } from "@/utils/cn"
+import { touch } from "@/styles"
 import { ChangeRequestsSection } from "@/components/pages/ChangeRequestsSection"
 import { MyChangeRequestsSection } from "@/components/pages/changeRequests/MyChangeRequestsSection"
 
-const segClass = "rounded-full px-4 py-1.5 text-[0.8125rem] font-semibold transition-colors"
+const segClass = cn(touch.target, "rounded-full px-4 py-1.5 text-[0.8125rem] font-semibold transition-colors")
 const segActive = "bg-elevated text-fg-strong shadow-[var(--shadow-sm)]"
 
 interface LanguagesTabsProps {
