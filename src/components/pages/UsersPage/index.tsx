@@ -154,7 +154,7 @@ export default function UsersPage() {
                   }
                 />
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3.5">
+                <div className="grid grid-cols-1 @2xl:grid-cols-2 @min-[72rem]:grid-cols-3 gap-3.5">
                   {filteredUsers.map((user) => (
                     <UserCard
                       key={user.id}

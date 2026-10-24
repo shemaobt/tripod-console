@@ -301,7 +301,7 @@ export default function AppDetailPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-[1.3fr_1fr] gap-[1.125rem] items-start mb-[1.125rem]">
+      <div className="grid grid-cols-1 @4xl:grid-cols-[1.3fr_1fr] gap-[1.125rem] items-start mb-[1.125rem]">
         <DetailsCard form={form} setForm={setForm} saving={saving} onSave={handleSave} />
 
         <div className="flex flex-col gap-[1.125rem]">

@@ -5,7 +5,8 @@
  *
  * Both rules only act under `touch:` — `(pointer: coarse)`, declared in index.css — so the
  * desktop drawing is untouched. 44px is written in px on purpose: it is a finger, not a
- * piece of the interface scale, and at lg the root is 82.8%, where 2.75rem would be 36px.
+ * piece of the interface scale, and the root follows the browser's default font size, so
+ * someone who set that below 16px would get a 2.75rem target under 44.
  */
 export const touch = {
   /**
