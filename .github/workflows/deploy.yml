@@ -58,9 +58,9 @@ jobs:
         id: secrets
         run: |
           BACKEND_URL=$(gcloud secrets versions access latest \
-            --secret=backend_url_staging \
+            --secret=tripod_console_backend_url \
             --project=${{ env.SECRETS_PROJECT }} | tr -d '\n')
-          echo "backend_url_staging=${BACKEND_URL}" >> "$GITHUB_OUTPUT"
+          echo "backend_url=${BACKEND_URL}" >> "$GITHUB_OUTPUT"
 
       - name: Deploy to Cloud Run
         run: |
@@ -74,7 +74,7 @@ jobs:
             --cpu=1 \
             --concurrency=80 \
             --timeout=60 \
-            --set-env-vars="BACKEND_URL=${{ steps.secrets.outputs.backend_url_staging }}"
+            --set-env-vars="BACKEND_URL=${{ steps.secrets.outputs.backend_url }}"
 
       - name: Show deployment URL
         run: |
